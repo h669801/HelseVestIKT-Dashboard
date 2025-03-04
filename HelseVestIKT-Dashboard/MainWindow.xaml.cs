@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Valve.VR;
 
 namespace HelseVestIKT_Dashboard
 {
@@ -72,6 +73,21 @@ namespace HelseVestIKT_Dashboard
             timer.Start();
 
             EmbedSteamVRSpectator();
+
+            //Test for å se at openVR kjører
+            EVRInitError error = EVRInitError.None;
+            CVRSystem vrSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
+
+            if (error != EVRInitError.None)
+            {
+                Console.WriteLine($"Feil ved initiering av OpenVR: {error}");
+            }
+            else
+            {
+                Console.WriteLine("OpenVR initialisert! Headset funnet.");
+            }
+
+
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
