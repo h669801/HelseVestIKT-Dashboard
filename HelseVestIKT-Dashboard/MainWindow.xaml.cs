@@ -14,6 +14,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Valve.VR;
+using MessageBox = System.Windows.MessageBox;  
+using Button = System.Windows.Controls.Button;
+
 
 namespace HelseVestIKT_Dashboard
 {
@@ -26,8 +30,6 @@ namespace HelseVestIKT_Dashboard
 
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
         private static extern bool AllocConsole();
-
-        public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
 
         [DllImport("user32.dll")]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -52,7 +54,11 @@ namespace HelseVestIKT_Dashboard
         // Deklarer volumeStatusTimer som nullable.
         private DispatcherTimer? volumeStatusTimer = null;
 
-        public MainWindow()
+        private CVRSystem vrSystem;
+
+        public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
+
+		public MainWindow()
         {
             InitializeComponent();
             // Set DataContext for bindings (for example, for CurrentTime)
@@ -72,13 +78,31 @@ namespace HelseVestIKT_Dashboard
             timer.Start();
 
             EmbedSteamVRSpectator();
+            InitializeOpenVR();
+        }
+
+        private void InitializeOpenVR()
+        {
+			EVRInitError initError = EVRInitError.None;
+			vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Scene);
+			if (initError != EVRInitError.None)
+			{
+				string errorMessage = OpenVR.GetStringForHmdError(initError);
+				System.Windows.MessageBox.Show("OpenVR Initialization failed: " + errorMessage);
+				// Optionally, close the application:
+				//this.Close();
+			}
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             VolumeSlider.ValueChanged += VolumeSlider_ValueChanged;
-            SteamApi steamApi = new SteamApi("3424AFEFF08E6EFC9084271524DDDFE2", "76561198071462154");
-            await steamApi.GetSteamGamesAsync();
+            SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
+            var fetchedGames = await steamApi.GetSteamGamesAsync();
+            foreach (var game in fetchedGames)
+            {
+                Games.Add(game);
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -198,35 +222,35 @@ namespace HelseVestIKT_Dashboard
             logWindow.ShowDialog();
         }
 
-        private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+		private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button && button.DataContext is Game game)
+			{
+				// Use the AppID from the game object dynamically
+				SteamLauncher.LaunchSteamGame(game.AppID);
+			}
+
+			// Hide header and game library, show the Return button in the toolbar.
+			HeaderGrid.Visibility = Visibility.Collapsed;
+			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+			ReturnButton.Visibility = Visibility.Visible;
+		}
+
+
+		private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SteamLauncher.LaunchSteamGame("70");
-            // Hide header and game library, show the Return button in the toolbar.
-            HeaderGrid.Visibility = Visibility.Collapsed;
-            GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+			// Create an instance of SteamApi with your API key and Steam user ID.
+			SteamApi steamApi = new SteamApi("YOUR_API_KEY", "YOUR_STEAM_USER_ID");
+			// Retrieve the list of games.
+			var games = await steamApi.GetSteamGamesAsync();
 
-            if (SteamGameImage != null)
-            {
-                SteamGameImage.Visibility = Visibility.Collapsed;
-            }
-            ReturnButton.Visibility = Visibility.Visible;
-
-        }
-
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Replace "123456" with the actual Steam AppID.
-            BitmapImage? gameImage = await SteamImageHelper.GetSteamGameImageAsync("70");
-            if (gameImage != null)
-            {
-                SteamGameImage.Source = gameImage;
-
-                SteamGameImage.Visibility = Visibility.Visible;
-
-            }
-
-        }
+			// Assuming you have an ObservableCollection<Game> property named "Games" bound to your ItemsControl,
+			// add each game to the collection.
+			foreach (var game in games)
+			{
+				Games.Add(game);
+			}
+		}
 
         private void EmbedSteamVRSpectator()
         {
@@ -244,6 +268,7 @@ namespace HelseVestIKT_Dashboard
                 System.Windows.MessageBox.Show("Kunne ikke finne SteamVR Spectator-vinduet.");
             }
         }
+
 
     }
 }

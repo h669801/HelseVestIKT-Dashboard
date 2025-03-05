@@ -10,9 +10,19 @@
 	  <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Native\openvr_api.dll" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<Page Remove="Dictionary1.xaml" />
 		<Page Remove="Resources.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Native\openvr_api.dll">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
