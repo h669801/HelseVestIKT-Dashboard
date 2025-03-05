@@ -32,7 +32,8 @@
     <DockPanel>
         <!-- Toolbar Tray with sky blue background -->
         <ToolBarTray DockPanel.Dock="Top" Background="SkyBlue" HorizontalAlignment="Stretch">
-            <ToolBar Height="80" Background="SkyBlue" HorizontalContentAlignment="Stretch">
+            <ToolBar Height="80" Background="SkyBlue" HorizontalContentAlignment="Stretch" Margin="0,0,7,0" Width="1400
+					 ">
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -76,19 +77,10 @@
                         <!-- Clock -->
                         <TextBlock Text="{Binding CurrentTime}"
                        VerticalAlignment="Center"
-                       FontSize="16"
+                       FontSize="20"
                        HorizontalAlignment="Right"
                        Margin="20,0,20,0"
                        Foreground="Black"/>
-                        <!-- Fullscreen button -->
-                        <Button Style="{StaticResource ToolBarButtonStyle}" Click="FullScreenButton_Click" Margin="20,0,20,0">
-                            ⛶
-                        </Button>
-                        <!-- Exit button -->
-                        <Button Style="{StaticResource ToolBarButtonStyle}" Click="ExitButton_Click" Margin="20,0,20,0">
-                            ❌
-                        </Button>
-                        <!-- Volume slider with status -->
                         <Grid Margin="20,0,20,0">
                             <Slider x:Name="VolumeSlider"
                       Width="100"
@@ -117,12 +109,20 @@
                     Click="ResetButton_Click" Visibility="Visible" Margin="20,0,20,0">
                             Reset
                         </Button>
-                    </StackPanel>
+						<!-- Fullscreen button -->
+						<Button Style="{StaticResource ToolBarButtonStyle}" Click="FullScreenButton_Click" Margin="20,0,20,0">
+							⛶
+						</Button>
+						<!-- Exit button -->
+						<Button Style="{StaticResource ToolBarButtonStyle}" Click="ExitButton_Click" Margin="20,0,20,0">
+							❌
+						</Button>
+					</StackPanel>
                 </Grid>
             </ToolBar>
         </ToolBarTray>
 
-        <!-- Header row with Filter/Sorter text, Alle spill header, and search bar -->
+			<!-- Header row with Filter/Sorter text, Alle spill header, and search bar -->
         <Grid DockPanel.Dock="Top" Height="40" Margin="0,10" x:Name="HeaderGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -150,48 +150,40 @@
         <!-- Game library area: Contains both the game library and the VR spectator view -->
         <Grid x:Name="GameLibraryArea">
             <!-- Original game library -->
-            <ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible">
-                <UniformGrid Columns="4" Margin="20">
-                    <!-- Spill 1: Clickable game box for Spill 1 -->
-                    <Button Click="LaunchGameButton_Click" Style="{StaticResource TransparentButtonStyle}" 
-                  Width="150" Height="210" Margin="10">
-                        <StackPanel>
-                            <Border BorderBrush="Gray" BorderThickness="2" Width="150" Height="150">
-                                <Image x:Name="SteamGameImage" Stretch="UniformToFill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                            </Border>
-                            <TextBlock Text="Spill 1" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Button>
-                    <!-- Spill 2 -->
-                    <Button Style="{StaticResource TransparentButtonStyle}" 
-                  Width="150" Height="210" Margin="10">
-                        <StackPanel>
-                            <Border BorderBrush="Gray" BorderThickness="2" Width="150" Height="150">
-                            </Border>
-                            <TextBlock Text="Spill 2" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Button>
-                    <!-- Spill 3 -->
-                    <Button Style="{StaticResource TransparentButtonStyle}" 
-                  Width="150" Height="210" Margin="10">
-                        <StackPanel>
-                            <Border BorderBrush="Gray" BorderThickness="2" Width="150" Height="150">
-                            </Border>
-                            <TextBlock Text="Spill 3" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Button>
-                    <!-- Spill 4 -->
-                    <Button Style="{StaticResource TransparentButtonStyle}" 
-                  Width="150" Height="210" Margin="10">
-                        <StackPanel>
-                            <Border BorderBrush="Gray" BorderThickness="2" Width="150" Height="150">
-                            </Border>
-                            <TextBlock Text="Spill 4" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
-                        </StackPanel>
-                    </Button>
-                </UniformGrid>
-            </ScrollViewer>
-            <!-- Example Image control for Steam game image -->
+			<ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible" HorizontalContentAlignment="Stretch" Width="1449" VerticalAlignment="Center">
+				<ItemsControl x:Name="GamesItemsControl" ItemsSource="{Binding Games}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<UniformGrid Columns="4" Margin="20"/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Button Click="LaunchGameButton_Click" Style="{StaticResource TransparentButtonStyle}" 
+                Width="200" Height="300" Margin="10">
+								<StackPanel>
+									<Border BorderThickness="2" Width="200" Height="250">
+										<Image Source="{Binding GameImage}" 
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+									</Border>
+									<TextBlock Text="{Binding Title}" 
+                           HorizontalAlignment="Center" 
+						TextAlignment="Left"
+											   TextTrimming="CharacterEllipsis"
+											   
+                           Margin="0,5,0,0" 
+                           FontWeight="Bold"
+											   MaxWidth="180"/>
+								</StackPanel>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+
+			<!-- Example Image control for Steam game image -->
 
             <!-- VR spectator view embedded via WindowsFormsHost; initially hidden -->
             <wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed">

@@ -1,58 +1,72 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace HelseVestIKT_Dashboard
 {
-    public static class SteamImageHelper
-    {
-        public static async Task<BitmapImage?> GetSteamGameImageAsync(string appId)
-        {
-            string apiUrl = $"http://store.steampowered.com/api/appdetails?appids={appId}";
-            using HttpClient client = new HttpClient();
-            var response = await client.GetStringAsync(apiUrl);
+	public static class GameImage
+	{
+		/// <summary>
+		/// Loads an image from your local Steam library cache based on the appID.
+		/// </summary>
+		public static BitmapImage? LoadLocalGameImage(string appID)
+		{
+			// Construct the local file path.
+			// Adjust this path if your Steam installation is in a different location.
+			string localPath = $@"C:\Program Files (x86)\Steam\appcache\librarycache\{appID}\library_600x900.jpg";
 
-            using JsonDocument doc = JsonDocument.Parse(response);
+			if (!File.Exists(localPath))
+			{
+				Console.WriteLine($"Local image file not found: {localPath}");
+				return null;
+			}
 
-            // Check if the JSON contains an element for the given appId
-            if (!doc.RootElement.TryGetProperty(appId, out JsonElement appElement))
-            {
-                // The appId key was not found
-                return null;
-            }
+			try
+			{
+				BitmapImage bitmap = new BitmapImage();
+				bitmap.BeginInit();
+				bitmap.UriSource = new Uri(localPath, UriKind.Absolute);
+				bitmap.CacheOption = BitmapCacheOption.OnLoad;
+				bitmap.EndInit();
+				bitmap.Freeze(); // Allows cross-thread access.
+				return bitmap;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error loading local image for AppID {appID}: {ex.Message}");
+				return null;
+			}
+		}
 
-            // Check if the "success" property exists and is true
-            if (!appElement.TryGetProperty("success", out JsonElement successElement) ||
-                !successElement.GetBoolean())
-            {
-                return null;
-            }
-
-            // Check for the "data" property and then "header_image"
-            if (!appElement.TryGetProperty("data", out JsonElement dataElement) ||
-                !dataElement.TryGetProperty("header_image", out JsonElement headerImageElement))
-            {
-                return null;
-            }
-
-            string? imageUrl = headerImageElement.GetString();
-            if (string.IsNullOrEmpty(imageUrl))
-            {
-                return null;
-            }
-
-            // Create the BitmapImage from the URL
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.UriSource = new Uri(imageUrl, UriKind.Absolute);
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.EndInit();
-            return bitmap;
-        }
-    }
+		/// <summary>
+		/// Downloads and creates a BitmapImage from an online URL.
+		/// </summary>
+		public static async Task<BitmapImage?> LoadOnlineGameImageAsync(string imageUrl)
+		{
+			try
+			{
+				using (HttpClient client = new HttpClient())
+				{
+					byte[] imageData = await client.GetByteArrayAsync(imageUrl);
+					BitmapImage bitmap = new BitmapImage();
+					using (var stream = new MemoryStream(imageData))
+					{
+						bitmap.BeginInit();
+						bitmap.CacheOption = BitmapCacheOption.OnLoad;
+						bitmap.StreamSource = stream;
+						bitmap.EndInit();
+						bitmap.Freeze(); // Allows cross-thread access.
+					}
+					return bitmap;
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error loading online image from {imageUrl}: {ex.Message}");
+				return null;
+			}
+		}
+	}
 }
