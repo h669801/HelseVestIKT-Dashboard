@@ -55,7 +55,7 @@ namespace HelseVestIKT_Dashboard
 						{
 							AppID = appID,
 							Title = title,
-							GameImage = gameImage
+							GameImage = gameImage!
 						});
 					}
 				}

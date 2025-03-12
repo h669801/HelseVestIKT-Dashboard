@@ -11,6 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Bilder\settings.png" />
+    <None Remove="Bilder\speaker.png" />
+    <None Remove="Bilder\vrheadset.png" />
+    <None Remove="Bilder\vrkontrollere.png" />
+    <None Remove="Bilder\wifi_bar_0.png" />
+    <None Remove="Bilder\wifi_bar_1.png" />
+    <None Remove="Bilder\wifi_bar_2.png" />
+    <None Remove="Bilder\wifi_bar_3.png" />
+    <None Remove="Bilder\wifi_bar_4.png" />
     <None Remove="Native\openvr_api.dll" />
   </ItemGroup>
 
@@ -26,6 +35,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Resource Include="Bilder\settings.png" />
+		<Resource Include="Bilder\speaker.png" />
+		<Resource Include="Bilder\vrheadset.png" />
+		<Resource Include="Bilder\vrkontrollere.png" />
+		<Resource Include="Bilder\wifi_bar_0.png" />
+		<Resource Include="Bilder\wifi_bar_1.png" />
+		<Resource Include="Bilder\wifi_bar_2.png" />
+		<Resource Include="Bilder\wifi_bar_3.png" />
+		<Resource Include="Bilder\wifi_bar_4.png" />
 		<Resource Include="Resources.xaml" />
 	</ItemGroup>
 
@@ -34,7 +52,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="SimpleWifi.netstandard" Version="2.0.0" />
+	  <PackageReference Include="SteamKit2" Version="3.0.2" />
+	  <PackageReference Include="ValveKeyValue" Version="0.12.0.391" />
 	</ItemGroup>
 
 
