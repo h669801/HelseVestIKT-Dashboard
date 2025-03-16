@@ -1,4 +1,4 @@
-﻿<Window x:Class="HelseVestIKT_Dashboard.MainWindow" 
+﻿<Window x:Class="HelseVestIKT_Dashboard.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
@@ -29,140 +29,129 @@
 		</Style>
 	</Window.Resources>
 
-	<DockPanel LastChildFill="True">
-		<!-- Toolbar Tray -->
-		<ToolBarTray DockPanel.Dock="Top" Background="DeepSkyBlue" HorizontalAlignment="Stretch">
-			<ToolBar Height="80" HorizontalContentAlignment="Stretch" Margin="0,0,7,0" HorizontalAlignment="Stretch" Background="SkyBlue">
-				<Grid HorizontalAlignment="Stretch">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto"/>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<!-- Left Group: VR Equipment Status -->
-					<StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
-						<!-- Headset Icon -->
-						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,20,0">
-							<Border x:Name="HeadsetStatusBorder" BorderThickness="2" CornerRadius="4" Width="52">
-								<Border.Style>
-									<Style TargetType="Border">
-										<Setter Property="BorderBrush" Value="Green"/>
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding VREquipmentStatus.IsHeadsetConnected}" Value="False">
-												<Setter Property="BorderBrush" Value="Red"/>
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</Border.Style>
-								<Button x:Name="HeadsetButton" Style="{StaticResource ToolBarButtonStyle}" Click="HeadsetButton_Click">
-									<Image Source="Bilder/vrheadset.png" Width="32" Height="32" Visibility="Visible"/>
-								</Button>
-							</Border>
-							<TextBlock Text="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}" 
-                                       HorizontalAlignment="Center" FontSize="12"/>
-						</StackPanel>
-						<!-- Left Controller Icon -->
-						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,20,0">
-							<Border x:Name="LeftControllerStatusBorder" BorderThickness="2" CornerRadius="4">
-								<Border.Style>
-									<Style TargetType="Border">
-										<Setter Property="BorderBrush" Value="Green"/>
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding VREquipmentStatus.IsLeftControllerConnected}" Value="False">
-												<Setter Property="BorderBrush" Value="Red"/>
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</Border.Style>
-								<Button x:Name="LeftControllerButton" Style="{StaticResource ToolBarButtonStyle}" Click="LeftControllerButton_Click">
-									<Image Source="Bilder/vrcontroller_left.png" Width="32" Height="32" Stretch="Uniform"/>
-								</Button>
-							</Border>
-							<TextBlock Text="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}" 
-                                       HorizontalAlignment="Center" FontSize="12"/>
-						</StackPanel>
-						<!-- Right Controller Icon -->
-						<StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-							<Border x:Name="RightControllerStatusBorder" BorderThickness="2" CornerRadius="4">
-								<Border.Style>
-									<Style TargetType="Border">
-										<Setter Property="BorderBrush" Value="Green"/>
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding VREquipmentStatus.IsRightControllerConnected}" Value="False">
-												<Setter Property="BorderBrush" Value="Red"/>
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</Border.Style>
-								<Button x:Name="RightControllerButton" Style="{StaticResource ToolBarButtonStyle}" Click="RightControllerButton_Click">
-									<Image Source="/Bilder/vrkontrollere.png" Width="32" Height="32" Stretch="Uniform"/>
-								</Button>
-							</Border>
-							<TextBlock Text="{Binding VREquipmentStatus.RightControllerBatteryPercentage, StringFormat={}{0:F0}%}" 
-                                       HorizontalAlignment="Center" FontSize="12"/>
-						</StackPanel>
-					</StackPanel>
-					<!-- Center Group: Application Title -->
-					<TextBlock Grid.Column="1" Text="Helse Vest IKT" 
-                               FontSize="20" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="50,0,50,0"/>
-					<!-- Right Group: Clock, Volume Slider, WiFi Signal, Fullscreen, Exit -->
-					<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-						<TextBlock Text="{Binding CurrentTime}"
-                                   VerticalAlignment="Center"
-                                   FontSize="20"
-                                   HorizontalAlignment="Right"
-                                   Margin="20,0,20,0"
-                                   Foreground="Black"/>
-						<Grid>
-							<!-- Speaker button and volume popup -->
-							<Button x:Name="SpeakerButton" Style="{StaticResource ToolBarButtonStyle}" 
-                                    MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave" BorderBrush="{x:Null}">
-								<Image Source="/Bilder/speaker.png" Width="20" Height="20"/>
-							</Button>
-							<Popup x:Name="VolumePopup" 
-								PlacementTarget="{Binding ElementName=SpeakerButton}" 
-								Placement="Bottom" 
-								HorizontalOffset="0" 
-								VerticalOffset="2" 
-								AllowsTransparency="True" 
-								StaysOpen="False" 
-								MouseEnter="VolumePopup_MouseEnter" 
-								MouseLeave="VolumePopup_MouseLeave">
-								<Border Background="White" BorderBrush="Gray" BorderThickness="1" Padding="5">
-									<StackPanel>
-										<Slider x:Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50" 
-                    ToolTip="Juster volum" ValueChanged="VolumeSlider_ValueChanged"/>
-										<TextBlock x:Name="VolumeStatusTextBlock" 
-                       Text="50%" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,5,0,0"/>
-									</StackPanel>
-								</Border>
-							</Popup>
-						</Grid>
-						<!-- WiFi Signal Indicator using a ProgressBar and TextBlock -->
-						<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
-							<Image x:Name="WifiSignalIcon" Width="24" Height="24" Margin="5"/>
-							<TextBlock x:Name="WifiSignalTextBlock" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
-						</StackPanel>
-						<StackPanel>
-							<Button Style="{StaticResource ToolBarButtonStyle}" Click="Settings_Click" Margin="20,0,20,0" BorderThickness="0">
-								<Image Source="Bilder/settings.png" Width="24" Height="24"/>
-							</Button>
-						</StackPanel>
-						
-						<Button Style="{StaticResource ToolBarButtonStyle}" Click="FullScreenButton_Click" 
-                                Margin="20,0,20,0" BorderThickness="0" FontSize="20">
-							⛶
+	<DockPanel>
+		<!-- Top Toolbar implemented with a Grid -->
+		<Grid DockPanel.Dock="Top" Background="SkyBlue" Height="80">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="2*"/>
+				<ColumnDefinition Width="2*"/>
+				<ColumnDefinition Width="2*"/>
+			</Grid.ColumnDefinitions>
+
+			<!-- Left Group: VR Equipment Status -->
+			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+				<!-- Headset Icon -->
+				<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="20,0">
+					<Border x:Name="HeadsetStatusBorder" BorderThickness="2" CornerRadius="4" Width="50">
+						<Border.Style>
+							<Style TargetType="Border">
+								<Setter Property="BorderBrush" Value="Green"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding VREquipmentStatus.IsHeadsetConnected}" Value="False">
+										<Setter Property="BorderBrush" Value="Red"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Border.Style>
+						<Button x:Name="HeadsetButton" Style="{StaticResource ToolBarButtonStyle}" Click="HeadsetButton_Click">
+							<Image Source="Bilder/vrheadset.png" Width="32" Height="32"/>
 						</Button>
-						<Button Style="{StaticResource ToolBarButtonStyle}" Click="ExitButton_Click" 
-                                Margin="20,0,20,0" BorderThickness="0">
-							❌
+					</Border>
+					<TextBlock Text="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}"
+                     HorizontalAlignment="Center" FontSize="12"/>
+				</StackPanel>
+				<!-- Left Controller Icon -->
+				<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,20,0">
+					<Border x:Name="LeftControllerStatusBorder" BorderThickness="2" CornerRadius="4">
+						<Border.Style>
+							<Style TargetType="Border">
+								<Setter Property="BorderBrush" Value="Green"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding VREquipmentStatus.IsLeftControllerConnected}" Value="False">
+										<Setter Property="BorderBrush" Value="Red"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Border.Style>
+						<Button x:Name="LeftControllerButton" Style="{StaticResource ToolBarButtonStyle}" Click="LeftControllerButton_Click">
+							<Image Source="Bilder/vrcontroller_left.png" Width="32" Height="32" Stretch="Uniform"/>
 						</Button>
-					</StackPanel>
+					</Border>
+					<TextBlock Text="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}"
+                     HorizontalAlignment="Center" FontSize="12"/>
+				</StackPanel>
+				<!-- Right Controller Icon -->
+				<StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+					<Border x:Name="RightControllerStatusBorder" BorderThickness="2" CornerRadius="4">
+						<Border.Style>
+							<Style TargetType="Border">
+								<Setter Property="BorderBrush" Value="Green"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding VREquipmentStatus.IsRightControllerConnected}" Value="False">
+										<Setter Property="BorderBrush" Value="Red"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Border.Style>
+						<Button x:Name="RightControllerButton" Style="{StaticResource ToolBarButtonStyle}" Click="RightControllerButton_Click">
+							<Image Source="/Bilder/vrkontrollere.png" Width="32" Height="32" Stretch="Uniform"/>
+						</Button>
+					</Border>
+					<TextBlock Text="{Binding VREquipmentStatus.RightControllerBatteryPercentage, StringFormat={}{0:F0}%}"
+                     HorizontalAlignment="Center" FontSize="12"/>
+				</StackPanel>
+			</StackPanel>
+
+			<!-- Center Group: Application Title -->
+			<TextBlock Grid.Column="1" Text="Helse Vest IKT"
+                 FontSize="20" FontWeight="Bold" VerticalAlignment="Center"
+                 HorizontalAlignment="Center" Margin="50,0,50,0"/>
+
+			<!-- Right Group: Clock, Volume, WiFi, Fullscreen, Exit -->
+			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0,10,0">
+				<TextBlock Text="{Binding CurrentTime}"
+               VerticalAlignment="Center" FontSize="20" Margin="5,0,5,0" Foreground="Black"
+               HorizontalAlignment="Right" FontWeight="ExtraBold"/>
+				<Grid>
+					<!-- Speaker Button and Volume Popup -->
+					<Button x:Name="SpeakerButton" Style="{StaticResource ToolBarButtonStyle}"
+                  MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave" BorderBrush="{x:Null}">
+						<Image Source="/Bilder/speaker.png" Width="20" Height="20"/>
+					</Button>
+					<Popup x:Name="VolumePopup"
+                 Placement="Custom"
+                 CustomPopupPlacementCallback="VolumePopupPlacementCallback"
+                 PlacementTarget="{Binding ElementName=SpeakerButton}"
+                 AllowsTransparency="True" StaysOpen="False"
+                 MouseEnter="VolumePopup_MouseEnter" MouseLeave="VolumePopup_MouseLeave">
+						<Border Background="White" BorderBrush="Gray" BorderThickness="1" Padding="5">
+							<StackPanel>
+								<Slider x:Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50"
+                        ToolTip="Juster volum" ValueChanged="VolumeSlider_ValueChanged"/>
+								<TextBlock x:Name="VolumeStatusTextBlock" Text="50%" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+							</StackPanel>
+						</Border>
+					</Popup>
 				</Grid>
-			</ToolBar>
-		</ToolBarTray>
+				<!-- WiFi Signal Indicator -->
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
+					<Image x:Name="WifiSignalIcon" Width="24" Height="24" Margin="5"/>
+					<TextBlock x:Name="WifiSignalTextBlock" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
+				</StackPanel>
+				<!-- Settings Button -->
+				<Button Style="{StaticResource ToolBarButtonStyle}" Click="Settings_Click" Margin="20,0,20,0" BorderThickness="0">
+					<Image Source="Bilder/settings.png" Width="24" Height="24"/>
+				</Button>
+				<!-- Fullscreen Button -->
+				<Button Style="{StaticResource ToolBarButtonStyle}" Click="FullScreenButton_Click" Margin="20,0,20,0" BorderThickness="0" FontSize="20">
+					⛶
+				</Button>
+				<!-- Exit Button -->
+				<Button Style="{StaticResource ToolBarButtonStyle}" Click="ExitButton_Click" Margin="20,0,20,0" BorderThickness="0">
+					❌
+				</Button>
+			</StackPanel>
+		</Grid>
 
 		<!-- New toolbar area for VR functional buttons -->
 		<Grid DockPanel.Dock="Top" Background="SkyBlue" Height="60">
@@ -173,23 +162,22 @@
 			</Grid.ColumnDefinitions>
 			<!-- Left side VR buttons -->
 			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-				<Button Content="VR Connect" Width="100" Margin="5" Click="VRConnectButton_Click"/>
-				<Button Content="VR Disconnect" Width="100" Margin="5" Click="VRDisconnectButton_Click"/>
+				<Button Content="Romkalibrering" Width="100" Margin="5" Click="VRConnectButton_Click"/>
+				<Button Content="Høydekalibrering" Width="100" Margin="5" Click="VRDisconnectButton_Click"/>
 			</StackPanel>
 			<!-- Center: Optional label -->
-			<TextBlock Grid.Column="1" Text="VR Equipment" 
-                       VerticalAlignment="Center" 
-                       HorizontalAlignment="Center" 
-                       FontSize="16" FontWeight="Bold"/>
-			<!-- Right side VR options including the moved buttons -->
+			<TextBlock Grid.Column="1" Text="VR Funksjoner"
+                 VerticalAlignment="Center" HorizontalAlignment="Center"
+                 FontSize="16" FontWeight="Bold"/>
+			<!-- Right side VR options -->
 			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-				<Button Content="VR Settings" Width="100" Margin="5" Click="VRSettingsButton_Click"/>
-				<Button x:Name="ReturnButton" Style="{StaticResource ToolBarButtonStyle}" 
-                        Click="ReturnButton_Click" Visibility="Collapsed" Margin="20,0,20,0">
+				<Button Content="VR innstillinger" Width="100" Margin="5" Click="VRSettingsButton_Click"/>
+				<Button x:Name="ReturnButton" Style="{StaticResource ToolBarButtonStyle}" Click="ReturnButton_Click"
+                Visibility="Collapsed" Margin="20,0,20,0">
 					tilbake til spillbibliotek
 				</Button>
-				<Button x:Name="ResetButton" Style="{StaticResource ToolBarButtonStyle}"  
-                        Click="ResetButton_Click" Visibility="Visible" Margin="20,0,20,0" FontWeight="Bold">
+				<Button x:Name="ResetButton" Style="{StaticResource ToolBarButtonStyle}" Click="ResetButton_Click"
+                Visibility="Visible" Margin="20,0,20,0" FontWeight="Bold">
 					Reset
 				</Button>
 			</StackPanel>
@@ -202,54 +190,45 @@
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-			<TextBlock Grid.Column="0" Text="Filter/Sorter"
-                       FontSize="16" FontWeight="Bold"
-                       VerticalAlignment="Center" Margin="10,0"/>
-			<TextBlock Grid.Column="1" Text="Alle spill"
-                       FontSize="24" FontWeight="Bold"
-                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+			<Button x:Name="FilterButton" Content="Filter/Sorter" 
+        FontStyle="Italic" FontWeight="Bold" Margin="20,0,20,0"
+        Click="FilterButton_Click"/>
+
+
+			<TextBlock Grid.Column="1" Text="Alle spill" FontSize="24" FontWeight="Bold"
+                 VerticalAlignment="Center" HorizontalAlignment="Center"/>
 			<TextBox Grid.Column="2" Text="Søk etter spill..."
-                     x:Name="SearchBox"
-                     VerticalAlignment="Center"
-                     Margin="10,0,10,0" Height="24" Width="150"
-                     ToolTip="Search games"
-                     GotFocus="SearchBox_GotFocus"
-                     LostFocus="SearchBox_LostFocus"/>
+               x:Name="SearchBox"
+               VerticalAlignment="Center" Margin="10,0,10,0" Height="24" Width="150"
+               ToolTip="Search games"
+               GotFocus="SearchBox_GotFocus"
+               LostFocus="SearchBox_LostFocus"
+               KeyDown="SearchBox_KeyDown"/>
 		</Grid>
 
 		<!-- Game library area -->
-		<Grid x:Name="GameLibraryArea" HorizontalAlignment="Stretch" >
+		<Grid x:Name="GameLibraryArea" HorizontalAlignment="Stretch">
 			<ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 				<ItemsControl x:Name="GamesItemsControl" ItemsSource="{Binding Games}"
-                              HorizontalAlignment="Stretch">
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
-							<UniformGrid Columns="4" Margin="0"/>
+							<WrapPanel HorizontalAlignment="Stretch"/>
 						</ItemsPanelTemplate>
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<Button Click="LaunchGameButton_Click" Style="{StaticResource TransparentButtonStyle}" 
-                                    Margin="10">
-								<StackPanel>
+							<Button Click="LaunchGameButton_Click" Style="{StaticResource TransparentButtonStyle}" Margin="10">
+								<StackPanel Width="300" Height="300">
 									<Border BorderThickness="2" Background="Transparent"
-                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                            Height="250">
-										<Image Source="{Binding GameImage}" 
-                                               Stretch="Uniform"
-                                               HorizontalAlignment="Center" 
-                                               VerticalAlignment="Center"/>
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="250">
+										<Image Source="{Binding GameImage}" Stretch="Uniform"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
 									</Border>
-									<TextBlock Text="{Binding Title}" 
-                                               HorizontalAlignment="Center" 
-                                               TextTrimming="CharacterEllipsis"
-                                               Margin="0,5,0,0" 
-                                               FontWeight="Bold"
-                                               MaxWidth="180"/>
+									<TextBlock Text="{Binding Title}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"
+                             Margin="0,5,0,0" FontWeight="Bold" MaxWidth="180"/>
 								</StackPanel>
 							</Button>
 						</DataTemplate>
@@ -258,20 +237,11 @@
 			</ScrollViewer>
 		</Grid>
 
+		<!-- VR spectator view (embedded via WindowsFormsHost) -->
 		<Grid>
-			<!-- VR spectator view (embedded via WindowsFormsHost) -->
 			<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed" Width="800" Height="600">
 				<wf:Panel x:Name="HostPanel"/>
 			</wfi:WindowsFormsHost>
 		</Grid>
-
-		<!-- Log button in bottom right -->
-		<Button x:Name="LogButton"
-                Content="Error log"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Margin="20"
-                Click="LogButton_Click"
-                Style="{StaticResource ToolBarButtonStyle}"/>
 	</DockPanel>
 </Window>
