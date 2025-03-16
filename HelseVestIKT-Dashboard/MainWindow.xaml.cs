@@ -24,6 +24,8 @@ using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using System.Net.NetworkInformation;
 using SimpleWifi;
 using System.Linq;
+using WPoint = System.Windows.Point;
+using WpfFilterDemo;
 
 namespace HelseVestIKT_Dashboard
 {
@@ -74,10 +76,16 @@ namespace HelseVestIKT_Dashboard
 
         public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
 
-        private DispatcherTimer _wifiSignalTimer;
+		public object WifiSignalProgressBar { get; private set; }
+
+		private DispatcherTimer? _wifiSignalTimer;
+
+        private ObservableCollection<Game> AllGames = new ObservableCollection<Game>();
+		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
 
 
-        public MainWindow()
+
+		public MainWindow()
         {
             InitializeComponent();
             StartMonitoringWifiSignal();
@@ -98,10 +106,12 @@ namespace HelseVestIKT_Dashboard
             timer.Start();
 
             _vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
+            _wifiSignalTimer = new DispatcherTimer();
 
             EmbedSteamVRSpectatorAsync();
             InitializeOpenVR();
             StartVRStatusTimer();
+            StartMonitoringWifiSignal();
 
  
         }
@@ -126,9 +136,9 @@ namespace HelseVestIKT_Dashboard
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_4.png";
 			else if (signalStrength >= 60)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_3.png";
-			else if (signalStrength >= 40)
+			else if (signalStrength >= 50)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_2.png";
-			else if (signalStrength >= 20)
+			else if (signalStrength >= 45)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_1.png";
 			else
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_0.png";
@@ -138,7 +148,7 @@ namespace HelseVestIKT_Dashboard
 			WifiSignalIcon.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
 		}
 
-		private void WifiSignalTimer_Tick(object sender, EventArgs e)
+		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
 		{
 			Wifi wifi = new Wifi();
 			var accessPoints = wifi.GetAccessPoints();
@@ -146,10 +156,10 @@ namespace HelseVestIKT_Dashboard
 
 			if (connected != null)
 			{
-				// Cast the uint signal strength to int
+				// Optionally, cast the uint signal strength to int if needed
 				int signalQuality = (int)connected.SignalStrength;
-				// Update text indicator if needed
-
+				// Set text to blank when a connection is present
+				WifiSignalTextBlock.Text = "";
 				// Update the icon based on the signal strength
 				UpdateWifiIcon(connected.SignalStrength);
 			}
@@ -160,6 +170,7 @@ namespace HelseVestIKT_Dashboard
 				UpdateWifiIcon(0);
 			}
 		}
+
 
 
 		#endregion
@@ -203,7 +214,10 @@ namespace HelseVestIKT_Dashboard
             {
                 Games.Add(game);
             }
-        }
+
+			await LoadGameAsync(steamApi);
+
+		}
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
@@ -232,18 +246,45 @@ namespace HelseVestIKT_Dashboard
             ReturnButton.Visibility = Visibility.Collapsed;
         }
 
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            HeaderGrid.Visibility = Visibility.Visible;
-            GameLibraryScrollViewer.Visibility = Visibility.Visible;
-            ResetButton.Visibility = Visibility.Visible;
-        }
+		private void ResetButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Restore header and game library areas.
+			HeaderGrid.Visibility = Visibility.Visible;
+			GameLibraryScrollViewer.Visibility = Visibility.Visible;
 
-  
+			// Hide the Return button (if it was used to go back to the library).
+			ReturnButton.Visibility = Visibility.Collapsed;
 
-        //VR Status: Henter informasjon om headset og kontrollere fra SteamAPI.
+			// Exit full-screen mode if currently active.
+			if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
+			{
+				this.WindowStyle = WindowStyle.SingleBorderWindow;
+				this.WindowState = WindowState.Normal;
+			}
 
-        private void VRStatusCallback(object? state)
+			// Reset the search box text to the placeholder.
+			SearchBox.Text = "Søk etter spill...";
+
+			// Reset the game list: repopulate the UI-bound collection (Games)
+			// from the backup (AllGames) so that any filtering is undone.
+			Games.Clear();
+			foreach (var game in AllGames)
+			{
+				Games.Add(game);
+			}
+
+			// Optionally, reset the scroll position of the game library.
+			GameLibraryScrollViewer.ScrollToHome();
+
+			// Reset any other UI elements or state as needed.
+		}
+
+
+
+
+		//VR Status: Henter informasjon om headset og kontrollere fra SteamAPI.
+
+		private void VRStatusCallback(object? state)
 		{
 			UpdateVREquipmentStatus();
 
@@ -261,7 +302,7 @@ namespace HelseVestIKT_Dashboard
 			vrStatusTimer.Start();
 		}
 
-        private void VrStatusTimer_Tick(object sender, EventArgs e)
+        private void VrStatusTimer_Tick(object? sender, EventArgs e)
 		{
 			UpdateVREquipmentStatus();
 		}
@@ -406,6 +447,14 @@ namespace HelseVestIKT_Dashboard
 			volumeStatusTimer.Start();
 		}
 
+        private CustomPopupPlacement[] VolumePopupPlacementCallback(System.Windows.Size popupSize, System.Windows.Size targetSize, WPoint offset)
+        {
+            double horizontalOffset = (targetSize.Width - popupSize.Width) / 2;
+            double verticalOffset = targetSize.Height;
+            var palcement = new CustomPopupPlacement(new WPoint(horizontalOffset, verticalOffset), PopupPrimaryAxis.Horizontal);
+            return new CustomPopupPlacement[] { palcement };
+
+		}
 
 		private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
@@ -451,16 +500,122 @@ namespace HelseVestIKT_Dashboard
 			MessageBox.Show("VR Settings clicked");
 		}
 
+		#region Filter Button
 
-		private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
+		private void FilterButton_Click(object sender, RoutedEventArgs e)
+		{
+			FilterWindow filterWindow = new FilterWindow();
+			filterWindow.Owner = this;  // sets the parent for modal behavior
+
+			if (filterWindow.ShowDialog() == true)
+			{
+				// The user clicked OK; read filter properties
+				var filtered = AllGames.Where(game =>
+				{
+					// Check the "PLAYERS" group:
+					if (filterWindow.IsSinglePlayer && !game.IsSinglePlayer) return false;
+					if (filterWindow.IsMultiplayer && !game.IsMultiplayer) return false;
+					if (filterWindow.IsCooperative && !game.IsCoop) return false;
+
+					// Example "GENRE" check:
+					if (filterWindow.IsAction && game.Genre != "Action") return false;
+					if (filterWindow.IsAdventure && game.Genre != "Adventure") return false;
+					if (filterWindow.IsCasual && game.Genre != "Casual") return false;
+					if (filterWindow.IsRPG && game.Genre != "RPG") return false;
+					if (filterWindow.IsSimulation && game.Genre != "Simulation") return false;
+					if (filterWindow.IsSports && game.Genre != "Sports") return false;
+					if (filterWindow.IsStrategy && game.Genre != "Strategy") return false;
+
+					// VR example
+					if (filterWindow.IsVR && !game.IsVR) return false;
+
+					// Additional checks for other categories as needed
+
+					return true;
+				}).ToList();
+
+				// Update FilteredGames with the new results
+				FilteredGames.Clear();
+				foreach (var g in filtered)
+				{
+					FilteredGames.Add(g);
+				}
+			}
+		}
+
+
+		#endregion
+
+
+		#region search logic
+
+		private void SearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+			{
+				SearchGames();
+			}
+		}
+
+        private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
+		{
+			if (string.IsNullOrWhiteSpace(SearchBox.Text))
+				SearchBox.Text = "Søk etter spill...";
+		}
+
+		private void SearchGames()
+		{
+			// For example, filter based on the current text
+			string searchQuery = SearchBox.Text;
+
+			// If the user left the placeholder text or typed nothing, 
+			// you might want to reset or skip filtering
+			if (string.IsNullOrWhiteSpace(searchQuery) || searchQuery == "Søk etter spill...")
+			{
+                // Possibly reset the game list or do nothing
+                Games.Clear();
+                foreach (var game in AllGames)
+                {
+                    Games.Add(game);
+				}
+                return;
+			}
+
+			// Filter the backup collection
+			var filteredGames = AllGames
+				.Where(g => g.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+
+			// Reset the Games collection with filtered results
+			Games.Clear();
+			foreach (var game in filteredGames)
+			{
+				Games.Add(game);
+			}
+		}
+
+        private async Task LoadGameAsync(SteamApi steamApi)
         {
-            if (string.IsNullOrWhiteSpace(SearchBox.Text))
-                SearchBox.Text = "Søk etter spill...";
-        }
+            var loadedGames = await steamApi.GetSteamGamesAsync();
 
-        
-        // Egen log knapp for å sjekke diverse feil i programmet.
-        private void LogButton_Click(object sender, RoutedEventArgs e)
+
+	            AllGames.Clear();
+            Games.Clear();
+
+            foreach (var game in loadedGames)
+            {
+                AllGames.Add(game);
+				Games.Add(game);
+			}
+
+
+		}
+
+		#endregion
+
+
+			// Egen log knapp for å sjekke diverse feil i programmet.
+		private void LogButton_Click(object sender, RoutedEventArgs e)
         {
             // Create and display the log window modally
             LogWindow logWindow = new LogWindow();
@@ -517,7 +672,7 @@ namespace HelseVestIKT_Dashboard
                 MessageBox.Show("Kunne ikke finne SteamVR Specator Window etter venting");
             }
         }
-    }
+	}
 }
 
 
