@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Filter" Height="500" Width="800" WindowStartupLocation="CenterOwner">
 	<Window.Resources>
-		<!-- Watermark style for TextBox (since WPF doesn't support PlaceholderText) -->
+		<!-- Vannmerke-stil for TextBox (siden WPF ikke støtter PlaceholderText) -->
 		<Style TargetType="TextBox" x:Key="WatermarkTextBox">
-			<!-- Set default border and background properties -->
+			<!-- Sett standard ramme- og bakgrunnsegenskaper -->
 			<Setter Property="BorderBrush" Value="Gray"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="Background" Value="White"/>
@@ -42,7 +42,7 @@
 
 	<ScrollViewer VerticalScrollBarVisibility="Auto">
 		<Grid Margin="20">
-			<!-- Define rows and columns -->
+			<!-- Definer rader og kolonner -->
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
@@ -54,77 +54,61 @@
 				<ColumnDefinition Width="2*"/>
 			</Grid.ColumnDefinitions>
 
-			<!-- PLAYERS -->
+			<!-- SPILLERE -->
 			<StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,0">
-				<TextBlock Text="PLAYERS" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
-				<CheckBox x:Name="CheckBoxSinglePlayer" Content="Single Player" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxMultiplayer" Content="Multiplayer" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxCooperative" Content="Cooperative" Margin="0,2,0,2"/>
+				<TextBlock Text="Spiller" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+				<CheckBox x:Name="CheckBoxSinglePlayer" Content="Enspiller" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxMultiplayer" Content="Flerspill" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxCooperative" Content="Cooperative/Samarbeidspill" Margin="0,2,0,2"/>
 			</StackPanel>
 
-			<!-- PLAY STATE -->
+			<!-- SPILLTILSTAND -->
 			<StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0">
-				<TextBlock Text="PLAY STATE" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
-				<CheckBox x:Name="CheckBoxReadyToPlay" Content="Ready to play" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxInstalledLocally" Content="Installed locally" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxPlayed" Content="Played" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxUnplayed" Content="Unplayed" Margin="0,2,0,2"/>
+				<TextBlock Text="Spilltilstand" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+				<CheckBox x:Name="CheckBoxReadyToPlay" Content="Klar til å spille" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxInstalledLocally" Content="Innstallert lokalt" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxPlayed" Content="Spilt før" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxUnplayed" Content="Ikke spilt" Margin="0,2,0,2"/>
 			</StackPanel>
 
-			<!-- GENRE -->
+			<!-- SJANGER -->
 			<StackPanel Grid.Row="0" Grid.Column="2" Margin="10,0,0,0">
-				<TextBlock Text="GENRE" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+				<TextBlock Text="Sjanger" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
 				<CheckBox x:Name="CheckBoxAction" Content="Action" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxAdventure" Content="Adventure" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxCasual" Content="Casual" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxIndie" Content="Indie" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxRPG" Content="RPG" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxSimulation" Content="Simulation" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxSports" Content="Sports" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxStrategy" Content="Strategy" Margin="0,2,0,2"/>
-			</StackPanel>
-
-			<!-- HARDWARE SUPPORT -->
-			<StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,10,0">
-				<TextBlock Text="HARDWARE SUPPORT" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
-				<CheckBox x:Name="CheckBoxControllerPreferred" Content="Controller Preferred" Margin="0,2,0,2"/>
-				<CheckBox x:Name="CheckBoxFullControllerSupport" Content="Full Controller Support" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxAdventure" Content="Eventyr" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxVR" Content="VR" Margin="0,2,0,2"/>
-				<TextBlock Text=" " Margin="0,5,0,5"/>
-				<TextBlock Text="Gamepads:" FontStyle="Italic"/>
-				<ComboBox x:Name="ComboBoxGamepads" Margin="0,2,0,2" Width="120">
-					<ComboBoxItem Content="Any"/>
-					<ComboBoxItem Content="Steam Deck"/>
-					<ComboBoxItem Content="Xbox Controller"/>
-					<ComboBoxItem Content="PS Controller"/>
-				</ComboBox>
+				<CheckBox x:Name="CheckBoxCasual" Content="Avslappet" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxIndie" Content="Indie" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxRPG" Content="Rollespill" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxSimulation" Content="Simulasjon" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxSports" Content="Sport" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxStrategy" Content="Strategi" Margin="0,2,0,2"/>
+
 			</StackPanel>
 
-			<!-- FEATURES -->
+			<!-- MASKINVARA STØTTE -->
+			<StackPanel Grid.Row="1" Grid.Column="0" Margin="0,10,10,0">
+				<TextBlock Text="Maskinvare støtte" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+				<CheckBox x:Name="CheckBoxControllerPreferred" Content="Delvis kontroll støtte" Margin="0,2,0,2"/>
+				<CheckBox x:Name="CheckBoxFullControllerSupport" Content="Full kontroll støtte" Margin="0,2,0,2"/>
+				<TextBlock Text=" " Margin="0,5,0,5"/>
+			</StackPanel>
+
+			<!--	
 			<StackPanel Grid.Row="1" Grid.Column="1" Margin="10,10">
-				<TextBlock Text="FEATURES" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
+				<TextBlock Text="Tillegg" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
 				<CheckBox x:Name="CheckBoxTradingCards" Content="Trading cards" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxWorkshop" Content="Workshop" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxAchievements" Content="Achievements" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxRemotePlayTogether" Content="Remote Play Together" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxFamilySharing" Content="Family Sharing" Margin="0,2,0,2"/>
 			</StackPanel>
+			-->
 
-			<!-- STORE TAGS / FRIENDS -->
-			<StackPanel Grid.Row="1" Grid.Column="2" Margin="10,10,0,0">
-				<TextBlock Text="STORE TAGS" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
-				<TextBox x:Name="StoreTagsTextBox" Margin="0,2,0,10" 
-         Style="{StaticResource WatermarkTextBox}" Tag="enter a tag"/>
-				<TextBlock Text="FRIENDS" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
-				<TextBox x:Name="FriendsTextBox" Margin="0,2,0,0"
-         Style="{StaticResource WatermarkTextBox}" Tag="enter a friend's name"/>
-
-			</StackPanel>
-
-			<!-- OK / Cancel Buttons -->
+			<!-- OK / Avbryt knapper -->
 			<StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
 				<Button Content="OK" Width="70" Margin="0,0,10,0" Click="OkButton_Click"/>
-				<Button Content="Cancel" Width="70" Click="CancelButton_Click"/>
+				<Button Content="Avbryt" Width="70" Click="CancelButton_Click"/>
 			</StackPanel>
 		</Grid>
 	</ScrollViewer>

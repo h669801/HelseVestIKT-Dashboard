@@ -6,7 +6,7 @@
         Title="Helse Vest IKT" Height="800" Width="1500"
         Loaded="MainWindow_Loaded">
 	<Window.Resources>
-		<!-- Style for toolbar buttons -->
+		<!-- Stil for verktøylinje-knapper -->
 		<Style x:Key="ToolBarButtonStyle" TargetType="Button">
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="Padding" Value="5"/>
@@ -20,7 +20,7 @@
 				</Trigger>
 			</Style.Triggers>
 		</Style>
-		<!-- Transparent button style for game boxes -->
+		<!-- Gjennomsiktig knappestil for spillbokser -->
 		<Style x:Key="TransparentButtonStyle" TargetType="Button">
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderBrush" Value="Transparent"/>
@@ -30,7 +30,7 @@
 	</Window.Resources>
 
 	<DockPanel>
-		<!-- Top Toolbar implemented with a Grid -->
+		<!-- Toppverktøylinje implementert med et Grid -->
 		<Grid DockPanel.Dock="Top" Background="SkyBlue" Height="80">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*"/>
@@ -38,9 +38,9 @@
 				<ColumnDefinition Width="2*"/>
 			</Grid.ColumnDefinitions>
 
-			<!-- Left Group: VR Equipment Status -->
-			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-				<!-- Headset Icon -->
+			<!-- Venstre gruppe: VR-utstyrsstatus -->
+			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,15,0,0">
+				<!-- Headset-ikon -->
 				<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="20,0">
 					<Border x:Name="HeadsetStatusBorder" BorderThickness="2" CornerRadius="4" Width="50">
 						<Border.Style>
@@ -60,7 +60,7 @@
 					<TextBlock Text="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}"
                      HorizontalAlignment="Center" FontSize="12"/>
 				</StackPanel>
-				<!-- Left Controller Icon -->
+				<!-- Venstre kontroller-ikon -->
 				<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,20,0">
 					<Border x:Name="LeftControllerStatusBorder" BorderThickness="2" CornerRadius="4">
 						<Border.Style>
@@ -74,13 +74,13 @@
 							</Style>
 						</Border.Style>
 						<Button x:Name="LeftControllerButton" Style="{StaticResource ToolBarButtonStyle}" Click="LeftControllerButton_Click">
-							<Image Source="Bilder/vrcontroller_left.png" Width="32" Height="32" Stretch="Uniform"/>
+							<Image Source="/Bilder/vrkontrollere.png" Width="32" Height="32" Stretch="Uniform"/>
 						</Button>
 					</Border>
 					<TextBlock Text="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}"
                      HorizontalAlignment="Center" FontSize="12"/>
 				</StackPanel>
-				<!-- Right Controller Icon -->
+				<!-- Høyre kontroller-ikon -->
 				<StackPanel Orientation="Vertical" HorizontalAlignment="Center">
 					<Border x:Name="RightControllerStatusBorder" BorderThickness="2" CornerRadius="4">
 						<Border.Style>
@@ -102,18 +102,18 @@
 				</StackPanel>
 			</StackPanel>
 
-			<!-- Center Group: Application Title -->
+			<!-- Sentergruppe: Applikasjonstittel -->
 			<TextBlock Grid.Column="1" Text="Helse Vest IKT"
                  FontSize="20" FontWeight="Bold" VerticalAlignment="Center"
                  HorizontalAlignment="Center" Margin="50,0,50,0"/>
 
-			<!-- Right Group: Clock, Volume, WiFi, Fullscreen, Exit -->
-			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0,10,0">
+			<!-- Høyre gruppe: Klokke, Volum, WiFi, Fullskjerm, Avslutt -->
+			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="50,0,10,0">
 				<TextBlock Text="{Binding CurrentTime}"
-               VerticalAlignment="Center" FontSize="20" Margin="5,0,5,0" Foreground="Black"
+               VerticalAlignment="Center" FontSize="20" Margin="50,0,5,0" Width="Auto" Foreground="Black"
                HorizontalAlignment="Right" FontWeight="ExtraBold"/>
 				<Grid>
-					<!-- Speaker Button and Volume Popup -->
+					<!-- Høyttalerknapp og Volum-popup -->
 					<Button x:Name="SpeakerButton" Style="{StaticResource ToolBarButtonStyle}"
                   MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave" BorderBrush="{x:Null}">
 						<Image Source="/Bilder/speaker.png" Width="20" Height="20"/>
@@ -133,57 +133,47 @@
 						</Border>
 					</Popup>
 				</Grid>
-				<!-- WiFi Signal Indicator -->
+				<!-- WiFi-signalindikator -->
 				<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
 					<Image x:Name="WifiSignalIcon" Width="24" Height="24" Margin="5"/>
 					<TextBlock x:Name="WifiSignalTextBlock" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="14"/>
 				</StackPanel>
-				<!-- Settings Button -->
+				<!-- Innstillingsknapp -->
 				<Button Style="{StaticResource ToolBarButtonStyle}" Click="Settings_Click" Margin="20,0,20,0" BorderThickness="0">
 					<Image Source="Bilder/settings.png" Width="24" Height="24"/>
 				</Button>
-				<!-- Fullscreen Button -->
+				<!-- Fullskjerm-knapp -->
 				<Button Style="{StaticResource ToolBarButtonStyle}" Click="FullScreenButton_Click" Margin="20,0,20,0" BorderThickness="0" FontSize="20">
 					⛶
 				</Button>
-				<!-- Exit Button -->
+				<!-- Avslutt-knapp -->
 				<Button Style="{StaticResource ToolBarButtonStyle}" Click="ExitButton_Click" Margin="20,0,20,0" BorderThickness="0">
 					❌
 				</Button>
 			</StackPanel>
 		</Grid>
 
-		<!-- New toolbar area for VR functional buttons -->
+		<!-- Ny verktøylinje for VR-funksjonsknapper -->
 		<Grid DockPanel.Dock="Top" Background="SkyBlue" Height="60">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"/>
 				<ColumnDefinition Width="*"/>
-				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-			<!-- Left side VR buttons -->
-			<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-				<Button Content="Romkalibrering" Width="100" Margin="5" Click="VRConnectButton_Click"/>
-				<Button Content="Høydekalibrering" Width="100" Margin="5" Click="VRDisconnectButton_Click"/>
-			</StackPanel>
-			<!-- Center: Optional label -->
-			<TextBlock Grid.Column="1" Text="VR Funksjoner"
-                 VerticalAlignment="Center" HorizontalAlignment="Center"
-                 FontSize="16" FontWeight="Bold"/>
-			<!-- Right side VR options -->
-			<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
-				<Button Content="VR innstillinger" Width="100" Margin="5" Click="VRSettingsButton_Click"/>
-				<Button x:Name="ReturnButton" Style="{StaticResource ToolBarButtonStyle}" Click="ReturnButton_Click"
-                Visibility="Collapsed" Margin="20,0,20,0">
-					tilbake til spillbibliotek
-				</Button>
-				<Button x:Name="ResetButton" Style="{StaticResource ToolBarButtonStyle}" Click="ResetButton_Click"
-                Visibility="Visible" Margin="20,0,20,0" FontWeight="Bold">
-					Reset
-				</Button>
+			<!-- Venstre side VR-knapper -->
+			<StackPanel Grid.Column="0" Orientation="Horizontal" Margin="20,0,20,0" VerticalAlignment="Center" HorizontalAlignment="Center">
+				<Button Content="Romkalibrering" Width="120" Margin="0,0,50,0" FontWeight="ExtraBold" Click="RomKalibrering"/>
+				<Button Content="Høydekalibrering" Width="125" Margin="0,0,50,0" FontWeight="ExtraBold" Click="HøydeKalibrering"/>
+				<Button Content="Midtstill" Width="100" Margin="0,0,50,0" FontWeight="ExtraBold" Click="MidstillView"/>
+				<Button Content="Kalibrering" Width="120" Margin="0,0,50,0" FontWeight="ExtraBold" Click="VRSettingsButton_Click"/>
+				<Button x:Name="ReturnButton" Width="100" FontWeight="ExtraBold" Click="ReturnButton_Click"
+                Visibility="Collapsed" Margin="0,0,50,0" Content="Tilbake til spillbibliotek"/>
+				<Button x:Name="ResetButtoN" Click="ResetButton_Click" Visibility="Visible" Width="100" Margin="5,0,50,0" 
+						FontWeight="ExtraBlack" Content="Tilbakestill"/>
+				<Button x:Name="PauseButton" Width="100" FontWeight="ExtraBold" Content="Nødstopp" Margin="0,0,50,0"/>
+				<Button Content="Pause-knapp" Width="100" Margin="0,0,0,0" FontWeight="ExtraBold"/>
 			</StackPanel>
 		</Grid>
 
-		<!-- Header row with Filter/Sorter, Title, and Search box -->
+		<!-- Header-rad med Filter/Sorter, Tittel og Søkeboks -->
 		<Grid DockPanel.Dock="Top" Height="40" Margin="0,10" x:Name="HeaderGrid">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto"/>
@@ -191,9 +181,8 @@
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
 			<Button x:Name="FilterButton" Content="Filter/Sorter" 
-        FontStyle="Italic" FontWeight="Bold" Margin="20,0,20,0"
+        FontStyle="Italic" Width="75" FontWeight="Bold" Margin="20,0,0,0"
         Click="FilterButton_Click"/>
-
 
 			<TextBlock Grid.Column="1" Text="Alle spill" FontSize="24" FontWeight="Bold"
                  VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -206,13 +195,13 @@
                KeyDown="SearchBox_KeyDown"/>
 		</Grid>
 
-		<!-- Game library area -->
-		<Grid x:Name="GameLibraryArea" HorizontalAlignment="Stretch">
+		<Grid x:Name="GameLibraryArea" HorizontalAlignment="Stretch" ClipToBounds="True">
+			<!-- Spillbiblioteksområde -->
 			<ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible"
-                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 				<ItemsControl x:Name="GamesItemsControl" ItemsSource="{Binding Games}"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<WrapPanel HorizontalAlignment="Stretch"/>
@@ -223,25 +212,23 @@
 							<Button Click="LaunchGameButton_Click" Style="{StaticResource TransparentButtonStyle}" Margin="10">
 								<StackPanel Width="300" Height="300">
 									<Border BorderThickness="2" Background="Transparent"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="250">
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="250">
 										<Image Source="{Binding GameImage}" Stretch="Uniform"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
 									</Border>
 									<TextBlock Text="{Binding Title}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"
-                             Margin="0,5,0,0" FontWeight="Bold" MaxWidth="180"/>
+                         Margin="0,5,0,0" FontWeight="Bold" MaxWidth="180"/>
 								</StackPanel>
 							</Button>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
 			</ScrollViewer>
+
+			<!-- VR-Live-visning plassert inne i samme grid -->
+			<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed" Width="800" Height="600"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
 		</Grid>
 
-		<!-- VR spectator view (embedded via WindowsFormsHost) -->
-		<Grid>
-			<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed" Width="800" Height="600">
-				<wf:Panel x:Name="HostPanel"/>
-			</wfi:WindowsFormsHost>
-		</Grid>
 	</DockPanel>
 </Window>

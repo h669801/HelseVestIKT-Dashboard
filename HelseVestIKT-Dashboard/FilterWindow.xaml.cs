@@ -11,7 +11,7 @@ namespace WpfFilterDemo
 			InitializeComponent();
 		}
 
-		// Example: store the user’s selections in properties that MainWindow can read
+		// Prøve på å lagre valgene til bruk i MainWindow som kan hente de
 		public bool IsSinglePlayer { get; private set; }
 		public bool IsMultiplayer { get; private set; }
 		public bool IsCooperative { get; private set; }
@@ -46,7 +46,7 @@ namespace WpfFilterDemo
 
 		private void OkButton_Click(object sender, RoutedEventArgs e)
 		{
-			// Capture the user’s selections
+			// Fanger opp valgene fra CheckBoxene
 			IsSinglePlayer = CheckBoxSinglePlayer.IsChecked == true;
 			IsMultiplayer = CheckBoxMultiplayer.IsChecked == true;
 			IsCooperative = CheckBoxCooperative.IsChecked == true;
@@ -60,20 +60,17 @@ namespace WpfFilterDemo
 			IsFullControllerSupport = CheckBoxFullControllerSupport.IsChecked == true;
 			IsVR = CheckBoxVR.IsChecked == true;
 
-			// Grab selected item from the ComboBox
-			if (ComboBoxGamepads.SelectedItem is ComboBoxItem item && item.Content != null)
-			{
-				SelectedGamepad = item.Content.ToString();
-			}
-
+			/*
 			IsTradingCards = CheckBoxTradingCards.IsChecked == true;
 			IsWorkshop = CheckBoxWorkshop.IsChecked == true;
 			IsAchievements = CheckBoxAchievements.IsChecked == true;
 			IsRemotePlayTogether = CheckBoxRemotePlayTogether.IsChecked == true;
 			IsFamilySharing = CheckBoxFamilySharing.IsChecked == true;
+			*/
 
 			IsAction = CheckBoxAction.IsChecked == true;
 			IsAdventure = CheckBoxAdventure.IsChecked == true;
+			IsVR = CheckBoxVR.IsChecked == true;
 			IsCasual = CheckBoxCasual.IsChecked == true;
 			IsIndie = CheckBoxIndie.IsChecked == true;
 			IsRPG = CheckBoxRPG.IsChecked == true;
@@ -81,9 +78,10 @@ namespace WpfFilterDemo
 			IsSports = CheckBoxSports.IsChecked == true;
 			IsStrategy = CheckBoxStrategy.IsChecked == true;
 
+			/*
 			StoreTags = StoreTagsTextBox.Text;
 			FriendsName = FriendsTextBox.Text;
-
+			*/
 			DialogResult = true;
 			Close();
 		}
