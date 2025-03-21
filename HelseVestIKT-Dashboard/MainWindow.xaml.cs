@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Diagnostics;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -15,7 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Valve.VR;
-using MessageBox = System.Windows.MessageBox;  
+using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
 using System.Threading.Tasks;
 using System.Windows.Media.Animation;
@@ -26,119 +27,117 @@ using SimpleWifi;
 using System.Linq;
 using WPoint = System.Windows.Point;
 using WpfFilterDemo;
+using System.Configuration;
 
 namespace HelseVestIKT_Dashboard
 {
 
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
-    {
+	/// <summary>
+	/// Interaction logic for MainWindow.xaml
+	/// </summary>
+	public partial class MainWindow : Window, INotifyPropertyChanged
+	{
 
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        private static extern bool AllocConsole();
+		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+		private static extern bool AllocConsole();
 
-        [DllImport("user32.dll")]
-        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+		[DllImport("user32.dll")]
+		static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-        [DllImport("user32.dll")]
-        static extern bool SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+		[DllImport("user32.dll")]
+		static extern bool SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
-        private string _currentTime = string.Empty;
-        public string CurrentTime
-        {
-            get => _currentTime;
-            set
-            {
-                if (_currentTime != value)
-                {
-                    _currentTime = value;
-                    OnPropertyChanged(nameof(CurrentTime));
-                }
-            }
-        }
+		private string _currentTime = string.Empty;
+		public string CurrentTime
+		{
+			get => _currentTime;
+			set
+			{
+				if (_currentTime != value)
+				{
+					_currentTime = value;
+					OnPropertyChanged(nameof(CurrentTime));
+				}
+			}
+		}
 
-        // Deklarer volumeStatusTimer som nullable.
-        private DispatcherTimer? volumeStatusTimer = null;
+		// Deklarer volumeStatusTimer som nullable.
+		private DispatcherTimer? volumeStatusTimer = null;
 
-        private CVRSystem? vrSystem;
+		private CVRSystem? vrSystem;
 
-        public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
-        public object? WifiConnectionButton { get; private set; }
+		public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
+		public object? WifiConnectionButton { get; private set; }
 
-        private bool _gamesLoaded = false;
+		private bool _gamesLoaded = false;
 
-        public VREquipmentStatusViewModel VREquipmentStatus { get; set; } = new VREquipmentStatusViewModel();
-        private DispatcherTimer vrStatusTimer;
+		public VREquipmentStatusViewModel VREquipmentStatus { get; set; } = new VREquipmentStatusViewModel();
+		private DispatcherTimer vrStatusTimer;
 
-        private ThreadingTimer? _vrStatusTimer;
+		private ThreadingTimer? _vrStatusTimer;
 
-        public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
+		public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
 
 		public object WifiSignalProgressBar { get; private set; }
 
 		private DispatcherTimer? _wifiSignalTimer;
 
-        private ObservableCollection<Game> AllGames = new ObservableCollection<Game>();
+		private ObservableCollection<Game> AllGames = new ObservableCollection<Game>();
 		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
 
 
 
 		public MainWindow()
-        {
-            InitializeComponent();
-            StartMonitoringWifiSignal();
-            // Set DataContext for bindings (for example, for CurrentTime)
-            DataContext = this;
-            this.Loaded += MainWindow_Loaded;
+		{
+			InitializeComponent();
+			StartMonitoringWifiSignal();
+			// Set DataContext for bindings (for example, for CurrentTime)
+			DataContext = this;
+			this.Loaded += MainWindow_Loaded;
 
-            // Åpner en konsoll for å vise utskrift (Brukes til testing av metoder)
-            AllocConsole();
+			// Åpner en konsoll for å vise utskrift (Brukes til testing av metoder)
+			AllocConsole();
 
-            // Oppdaterer CurrentTime hvert sekund
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += (s, e) =>
-            {
-                CurrentTime = DateTime.Now.ToString("HH:mm");
-            };
-            timer.Start();
+			// Oppdaterer CurrentTime hvert sekund
+			DispatcherTimer timer = new DispatcherTimer();
+			timer.Interval = TimeSpan.FromSeconds(1);
+			timer.Tick += (s, e) =>
+			{
+				CurrentTime = DateTime.Now.ToString("HH:mm");
+			};
+			timer.Start();
 
-            _vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
-            _wifiSignalTimer = new DispatcherTimer();
+			_vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
+			_wifiSignalTimer = new DispatcherTimer();
 
-            EmbedSteamVRSpectatorAsync();
-            InitializeOpenVR();
-            StartVRStatusTimer();
-            StartMonitoringWifiSignal();
+			InitializeOpenVR();
+			StartVRStatusTimer();
+			StartMonitoringWifiSignal();
+		}
 
- 
-        }
+		#region Wifi Connection
 
-        #region Wifi Connection
-
-        private void StartMonitoringWifiSignal()
-        {
-            _wifiSignalTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
-            };
-            _wifiSignalTimer.Tick += WifiSignalTimer_Tick;
-            _wifiSignalTimer.Start();
-        }
+		private void StartMonitoringWifiSignal()
+		{
+			_wifiSignalTimer = new DispatcherTimer
+			{
+				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
+			};
+			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
+			_wifiSignalTimer.Start();
+		}
 
 		private void UpdateWifiIcon(uint signalStrength)
 		{
 			string iconPath;
 
-			if (signalStrength >= 80)
+			if (signalStrength >= 78)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_4.png";
-			else if (signalStrength >= 60)
+			else if (signalStrength >= 52)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_3.png";
-			else if (signalStrength >= 50)
+			else if (signalStrength >= 26)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_2.png";
-			else if (signalStrength >= 45)
+			else if (signalStrength >= 1)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_1.png";
 			else
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_0.png";
@@ -150,7 +149,7 @@ namespace HelseVestIKT_Dashboard
 
 		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
 		{
-			Wifi wifi = new Wifi();
+			Wifi wifi = new();
 			var accessPoints = wifi.GetAccessPoints();
 			var connected = accessPoints.FirstOrDefault(ap => ap.IsConnected);
 
@@ -165,7 +164,7 @@ namespace HelseVestIKT_Dashboard
 			}
 			else
 			{
-				WifiSignalTextBlock.Text = "No Connection";
+				WifiSignalTextBlock.Text = "Ingen internettilgang";
 				// Optionally show the "no signal" icon
 				UpdateWifiIcon(0);
 			}
@@ -176,75 +175,70 @@ namespace HelseVestIKT_Dashboard
 		#endregion
 
 		private void InitializeOpenVR()
-        {
-            EVRInitError initError = EVRInitError.None;
-            vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Scene);
-            if (initError != EVRInitError.None)
-            {
-                string errorMessage = OpenVR.GetStringForHmdError(initError);
-                System.Windows.MessageBox.Show("OpenVR Initialization failed: " + errorMessage);
-                // Optionally, close the application:
-                //this.Close();
-            }
-            //Test for å se at openVR kjører
-            EVRInitError error = EVRInitError.None;
-            vrSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
+		{
+			EVRInitError initError = EVRInitError.None;
+			vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Scene);
+			if (initError != EVRInitError.None)
+			{
+				string errorMessage = OpenVR.GetStringForHmdError(initError);
+				System.Windows.MessageBox.Show("OpenVR Initialization failed: " + errorMessage);
+				// Optionally, close the application:
+				//this.Close();
+			}
+			//Test for å se at openVR kjører
+			EVRInitError error = EVRInitError.None;
+			vrSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
 
-            if (error != EVRInitError.None)
-            {
-                Console.WriteLine($"Feil ved initiering av OpenVR: {error}");
-            }
-            else
-            {
-                Console.WriteLine("OpenVR initialisert! Headset funnet.");
-            }
+			if (error != EVRInitError.None)
+			{
+				Console.WriteLine($"Feil ved initiering av OpenVR: {error}");
+			}
+			else
+			{
+				Console.WriteLine("OpenVR initialisert! Headset funnet.");
+			}
 
-        }
+		}
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (_gamesLoaded)
-                return;
+		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+		{
+			if (_gamesLoaded)
+				return;
 
-            _gamesLoaded = true;
-            
-            SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
-            var fetchedGames = await steamApi.GetSteamGamesAsync();
-            foreach (var game in fetchedGames)
-            {
-                Games.Add(game);
-            }
+			_gamesLoaded = true;
+
+			SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
+			var fetchedGames = await steamApi.GetSteamGamesAsync();
+			foreach (var game in fetchedGames)
+			{
+				Games.Add(game);
+			}
 
 			await LoadGameAsync(steamApi);
 
 		}
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void Settings_Click(object sender, RoutedEventArgs e)
+		public event PropertyChangedEventHandler? PropertyChanged;
+		protected void OnPropertyChanged(string propertyName)
 		{
-			Console.WriteLine("Settings clicked");
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
 		private void Spill1_Click(object sender, RoutedEventArgs e)
-        {
-            // Hide header and game library, show the Return button in the toolbar.
-            HeaderGrid.Visibility = Visibility.Collapsed;
-            GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
-            ReturnButton.Visibility = Visibility.Visible;
-        }
+		{
+			// Hide header and game library, show the Return button in the toolbar.
+			HeaderGrid.Visibility = Visibility.Collapsed;
+			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+			ReturnButton.Visibility = Visibility.Visible;
+		}
 
-        private void ReturnButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Restore header and game library, hide the Return button.
-            HeaderGrid.Visibility = Visibility.Visible;
-            GameLibraryScrollViewer.Visibility = Visibility.Visible;
-            ReturnButton.Visibility = Visibility.Collapsed;
-        }
+		private void ReturnButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Restore header and game library, hide the Return button.
+			HeaderGrid.Visibility = Visibility.Visible;
+			GameLibraryScrollViewer.Visibility = Visibility.Visible;
+			ReturnButton.Visibility = Visibility.Collapsed;
+		}
 
 		private void ResetButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -277,6 +271,15 @@ namespace HelseVestIKT_Dashboard
 			GameLibraryScrollViewer.ScrollToHome();
 
 			// Reset any other UI elements or state as needed.
+
+			// Lukk SteamVR
+			Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
+
+			// Vent litt før du starter på nytt
+			System.Threading.Thread.Sleep(3000);
+
+			// Start SteamVR på nytt
+			Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
 		}
 
 
@@ -288,29 +291,29 @@ namespace HelseVestIKT_Dashboard
 		{
 			UpdateVREquipmentStatus();
 
-            Dispatcher.Invoke(() =>
+			Dispatcher.Invoke(() =>
 			{
 				OnPropertyChanged(nameof(VREquipmentStatus));
 			});
 		}
 
 		private void StartVRStatusTimer()
-        {
+		{
 			vrStatusTimer = new DispatcherTimer();
 			vrStatusTimer.Interval = TimeSpan.FromSeconds(5);
 			vrStatusTimer.Tick += VrStatusTimer_Tick;
 			vrStatusTimer.Start();
 		}
 
-        private void VrStatusTimer_Tick(object? sender, EventArgs e)
+		private void VrStatusTimer_Tick(object? sender, EventArgs e)
 		{
 			UpdateVREquipmentStatus();
 		}
 
-        private void UpdateVREquipmentStatus()
-        {
-            if (vrSystem == null)
-                return;
+		private void UpdateVREquipmentStatus()
+		{
+			if (vrSystem == null)
+				return;
 
 			// Update headset status (assuming headset is device index 0)
 			bool headsetConnected = vrSystem.IsTrackedDeviceConnected(0);
@@ -320,10 +323,10 @@ namespace HelseVestIKT_Dashboard
 				ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
 				float battery = vrSystem.GetFloatTrackedDeviceProperty(0, ETrackedDeviceProperty.Prop_DeviceBatteryPercentage_Float, ref error);
 				double newBatteryPercentage = battery * 100; // assuming value is between 0 and 1
-                if (Math.Abs(VREquipmentStatus.HeadsetBatteryPercentage - newBatteryPercentage) > 1)
-                {
-                    VREquipmentStatus.HeadsetBatteryPercentage = newBatteryPercentage;
-                }
+				if (Math.Abs(VREquipmentStatus.HeadsetBatteryPercentage - newBatteryPercentage) > 1)
+				{
+					VREquipmentStatus.HeadsetBatteryPercentage = newBatteryPercentage;
+				}
 			}
 			else
 			{
@@ -331,8 +334,8 @@ namespace HelseVestIKT_Dashboard
 			}
 
 			// For left controller:
-                uint leftIndex = vrSystem.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
-                bool leftConnected = vrSystem.IsTrackedDeviceConnected(leftIndex);
+			uint leftIndex = vrSystem.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
+			bool leftConnected = vrSystem.IsTrackedDeviceConnected(leftIndex);
 			VREquipmentStatus.IsLeftControllerConnected = leftConnected;
 			if (leftConnected)
 			{
@@ -363,19 +366,19 @@ namespace HelseVestIKT_Dashboard
 
 		protected override void OnClosed(EventArgs e)
 		{
-		_vrStatusTimer?.Dispose();
-            base.OnClosed(e);
+			_vrStatusTimer?.Dispose();
+			base.OnClosed(e);
 		}
 
 
 		private void LeftControllerButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Handle left hand button click
-            Console.WriteLine("Left controller button clicked");
+		{
+			// Handle left hand button click
+			Console.WriteLine("Left controller button clicked");
 		}
 
-        private void RightControllerButton_Click(object sender, RoutedEventArgs e)
-        {
+		private void RightControllerButton_Click(object sender, RoutedEventArgs e)
+		{
 			// Handle right hand button click
 			Console.WriteLine("Right controller button clicked");
 		}
@@ -387,7 +390,13 @@ namespace HelseVestIKT_Dashboard
 		}
 
 
-		//Høyre side av toolbar: VolumeSlider, Fullscreen og ExitButton
+		//Høyre side av toolbar: VolumeSlider,Innstillinger, Fullscreen og ExitButton
+
+		private void Settings_Click(object sender, RoutedEventArgs e)
+		{
+			MessageBox.Show("Innstillinger klikket");
+
+		}
 
 		// Ny event handler for volumslideren
 		private void SpeakerButton_MouseEnter(object sender, MouseEventArgs e)
@@ -447,41 +456,48 @@ namespace HelseVestIKT_Dashboard
 			volumeStatusTimer.Start();
 		}
 
-        private CustomPopupPlacement[] VolumePopupPlacementCallback(System.Windows.Size popupSize, System.Windows.Size targetSize, WPoint offset)
-        {
-            double horizontalOffset = (targetSize.Width - popupSize.Width) / 2;
-            double verticalOffset = targetSize.Height;
-            var palcement = new CustomPopupPlacement(new WPoint(horizontalOffset, verticalOffset), PopupPrimaryAxis.Horizontal);
-            return new CustomPopupPlacement[] { palcement };
+		private CustomPopupPlacement[] VolumePopupPlacementCallback(System.Windows.Size popupSize, System.Windows.Size targetSize, WPoint offset)
+		{
+			double horizontalOffset = (targetSize.Width - popupSize.Width) / 2;
+			double verticalOffset = targetSize.Height;
+			var palcement = new CustomPopupPlacement(new WPoint(horizontalOffset, verticalOffset), PopupPrimaryAxis.Horizontal);
+			return new CustomPopupPlacement[] { palcement };
 
 		}
 
 		private void FullScreenButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
-            {
-                this.WindowStyle = WindowStyle.SingleBorderWindow;
-                this.WindowState = WindowState.Normal;
-            }
-            else
-            {
-                this.WindowStyle = WindowStyle.None;
-                this.WindowState = WindowState.Maximized;
-            }
-        }
+		{
+			if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
+			{
+				this.WindowStyle = WindowStyle.SingleBorderWindow;
+				this.WindowState = WindowState.Normal;
+			}
+			else
+			{
+				this.WindowStyle = WindowStyle.None;
+				this.WindowState = WindowState.Maximized;
+			}
+		}
 
-        private void ExitButton_Click(object sender, RoutedEventArgs e)
-        {
-            System.Windows.Application.Current.Shutdown();
-        }
+		private void ExitButton_Click(object sender, RoutedEventArgs e)
+		{
+			//Sjekker om brukeren er sikker på at de vil avslutte programmet
+			if (MessageBox.Show("Er du sikker på at du vil avslutte programmet?", "Avslutt programmet", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+			{ this.Close(); }
+		}
 
-        //Andre rad i MainWindow: Inkl. Filter/Sorter, Header(Alle Spill) og en searchbar for søke etter spill.
-        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (SearchBox.Text == "Søk etter spill...")
-                SearchBox.Text = "";
-        }
 
+		#region VR Verktøylinje knapper
+		//Andre rad i MainWindow: Inkl. Filter/Sorter, Header(Alle Spill) og en searchbar for søke etter spill.
+
+		private void Nodstopp_Click(object sender, RoutedEventArgs e)
+		{
+			// Emergency stop button if application is not responding and VR functions are not working
+			// This is a last resort to close the application
+
+			if (MessageBox.Show("Er du sikker på at du vil avslutte programmet?", "Avslutt programmet", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+				System.Windows.Application.Current.Shutdown();
+		}
 		private void VRConnectButton_Click(object sender, RoutedEventArgs e)
 		{
 			// TODO: Implement logic to connect VR equipment
@@ -499,6 +515,7 @@ namespace HelseVestIKT_Dashboard
 			// TODO: Implement logic to open VR settings
 			MessageBox.Show("VR Settings clicked");
 		}
+		#endregion
 
 		#region Filter Button
 
@@ -547,7 +564,14 @@ namespace HelseVestIKT_Dashboard
 		#endregion
 
 
-		#region search logic
+		#region Søkeboks logikk
+
+		private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+		{
+			if (SearchBox.Text == "Søk etter spill...")
+				SearchBox.Text = "";
+		}
+
 
 		private void SearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
 		{
@@ -557,7 +581,7 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-        private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
+		private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(SearchBox.Text))
 				SearchBox.Text = "Søk etter spill...";
@@ -572,13 +596,13 @@ namespace HelseVestIKT_Dashboard
 			// you might want to reset or skip filtering
 			if (string.IsNullOrWhiteSpace(searchQuery) || searchQuery == "Søk etter spill...")
 			{
-                // Possibly reset the game list or do nothing
-                Games.Clear();
-                foreach (var game in AllGames)
-                {
-                    Games.Add(game);
+				// Possibly reset the game list or do nothing
+				Games.Clear();
+				foreach (var game in AllGames)
+				{
+					Games.Add(game);
 				}
-                return;
+				return;
 			}
 
 			// Filter the backup collection
@@ -594,17 +618,17 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-        private async Task LoadGameAsync(SteamApi steamApi)
-        {
-            var loadedGames = await steamApi.GetSteamGamesAsync();
+		private async Task LoadGameAsync(SteamApi steamApi)
+		{
+			var loadedGames = await steamApi.GetSteamGamesAsync();
 
 
-	            AllGames.Clear();
-            Games.Clear();
+			AllGames.Clear();
+			Games.Clear();
 
-            foreach (var game in loadedGames)
-            {
-                AllGames.Add(game);
+			foreach (var game in loadedGames)
+			{
+				AllGames.Add(game);
 				Games.Add(game);
 			}
 
@@ -614,65 +638,94 @@ namespace HelseVestIKT_Dashboard
 		#endregion
 
 
-			// Egen log knapp for å sjekke diverse feil i programmet.
+		// Egen log knapp for å sjekke diverse feil i programmet.
 		private void LogButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Create and display the log window modally
-            LogWindow logWindow = new LogWindow();
-            logWindow.ShowDialog();
-        }
+		{
+			// Create and display the log window modally
+			LogWindow logWindow = new LogWindow();
+			logWindow.ShowDialog();
+		}
 
 
-        //Dette omhandler Spillgrid seksjonen av vinduet
-        private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.DataContext is Game game)
-            {
-                // Use the AppID from the game object dynamically
-                SteamLauncher.LaunchSteamGame(game.AppID);
-            }
+		//Dette omhandler Spillgrid seksjonen av vinduet
+		private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (sender is Button button && button.DataContext is Game game)
+			{
+				// Use the AppID from the game object dynamically
+				SteamLauncher.LaunchSteamGame(game.AppID);
+			}
 
-            // Hide header and game library, show the Return button in the toolbar.
-            HeaderGrid.Visibility = Visibility.Collapsed;
-            GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
-            ReturnButton.Visibility = Visibility.Visible;
+			// Hide header and game library, show the Return button in the toolbar.
+			HeaderGrid.Visibility = Visibility.Collapsed;
+			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+			ReturnButton.Visibility = Visibility.Visible;
 
-            await Task.Delay(5000);
-            await EmbedSteamVRSpectatorAsync();
-        }
+			await Task.Delay(5000);
+			await EmbedSteamVRSpectatorAsync();
+		}
 
 
-        //Henter VR View vinduet fra SteamVR og setter det inn/embedder i WPF vinduet
-        private async Task EmbedSteamVRSpectatorAsync()
-        {
-            const int maxAttempts = 20;
-            const int delayMs = 5000;
-            IntPtr spectatorHandle = IntPtr.Zero;
+		//Henter VR View vinduet fra SteamVR og setter det inn/embedder i WPF vinduet
+		private async Task EmbedSteamVRSpectatorAsync()
+		{
+			const int maxAttempts = 20;
+			const int delayMs = 5000;
+			IntPtr spectatorHandle = IntPtr.Zero;
 
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
-            {
-                spectatorHandle = FindWindow(null, "VR View");
-                if (spectatorHandle != IntPtr.Zero)
-                {
-                    Console.WriteLine("Found Steam VR Spectator Window");
-                    break;
-                }
-                Console.WriteLine($"Attempt {attempt + 1}: Steam VR Spectator Window not found. Waiting...");
-                await Task.Delay(delayMs);
-            }
+			for (int attempt = 0; attempt < maxAttempts; attempt++)
+			{
+				spectatorHandle = FindWindow(null, "VR View");
+				if (spectatorHandle != IntPtr.Zero)
+				{
+					Console.WriteLine("Found Steam VR Spectator Window");
+					break;
+				}
+				Console.WriteLine($"Attempt {attempt + 1}: Steam VR Spectator Window not found. Waiting...");
+				await Task.Delay(delayMs);
+			}
 
-            if (spectatorHandle != IntPtr.Zero)
-            {
-                var helper = new WindowInteropHelper(this);
-                SetParent(spectatorHandle, helper.Handle);
-                Console.WriteLine("Embedded Steam VR Spectator Window");
-            }
-            else
-            {
-                MessageBox.Show("Kunne ikke finne SteamVR Specator Window etter venting");
-            }
-        }
+			if (spectatorHandle != IntPtr.Zero)
+			{
+				var helper = new WindowInteropHelper(this);
+				SetParent(spectatorHandle, helper.Handle);
+				Console.WriteLine("Embedded Steam VR Spectator Window");
+			}
+			else
+			{
+				MessageBox.Show("Kunne ikke finne SteamVR Specator Window etter venting");
+			}
+		}
+
+		#region VR-Kalibreringsknapper og funksjoner
+		private void RomKalibrering(object sender, RoutedEventArgs e)
+		{
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = "explorer.exe",
+				Arguments = "steam://run/250820//roomsetup",
+				UseShellExecute = true
+			});
+		}
+
+		private void HøydeKalibrering(object sender, RoutedEventArgs e)
+		{
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = "explorer.exe",
+				Arguments = "steam://run/250820//standalone",
+				UseShellExecute = true
+			});
+		}
+		private void MidstillView(object sender, RoutedEventArgs e)
+		{
+			if (OpenVR.Chaperone != null)
+			{
+				OpenVR.Chaperone.ResetZeroPose(ETrackingUniverseOrigin.TrackingUniverseSeated);
+				Console.WriteLine("Seated zero pose has been reset.");
+			}
+		}
 	}
+	#endregion
 }
-
 
