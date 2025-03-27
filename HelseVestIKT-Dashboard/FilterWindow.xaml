@@ -47,6 +47,8 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="14*"/>
+				<RowDefinition Height="97*"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*"/>
@@ -55,7 +57,7 @@
 			</Grid.ColumnDefinitions>
 
 			<!-- SPILLERE -->
-			<StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,0">
+			<StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,97" Grid.RowSpan="2">
 				<TextBlock Text="Spiller" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
 				<CheckBox x:Name="CheckBoxSinglePlayer" Content="Enspiller" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxMultiplayer" Content="Flerspill" Margin="0,2,0,2"/>
@@ -63,7 +65,7 @@
 			</StackPanel>
 
 			<!-- SPILLTILSTAND -->
-			<StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0">
+			<StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,10,97" Grid.RowSpan="2">
 				<TextBlock Text="Spilltilstand" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
 				<CheckBox x:Name="CheckBoxReadyToPlay" Content="Klar til å spille" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxInstalledLocally" Content="Innstallert lokalt" Margin="0,2,0,2"/>
@@ -72,7 +74,7 @@
 			</StackPanel>
 
 			<!-- SJANGER -->
-			<StackPanel Grid.Row="0" Grid.Column="2" Margin="10,0,0,0">
+			<StackPanel Grid.Row="0" Grid.Column="2" Margin="10,0,0,97" Grid.RowSpan="2">
 				<TextBlock Text="Sjanger" FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
 				<CheckBox x:Name="CheckBoxAction" Content="Action" Margin="0,2,0,2"/>
 				<CheckBox x:Name="CheckBoxAdventure" Content="Eventyr" Margin="0,2,0,2"/>
@@ -106,7 +108,7 @@
 			-->
 
 			<!-- OK / Avbryt knapper -->
-			<StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+			<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0" Grid.Column="2">
 				<Button Content="OK" Width="70" Margin="0,0,10,0" Click="OkButton_Click"/>
 				<Button Content="Avbryt" Width="70" Click="CancelButton_Click"/>
 			</StackPanel>

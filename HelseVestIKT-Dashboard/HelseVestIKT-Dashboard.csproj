@@ -11,10 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Bilder\accessibility.png" />
+    <None Remove="Bilder\exit_knapp.png" />
+    <None Remove="Bilder\fullskjerm.png" />
+    <None Remove="Bilder\fullskjerm_lukk.png" />
+    <None Remove="Bilder\kontroller – Kopi.png" />
+    <None Remove="Bilder\kontroller.png" />
+    <None Remove="Bilder\kontroller_venstre.png" />
+    <None Remove="Bilder\nodstopp_knapp.png" />
+    <None Remove="Bilder\pause_knapp.png" />
     <None Remove="Bilder\settings.png" />
     <None Remove="Bilder\speaker.png" />
     <None Remove="Bilder\vrheadset.png" />
     <None Remove="Bilder\vrkontrollere.png" />
+    <None Remove="Bilder\vr_headset.png" />
     <None Remove="Bilder\wifi_bar_0.png" />
     <None Remove="Bilder\wifi_bar_1.png" />
     <None Remove="Bilder\wifi_bar_2.png" />
@@ -35,10 +45,24 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Resource Include="Bilder\accessibility.png" />
+		<Resource Include="Bilder\exit_knapp.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Bilder\fullskjerm.png" />
+		<Resource Include="Bilder\fullskjerm_lukk.png" />
+		<Resource Include="Bilder\kontroller – Kopi.png" />
+		<Resource Include="Bilder\kontroller.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Bilder\kontroller_venstre.png" />
+		<Resource Include="Bilder\nodstopp_knapp.png" />
+		<Resource Include="Bilder\pause_knapp.png" />
 		<Resource Include="Bilder\settings.png" />
 		<Resource Include="Bilder\speaker.png" />
 		<Resource Include="Bilder\vrheadset.png" />
 		<Resource Include="Bilder\vrkontrollere.png" />
+		<Resource Include="Bilder\vr_headset.png" />
 		<Resource Include="Bilder\wifi_bar_0.png" />
 		<Resource Include="Bilder\wifi_bar_1.png" />
 		<Resource Include="Bilder\wifi_bar_2.png" />

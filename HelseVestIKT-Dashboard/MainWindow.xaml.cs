@@ -42,7 +42,7 @@ namespace HelseVestIKT_Dashboard
 		private static extern bool AllocConsole();
 
 		[DllImport("user32.dll")]
-		static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+		static extern IntPtr FindWindow(string? lpClassName, string lpWindowName);
 
 		[DllImport("user32.dll")]
 		static extern bool SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
@@ -72,19 +72,20 @@ namespace HelseVestIKT_Dashboard
 		private bool _gamesLoaded = false;
 
 		public VREquipmentStatusViewModel VREquipmentStatus { get; set; } = new VREquipmentStatusViewModel();
-		private DispatcherTimer vrStatusTimer;
+		private DispatcherTimer? vrStatusTimer;
 
 		private ThreadingTimer? _vrStatusTimer;
 
 		public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
 
-		public object WifiSignalProgressBar { get; private set; }
+		public object? WifiSignalProgressBar { get; private set; }
 
 		private DispatcherTimer? _wifiSignalTimer;
 
 		private ObservableCollection<Game> AllGames = new ObservableCollection<Game>();
 		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
 
+		private DispatcherTimer searchTimer;
 
 
 		public MainWindow()
@@ -98,6 +99,9 @@ namespace HelseVestIKT_Dashboard
 			// Åpner en konsoll for å vise utskrift (Brukes til testing av metoder)
 			AllocConsole();
 
+			// Oppretter timeren og sett intervall til 500ms
+			searchTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+			searchTimer.Tick += SearchTimer_Tick;
 			// Oppdaterer CurrentTime hvert sekund
 			DispatcherTimer timer = new DispatcherTimer();
 			timer.Interval = TimeSpan.FromSeconds(1);
@@ -121,7 +125,7 @@ namespace HelseVestIKT_Dashboard
 		{
 			_wifiSignalTimer = new DispatcherTimer
 			{
-				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
+				Interval = TimeSpan.FromSeconds(5) // update every 2 seconds
 			};
 			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
 			_wifiSignalTimer.Start();
@@ -158,13 +162,11 @@ namespace HelseVestIKT_Dashboard
 				// Optionally, cast the uint signal strength to int if needed
 				int signalQuality = (int)connected.SignalStrength;
 				// Set text to blank when a connection is present
-				WifiSignalTextBlock.Text = "";
 				// Update the icon based on the signal strength
 				UpdateWifiIcon(connected.SignalStrength);
 			}
 			else
 			{
-				WifiSignalTextBlock.Text = "Ingen internettilgang";
 				// Optionally show the "no signal" icon
 				UpdateWifiIcon(0);
 			}
@@ -240,6 +242,30 @@ namespace HelseVestIKT_Dashboard
 			ReturnButton.Visibility = Visibility.Collapsed;
 		}
 
+		private void PauseKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			// Restore header and game library areas.
+			HeaderGrid.Visibility = Visibility.Visible;
+			GameLibraryScrollViewer.Visibility = Visibility.Visible;
+
+			// Hide the Return button (if it was used to go back to the library).
+			PauseKnapp.Visibility = Visibility.Collapsed;
+		}
+
+		private void AvsluttKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			// Exit the game or application
+			MessageBox.Show("Spillet er avsluttet");
+		}
+
+		private void NodStoppKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			// Emergency stop button if application is not responding and VR functions are not working
+			// This is a last resort to close the application
+			if (MessageBox.Show("Er du sikker på at du vil avslutte programmet?", "Avslutt programmet", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+				System.Windows.Application.Current.Shutdown();
+		}
+
 		private void ResetButton_Click(object sender, RoutedEventArgs e)
 		{
 			// Restore header and game library areas.
@@ -248,6 +274,9 @@ namespace HelseVestIKT_Dashboard
 
 			// Hide the Return button (if it was used to go back to the library).
 			ReturnButton.Visibility = Visibility.Collapsed;
+
+			// Gjemmer Kalibrering popup
+			KalibreringPopup.IsOpen = false;
 
 			// Exit full-screen mode if currently active.
 			if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
@@ -572,19 +601,24 @@ namespace HelseVestIKT_Dashboard
 				SearchBox.Text = "";
 		}
 
-
-		private void SearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-		{
-			if (e.Key == Key.Enter)
-			{
-				SearchGames();
-			}
-		}
-
 		private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(SearchBox.Text))
 				SearchBox.Text = "Søk etter spill...";
+		}
+
+		private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (searchTimer == null)
+				return;
+			searchTimer.Stop();
+			searchTimer.Start();
+		}
+
+		private void SearchTimer_Tick(object? sender, EventArgs e)
+		{
+			searchTimer.Stop();
+			SearchGames();
 		}
 
 		private void SearchGames()
@@ -657,7 +691,7 @@ namespace HelseVestIKT_Dashboard
 			}
 
 			// Hide header and game library, show the Return button in the toolbar.
-			HeaderGrid.Visibility = Visibility.Collapsed;
+			HeaderGrid.Visibility = Visibility.Visible;
 			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
 			ReturnButton.Visibility = Visibility.Visible;
 
@@ -698,6 +732,14 @@ namespace HelseVestIKT_Dashboard
 		}
 
 		#region VR-Kalibreringsknapper og funksjoner
+
+		private void Romkalibrering_Click(object sender, RoutedEventArgs e)
+		{
+			KalibrerKnapp.Visibility = Visibility.Visible;
+			KalibreringPopup.IsOpen = true;
+
+		}
+
 		private void RomKalibrering(object sender, RoutedEventArgs e)
 		{
 			Process.Start(new ProcessStartInfo
@@ -725,7 +767,30 @@ namespace HelseVestIKT_Dashboard
 				Console.WriteLine("Seated zero pose has been reset.");
 			}
 		}
+		#endregion
+
+		private void SearchBox_KeyDown_1(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+
+		}
+
+		// Denne knappen skal skjule sidemenyen og vise en knapp for å vise den igjen
+		private void SkjulKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			// Skjuler sidemenyen
+			SideMenu.Visibility = Visibility.Collapsed;
+			// Viser knappen for å vise sidemenyen igjen
+			VisKnapp.Visibility = Visibility.Visible;
+
+		}
+
+		private void VisKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			// Viser sidemenyen
+			SideMenu.Visibility = Visibility.Visible;
+			// Skjuler knappen for å vise sidemenyen igjen
+			VisKnapp.Visibility = Visibility.Collapsed;
+		}
 	}
-	#endregion
-}
+	}
 
