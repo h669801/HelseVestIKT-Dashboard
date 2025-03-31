@@ -13,6 +13,24 @@ namespace HelseVestIKT_Dashboard
 		/// </summary>
 		public static BitmapImage? LoadLocalGameImage(string appID)
 		{
+			string basePath = $@"C:\Program Files (x86)\Steam\appcache\librarycache\{appID}";
+
+			if (!Directory.Exists(basePath))
+			{
+				Console.WriteLine($"Mappen for appID {appID} finnes ikke: {basePath}");
+				return null;
+			}
+
+			string[] files = Directory.GetFiles(basePath, "library_600x900.jpg", SearchOption.AllDirectories);
+			if (files.Length == 0)
+			{
+				Console.WriteLine($"Fant ingen 'library_600x900.jpg' i mappen {basePath}");
+				return null;
+			}
+
+			string localPath = files[0];
+			
+			/*
 			// Construct the local file path.
 			// Adjust this path if your Steam installation is in a different location.
 			string localPath = $@"C:\Program Files (x86)\Steam\appcache\librarycache\{appID}\library_600x900.jpg";
@@ -22,6 +40,7 @@ namespace HelseVestIKT_Dashboard
 				Console.WriteLine($"Local image file not found: {localPath}");
 				return null;
 			}
+			*/
 
 			try
 			{

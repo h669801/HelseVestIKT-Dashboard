@@ -26,8 +26,8 @@ using System.Net.NetworkInformation;
 using SimpleWifi;
 using System.Linq;
 using WPoint = System.Windows.Point;
-using WpfFilterDemo;
 using System.Configuration;
+using System.Runtime.InteropServices;
 
 namespace HelseVestIKT_Dashboard
 {
@@ -46,6 +46,42 @@ namespace HelseVestIKT_Dashboard
 
 		[DllImport("user32.dll")]
 		static extern bool SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+		#region sinmulering av tastetrykk "ESC" for å pause et spill
+		[DllImport("user32.dll", SetLastError = true)]
+		static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+		// Constants for input type and key flags.
+		const int INPUT_KEYBOARD = 1;
+		const uint KEYEVENTF_KEYUP = 0x0002;
+		const ushort VK_ESCAPE = 0x1B;
+
+		// Define the INPUT structure.
+		[StructLayout(LayoutKind.Sequential)]
+		struct INPUT
+		{
+			public uint type;
+			public InputUnion u;
+
+			public static int Size => Marshal.SizeOf(typeof(INPUT));
+		}
+
+		[StructLayout(LayoutKind.Explicit)]
+		struct InputUnion
+		{
+			[FieldOffset(0)]
+			public KEYBDINPUT ki;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct KEYBDINPUT
+		{
+			public ushort wVk;
+			public ushort wScan;
+			public uint dwFlags;
+			public uint time;
+			public IntPtr dwExtraInfo;
+		}
+		#endregion
 
 		private string _currentTime = string.Empty;
 		public string CurrentTime
@@ -67,6 +103,8 @@ namespace HelseVestIKT_Dashboard
 		private CVRSystem? vrSystem;
 
 		public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
+		public ObservableCollection<SpillKategori> SpillKategorier { get; set; } = new ObservableCollection<SpillKategori>();
+		public SpillKategori? ValgtKategori { get; set; }
 		public object? WifiConnectionButton { get; private set; }
 
 		private bool _gamesLoaded = false;
@@ -86,6 +124,8 @@ namespace HelseVestIKT_Dashboard
 		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
 
 		private DispatcherTimer searchTimer;
+
+		private VRFullscreenWindow? _fullScreenWindow = null;
 
 
 		public MainWindow()
@@ -240,6 +280,7 @@ namespace HelseVestIKT_Dashboard
 			HeaderGrid.Visibility = Visibility.Visible;
 			GameLibraryScrollViewer.Visibility = Visibility.Visible;
 			ReturnButton.Visibility = Visibility.Collapsed;
+			VRHost.Visibility = Visibility.Collapsed;
 		}
 
 		private void PauseKnapp_Click(object sender, RoutedEventArgs e)
@@ -249,13 +290,26 @@ namespace HelseVestIKT_Dashboard
 			GameLibraryScrollViewer.Visibility = Visibility.Visible;
 
 			// Hide the Return button (if it was used to go back to the library).
-			PauseKnapp.Visibility = Visibility.Collapsed;
+			PauseKnapp.Visibility = Visibility.Visible;
+
+			SimulerEscapeTasteTrykk();
 		}
 
+		// Hente informasjon om hvilket spill som kjøres og returnere spill tittel inne i denne textblocken
+		private void SpillerNaa(Game game, SteamApi steamapi)
+		{
+			// Setter opp metoden for å displaye spillnavn i textblock
+
+			
+		}
+
+		//Denne knappen lukker/Avslutter spillvinduet gjennom applikasjonen
 		private void AvsluttKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			// Exit the game or application
-			MessageBox.Show("Spillet er avsluttet");
+			// Metode for å avslutte spillet ved å trykke på knappen uten å exite applikasjonen
+			HeaderGrid.Visibility = Visibility.Visible;
+
+			
 		}
 
 		private void NodStoppKnapp_Click(object sender, RoutedEventArgs e)
@@ -496,16 +550,8 @@ namespace HelseVestIKT_Dashboard
 
 		private void FullScreenButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
-			{
-				this.WindowStyle = WindowStyle.SingleBorderWindow;
-				this.WindowState = WindowState.Normal;
-			}
-			else
-			{
-				this.WindowStyle = WindowStyle.None;
-				this.WindowState = WindowState.Maximized;
-			}
+		
+			ToggleVRFullScreenMode();
 		}
 
 		private void ExitButton_Click(object sender, RoutedEventArgs e)
@@ -518,6 +564,8 @@ namespace HelseVestIKT_Dashboard
 
 		#region VR Verktøylinje knapper
 		//Andre rad i MainWindow: Inkl. Filter/Sorter, Header(Alle Spill) og en searchbar for søke etter spill.
+
+		
 
 		private void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
@@ -548,48 +596,7 @@ namespace HelseVestIKT_Dashboard
 
 		#region Filter Button
 
-		private void FilterButton_Click(object sender, RoutedEventArgs e)
-		{
-			FilterWindow filterWindow = new FilterWindow();
-			filterWindow.Owner = this;  // sets the parent for modal behavior
-
-			if (filterWindow.ShowDialog() == true)
-			{
-				// The user clicked OK; read filter properties
-				var filtered = AllGames.Where(game =>
-				{
-					// Check the "PLAYERS" group:
-					if (filterWindow.IsSinglePlayer && !game.IsSinglePlayer) return false;
-					if (filterWindow.IsMultiplayer && !game.IsMultiplayer) return false;
-					if (filterWindow.IsCooperative && !game.IsCoop) return false;
-
-					// Example "GENRE" check:
-					if (filterWindow.IsAction && game.Genre != "Action") return false;
-					if (filterWindow.IsAdventure && game.Genre != "Adventure") return false;
-					if (filterWindow.IsCasual && game.Genre != "Casual") return false;
-					if (filterWindow.IsRPG && game.Genre != "RPG") return false;
-					if (filterWindow.IsSimulation && game.Genre != "Simulation") return false;
-					if (filterWindow.IsSports && game.Genre != "Sports") return false;
-					if (filterWindow.IsStrategy && game.Genre != "Strategy") return false;
-
-					// VR example
-					if (filterWindow.IsVR && !game.IsVR) return false;
-
-					// Additional checks for other categories as needed
-
-					return true;
-				}).ToList();
-
-				// Update FilteredGames with the new results
-				FilteredGames.Clear();
-				foreach (var g in filtered)
-				{
-					FilteredGames.Add(g);
-				}
-			}
-		}
-
-
+		
 		#endregion
 
 
@@ -644,7 +651,35 @@ namespace HelseVestIKT_Dashboard
 				.Where(g => g.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
 				.ToList();
 
+	
 			// Reset the Games collection with filtered results
+			Games.Clear();
+			foreach (var game in filteredGames)
+			{
+				Games.Add(game);
+			}
+		}
+
+		private void ApplyGenreFilter()
+		{
+			// For example, check if a specific genre checkbox is checked.
+			bool filterAction = CheckBoxFlerspill.IsChecked == true;
+			bool filterAdventure = CheckBoxEventyr.IsChecked == true;
+
+			var filteredGames = AllGames.Where(game =>
+			{
+				// If filtering by Action, check if the game's genres include "Action"
+				if (filterAction && !game.Genres.Contains("Action"))
+					return false;
+				// Similarly for Adventure, add more conditions as needed
+				if (filterAdventure && !game.Genres.Contains("Adventure"))
+					return false;
+
+				// Additional filters can be added here
+
+				return true;
+			}).ToList();
+
 			Games.Clear();
 			foreach (var game in filteredGames)
 			{
@@ -693,6 +728,7 @@ namespace HelseVestIKT_Dashboard
 			// Hide header and game library, show the Return button in the toolbar.
 			HeaderGrid.Visibility = Visibility.Visible;
 			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+			VRHost.Visibility = Visibility.Visible;
 			ReturnButton.Visibility = Visibility.Visible;
 
 			await Task.Delay(5000);
@@ -767,6 +803,12 @@ namespace HelseVestIKT_Dashboard
 				Console.WriteLine("Seated zero pose has been reset.");
 			}
 		}
+
+		// Denne metoden skal pause et spill som kjører i VR
+		private void PauseSpillKnapp_Click(Object sender, RoutedEventArgs e)
+		{ 
+
+		}
 		#endregion
 
 		private void SearchBox_KeyDown_1(object sender, System.Windows.Input.KeyEventArgs e)
@@ -791,6 +833,121 @@ namespace HelseVestIKT_Dashboard
 			// Skjuler knappen for å vise sidemenyen igjen
 			VisKnapp.Visibility = Visibility.Collapsed;
 		}
+	
+		// Denne metoden legger til et spill i en valgt kategori
+		public void LeggTilSpillIKategori(SpillKategori kategori, Game game)
+		{
+			if (ValgtKategori != null && game != null)
+			{
+				ValgtKategori.Games.Add(game);
+			}
+		}
+
+		// Denne metoden fjerner et spill fra en kategori
+		public void FjernSpillFraKategori(Game game)
+		{
+			if (ValgtKategori != null && ValgtKategori.Games.Contains(game))
+			{
+				ValgtKategori.Games.Remove(game);
+			}
+		}
+
+
+		private void ApplyFilter_Click(object sender, RoutedEventArgs e)
+		{
+			// Build a filter object from the MainWindow UI elements (e.g., CheckBoxes)
+			var filteredGames = AllGames.Where(game =>
+			{
+				// Example: filter by search text
+				if (!string.IsNullOrWhiteSpace(SearchBox.Text) &&
+					SearchBox.Text != "Søk etter spill..." &&
+					!game.Title.Contains(SearchBox.Text, StringComparison.OrdinalIgnoreCase))
+				{
+					return false;
+				}
+				// Example: apply checkbox filters
+				if (CheckBoxSteamSpill.IsChecked == true && !game.IsSinglePlayer)
+					return false;
+				if (CheckBoxHelseVestSpill.IsChecked == true && !game.IsMultiplayer)
+					return false;
+				// Add additional conditions as needed...
+
+				return true;
+			}).ToList();
+
+			// Update the Games collection to show filtered results
+			Games.Clear();
+			foreach (var game in filteredGames)
+			{
+				Games.Add(game);
+			}
+		}
+
+		private void ToggleVRFullScreenMode()
+		{
+			if (_fullScreenWindow == null)
+			{
+				// Enter fullscreen mode:
+				// Remove the VRHost from its current parent.
+				var parent = VisualTreeHelper.GetParent(VRHost) as System.Windows.Controls.Panel;
+				if (parent != null)
+				{
+					parent.Children.Remove(VRHost);
+				}
+
+				// Create and show the fullscreen window.
+				_fullScreenWindow = new VRFullscreenWindow();
+				_fullScreenWindow.FullscreenGrid.Children.Add(VRHost);
+				_fullScreenWindow.Show();
+			}
+			else
+			{
+				// Exit fullscreen mode:
+				// Remove the VRHost from the fullscreen window.
+				_fullScreenWindow.FullscreenGrid.Children.Remove(VRHost);
+
+				// Re-add it to its original container (assumed here to be GameLibraryArea).
+				GameLibraryArea.Children.Add(VRHost);
+
+				_fullScreenWindow.Close();
+				_fullScreenWindow = null;
+			}
+		}
+
+		private void SimulerEscapeTasteTrykk()
+		{
+			const int INPUT_KEYBOARD = 1;
+			const uint KEYEVENTF_KEYUP = 0x0002;
+			const ushort VK_ESCAPE = 0x1B;
+			INPUT[] inputs = new INPUT[2];
+
+			// Key down event for ESC
+			inputs[0].type = INPUT_KEYBOARD;
+			inputs[0].u.ki.wVk = VK_ESCAPE;
+			inputs[0].u.ki.wScan = 0;
+			inputs[0].u.ki.dwFlags = 0; // 0 for key press
+			inputs[0].u.ki.time = 0;
+			inputs[0].u.ki.dwExtraInfo = IntPtr.Zero;
+
+			// Key up event for ESC
+			inputs[1].type = INPUT_KEYBOARD;
+			inputs[1].u.ki.wVk = VK_ESCAPE;
+			inputs[1].u.ki.wScan = 0;
+			inputs[1].u.ki.dwFlags = KEYEVENTF_KEYUP; // key release flag
+			inputs[1].u.ki.time = 0;
+			inputs[1].u.ki.dwExtraInfo = IntPtr.Zero;
+
+			// Send the input events
+			uint result = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT)));
+			if (result == 0)
+			{
+				int error = Marshal.GetLastWin32Error();
+				// Optionally log the error or display a message.
+				Console.WriteLine("SendInput failed with error: " + error);
+			}
+		}
+
+
 	}
-	}
+}
 
