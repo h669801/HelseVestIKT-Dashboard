@@ -2,10 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
-        Title="Helse Vest IKT" Height="800" Width="1300">
+        Title="Helse Vest IKT" Height="800" Width="1300"
+		WindowState="Maximized">
+
 	<Window.Resources>
-		
-	
+
+		<FontFamily x:Key="SourceSansFont">Source Sans Pro</FontFamily>
+
+
 		<Style x:Key="SquareRoundedButtonStyle" TargetType="Button">
 			<Setter Property="Template">
 				<Setter.Value>
@@ -32,6 +36,7 @@
 			<Setter Property="HorizontalContentAlignment" Value="Center"/>
 			<Setter Property="VerticalContentAlignment" Value="Center"/>
 			<Setter Property="Margin" Value="5"/>
+			<Setter Property="Foreground" Value="#003087"/>
 			<Style.Triggers>
 				<Trigger Property="IsMouseOver" Value="True">
 					<Setter Property="Background" Value="#EFEFEF"/>
@@ -76,14 +81,55 @@
 			<Setter Property="Height" Value="30"/>
 		</Style>
 
-		<!-- Helse Vest Font stil -->
-		<Style x:Key="SourceSansFont" TargetType="TextBlock">
-			<Setter Property="FontFamily"
-					Value="pack://application:,,,/HelseVestIKT-Dashboard;component/Fonts/#Source Sans Pro"/>
+		<!-- Updated TextBlock style with a unique key -->
+		<Style x:Key="SourceSansTextBlockStyle" TargetType="TextBlock">
+			<Setter Property="FontFamily" Value="{StaticResource SourceSansFont}"/>
 			<Setter Property="FontSize" Value="16"/>
 			<Setter Property="Foreground" Value="#003087"/>
 		</Style>
-		
+
+
+		<!-- Base-stil for CheckBox med avrundede hjørner -->
+		<Style x:Key="RoundedCheckBoxStyle" TargetType="CheckBox">
+			<Setter Property="Margin" Value="5"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="CheckBox">
+						<StackPanel Orientation="Horizontal">
+							<Border x:Name="CheckBoxBorder" Width="16" Height="16"
+                                    CornerRadius="4"
+                                    Background="White"
+                                    BorderBrush="Gray"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+								<Path x:Name="CheckMark"
+                                      Data="M2,8 L6,12 L14,4"
+                                      Stroke="Black"
+                                      StrokeThickness="2"
+                                      Visibility="Collapsed"/>
+							</Border>
+							<ContentPresenter VerticalAlignment="Center" Margin="5,0,0,0"/>
+						</StackPanel>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsChecked" Value="True">
+								<Setter TargetName="CheckBoxBorder" Property="Background" Value="LightBlue"/>
+								<Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+							</Trigger>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="DarkGray"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<!-- Stil for CheckBox som bruker SourceSansFont -->
+		<Style x:Key="RoundedCheckBoxWithSourceSansFontStyle" TargetType="CheckBox" BasedOn="{StaticResource RoundedCheckBoxStyle}">
+			<Setter Property="FontFamily" Value="{StaticResource SourceSansFont}"/>
+			<Setter Property="Foreground" Value="#003087"/>
+		</Style>
+
 	</Window.Resources>
 
 	<Grid Background="#F6F6F6">
@@ -144,7 +190,7 @@
 								</Button>
 							</Border>
 							<!-- Viser batteriprosent -->
-							<TextBlock Style="{StaticResource SourceSansFont}" Text="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}"
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}"
                                    HorizontalAlignment="Center" FontSize="12" Margin="0,5"/>
 						</StackPanel>
 
@@ -169,7 +215,7 @@
 									<Image Source="Bilder/kontroller_venstre.png" Width="31" Height="31"/>
 								</Button>
 							</Border>
-							<TextBlock Style="{StaticResource SourceSansFont}" Text="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}"
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}"
                                    HorizontalAlignment="Center" FontSize="12" Margin="0,5"/>
 						</StackPanel>
 
@@ -194,14 +240,14 @@
 									<Image Source="Bilder/kontroller.png" Width="31" Height="31"/>
 								</Button>
 							</Border>
-							<TextBlock Style="{StaticResource SourceSansFont}" Text="{Binding VREquipmentStatus.RightControllerBatteryPercentage, StringFormat={}{0:F0}%}"
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding VREquipmentStatus.RightControllerBatteryPercentage, StringFormat={}{0:F0}%}"
                                    HorizontalAlignment="Center" FontSize="12" Margin="0,5"/>
 						</StackPanel>
 					</StackPanel>
 
 					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Click="Romkalibrering_Click" Height="45" Margin="0,0,0,15">
 						<StackPanel Orientation="Horizontal">
-							<TextBlock Style="{StaticResource SourceSansFont}" Text="Kalibrering av VR" Margin="5,7,0,0"/>
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/>
 							<Image Source="/Bilder/accessibility.png" Width="30" Height="30" HorizontalAlignment="Right" Margin="10,0,0,0" />
 						</StackPanel>
 					</Button>
@@ -217,16 +263,16 @@
 							</Border.Effect>
 							<StackPanel Orientation="Horizontal" Height="Auto">
 								<Button Style="{StaticResource SquareRoundedButtonStyle}">
-									<TextBlock Style="{StaticResource SourceSansFont}" Text="Romkalibrering" Margin="5,7,0,0"/>
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering" Margin="5,7,0,0"/>
 								</Button>
 								<Button Style="{StaticResource SquareRoundedButtonStyle}">
-									<TextBlock Style="{StaticResource SourceSansFont}" Text="Høydekalibrering" Margin="5,7,0,0"/>
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering" Margin="5,7,0,0"/>
 								</Button>
 								<Button Style="{StaticResource SquareRoundedButtonStyle}">
-									<TextBlock Style="{StaticResource SourceSansFont}" Text="Midtstill" Margin="5,7,0,0"/>
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill" Margin="5,7,0,0"/>
 								</Button>
 								<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="ResetButton_Click" Margin="5,7,0,0">
-									<TextBlock Style="{StaticResource SourceSansFont}" Text="Tilbake"/>
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Tilbake"/>
 								</Button>
 							</StackPanel>
 						</Border>
@@ -235,9 +281,9 @@
 
 
 
-					<Button x:Name="VisKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Height="45" Margin="10,0,0,10" Visibility="Collapsed" Click="VisKnapp_Click">
+					<Button x:Name="VisKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Height="45" Margin="10,0,0,15" Visibility="Collapsed" Click="VisKnapp_Click">
 						<StackPanel>
-							<TextBlock Style="{StaticResource SourceSansFont}" Text="Vis sidemeny"/>
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Vis sidemeny"/>
 						</StackPanel>
 					</Button>
 
@@ -301,11 +347,11 @@
              VerticalAlignment="Center"
 								 Margin="3"/>
 					</Grid>
-					<TextBlock Style="{StaticResource SourceSansFont}" Text="HELSE" 
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="HELSE" 
                       FontSize="24"
                      VerticalAlignment="Center" 
                      Margin="0,0"/>
-					<TextBlock Style="{StaticResource SourceSansFont}" Text="VEST" 
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="VEST" 
 					  FontSize="24"
 					FontWeight="Bold"
 					 VerticalAlignment="Center" 
@@ -316,7 +362,7 @@
 				<StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
 					<!-- Klokke -->
 
-					<TextBlock Style="{StaticResource SourceSansFont}" Text="{Binding CurrentTime}" VerticalAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="10,0"/>
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding CurrentTime}" VerticalAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="10,0"/>
 					<!-- Wifi signal-->
 					<Image x:Name="WifiSignalIcon" Width="30" Height="30"/>
 
@@ -324,7 +370,7 @@
 					<Button Style="{StaticResource SquareRoundedButtonStyle}" BorderThickness="0" x:Name="SpeakerButton"
                   MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 						<StackPanel Orientation="Horizontal">
-							<Image Source="Bilder/speaker.png" Width="24" Height="24"/>
+							<Image Source="Bilder/speaker_popup.png" Width="24" Height="24"/>
 						</StackPanel>
 					</Button>
 
@@ -344,17 +390,17 @@
 					</Popup>
 
 					<!-- Fullskjerm knapp -->
-					<Button x:Name="FullscreenButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="40" Height="40" Click="FullScreenButton_Click">
-						<Image Source="/Bilder/fullskjerm.png" Width="20" Height="24"/>
+					<Button x:Name="FullscreenButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="42" Height="40" Click="FullScreenButton_Click">
+						<Image Source="/Bilder/fullskjerm.png" Width="21" Height="24"/>
 					</Button>
 					<!-- Avslutt-knapp -->
-					<Button Style="{StaticResource SquareRoundedButtonStyle}" Width="40" Height="40" Click="ExitButton_Click" Margin="10,0">
-						<Image Source="/Bilder/exit_knapp.png" Width="20" Height="24" />
+					<Button Style="{StaticResource SquareRoundedButtonStyle}" Width="42" Height="40" Click="ExitButton_Click" Margin="10,0">
+						<Image Source="/Bilder/exit_knapp.png" Width="21" Height="24" />
 					</Button>
 				</StackPanel>
 			</Grid>
 		</Border>
-		
+
 		<!-- Status, Spiller nå, knapper -->
 
 		<Grid Grid.Row="1" Height="50" Background="White" >
@@ -364,62 +410,62 @@
 								  Direction="270"
 								  Color="Black"
 								  Opacity="0.9"/>
-			
+
 			</Grid.Effect>
-			
+
 			<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
-				</Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
 
-				<!--Spiller nå-->
-				<TextBlock Style="{StaticResource SourceSansFont}" Grid.Column="0" Text="Spiller nå:" VerticalAlignment="Center" Margin="10,0"/>
-				<TextBox Grid.Column="1" x:Name="CurrentGameTextBlock" Text="{Binding CurrentPlayer}" VerticalAlignment="Center" Width="Auto"/>
+			<!--Spiller nå-->
+			<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Grid.Column="0" Text="Spiller nå:" VerticalAlignment="Center" Margin="10,0"/>
+			<TextBox Grid.Column="1" x:Name="CurrentGameTextBlock" Text="{Binding CurrentPlayer}" VerticalAlignment="Center" Width="Auto"/>
 
-				<!--Status-->
-				<TextBlock Style="{StaticResource SourceSansFont}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0"/>
-				<TextBox Grid.Column="3" x:Name="StatusTextBlock" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Left" Width="6"/>
+			<!--Status-->
+			<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0"/>
+			<TextBox Grid.Column="3" x:Name="StatusTextBlock" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Left" Width="6"/>
 
-				<!--Knapper (Pause, Avslutt og Nødstopp -->
-				<StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0">
+			<!--Knapper (Pause, Avslutt og Nødstopp -->
+			<StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0">
 				<!-- Return-knapp for spillvisning (skjules initialt) -->
 				<Button x:Name="ReturnButton"  Click="ReturnButton_Click"
 Style="{StaticResource SquareRoundedButtonStyle}"
 HorizontalAlignment="Right" VerticalAlignment="Center" 
 Margin="0,0,5,0" Visibility="Collapsed">
 					<StackPanel Orientation="Horizontal">
-						<TextBlock Style="{StaticResource SourceSansFont}" Text="Tilbake"/>
+						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Hjem"/>
 					</StackPanel>
 				</Button>
 				<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="PauseKnapp" Width="Auto" Click="PauseKnapp_Click">
 					<StackPanel Orientation="Horizontal">
-						<TextBlock Style="{StaticResource SourceSansFont}" Text="Pause" Margin="0,0,10,0"/>
+						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Pause" Margin="0,0,10,0"/>
 						<Image Source="/Bilder/pause_knapp.png" Height="18" Width="18" HorizontalAlignment="Right"/>
-				</StackPanel>
-						</Button>
-
-					<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="AvsluttKnapp" Width="Auto" Click="AvsluttKnapp_Click">
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Style="{StaticResource SourceSansFont}" Text="Avslutt" Margin="0,0,10,0"/>
-						<Image Source="/Bilder/exit_knapp.png" Height="18" Width="18" HorizontalAlignment="Right"/>
-					</StackPanel>
-					</Button>
-
-					<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="NodStoppKnapp" Width="Auto" Click="NodStoppKnapp_Click">
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Style="{StaticResource SourceSansFont}" Text="Nødstopp" Margin="0,0,5,0"/>
-						<Image Source="/Bilder/nodstopp_knapp.png" Height="18" Width="18" HorizontalAlignment="Right"/>
 					</StackPanel>
 				</Button>
 
-				</StackPanel>
+				<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="AvsluttKnapp" Width="Auto" Click="AvsluttKnapp_Click">
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Avslutt" Margin="0,0,10,0"/>
+						<Image Source="/Bilder/exit_knapp.png" Height="18" Width="18" HorizontalAlignment="Right"/>
+					</StackPanel>
+				</Button>
 
-			</Grid>
+				<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="NodStoppKnapp" Width="105" Click="NodStoppKnapp_Click">
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Nødstopp" Margin="0,0,0,0"/>
+						<Image Source="/Bilder/nodstopp_knapp.png" Height="18" Width="18"/>
+					</StackPanel>
+				</Button>
 
-			<!-- HOVEDINNHOLD -->
+			</StackPanel>
+
+		</Grid>
+
+		<!-- HOVEDINNHOLD -->
 		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>
 				<!-- Sidemeny: Bredden settes til 250 når den er synlig -->
@@ -431,45 +477,45 @@ Margin="0,0,5,0" Visibility="Collapsed">
 			<!-- SIDEMENY -->
 			<Border x:Name="SideMenu" Grid.Column="0" Background="White" BorderThickness="0,0,1,0" BorderBrush="#DDD">
 				<Border.Effect>
-					<DropShadowEffect BlurRadius="6"
-									  ShadowDepth="10"
-									  Direction="270"
-									  Color="Black"
-									  Opacity="0.9"/>
+					<DropShadowEffect BlurRadius="6" ShadowDepth="10" Direction="270" Color="Black" Opacity="0.9"/>
 				</Border.Effect>
 				<StackPanel Orientation="Vertical">
 					<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
-							 Text="Søk etter spill.." 
-							 Foreground="#888"
-							 GotFocus="SearchBox_GotFocus"
-							 LostFocus="SearchBox_LostFocus"
-							 TextChanged="SearchBox_TextChanged"/>
-					<TextBlock Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
-					<CheckBox Content="Steam spill" Margin="10,5,0,0"/>
-					<CheckBox Content="Helse Vest Spill" Margin="10,5,0,0"/>
-					<CheckBox Content="Diverse spill" Margin="10,5,0,0"/>
+                 Text="Søk etter spill..."
+                 Foreground="#888"
+                 GotFocus="SearchBox_GotFocus"
+                 LostFocus="SearchBox_LostFocus"
+                 TextChanged="SearchBox_TextChanged"/>
+					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxHelseVestSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Helse Vest Spill" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxDiverseSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Diverse spill" Margin="10,5,0,0"/>
 					<Separator Margin="10,10,10,10"/>
-					<TextBlock Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
-					<CheckBox Content="Helse" Margin="10,5,0,0"/>
-					<CheckBox Content="Eventyr" Margin="10,5,0,0"/>
-					<CheckBox Content="Trening" Margin="10,5,0,0"/>
-					<CheckBox Content="Flersspill" Margin="10,5,0,0"/>
+					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxHelse" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Helse" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxTrening" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Trening" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspill" Margin="10,5,0,0"/>
 					<Separator Margin="10,10,10,10"/>
-					<CheckBox Content="Vis kun favoritter" Margin="10,5,0,0"/>
-					<CheckBox Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
-					<CheckBox Content="VR-spill" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
+					<CheckBox x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
 					<Separator Margin="10,10,10,10"/>
+					<ComboBox ItemsSource="{Binding SpillKategorier}" SelectedItem="{Binding ValgtKategorier}" DisplayMemberPath="Name" Width="200" Margin="10"/>
+					<Button Content="Filtrer" Style="{DynamicResource SquareRoundedButtonStyle}"
+        HorizontalAlignment="Center" VerticalAlignment="Center" Click="ApplyFilter_Click"/>
 					<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
-							HorizontalAlignment="Center" VerticalAlignment="Center" Click="SkjulKnapp_Click"/>
+                HorizontalAlignment="Center" VerticalAlignment="Center" Click="SkjulKnapp_Click"/>
 				</StackPanel>
 			</Border>
 
-			<!-- HOVEDINNHOLD -->
-			<Grid Grid.Column="1">
-				<!-- Innholdet ditt her -->
-			</Grid>
-
-			
+			<ItemsControl ItemsSource="{Binding ValgtKategori.Games}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Title}"/>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
 
 			<!-- Spillvisning (dynamisk) -->
 			<Grid x:Name="GameLibraryArea" HorizontalAlignment="Stretch" ClipToBounds="True" Grid.Column="1">
@@ -500,18 +546,18 @@ Margin="0,0,5,0" Visibility="Collapsed">
 											<Image Source="{Binding GameImage}" Stretch="Uniform"
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
 										</Border>
-										<TextBlock Style="{StaticResource SourceSansFont}" Text="{Binding Title}" HorizontalAlignment="Center" 
+										<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding Title}" HorizontalAlignment="Center" 
                      TextTrimming="CharacterEllipsis" Margin="0,5,0,0" 
                      FontWeight="Bold" MaxWidth="180"/>
 									</StackPanel>
 								</Button>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
-						</ItemsControl>
+					</ItemsControl>
 				</ScrollViewer>
 				<!-- VR-Live-visning -->
-				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed" Width="800" Height="600"
-                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 			</Grid>
 		</Grid>
 	</Grid>

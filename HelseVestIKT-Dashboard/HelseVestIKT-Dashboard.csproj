@@ -22,6 +22,7 @@
     <None Remove="Bilder\pause_knapp.png" />
     <None Remove="Bilder\settings.png" />
     <None Remove="Bilder\speaker.png" />
+    <None Remove="Bilder\speaker_popup.png" />
     <None Remove="Bilder\vrheadset.png" />
     <None Remove="Bilder\vrkontrollere.png" />
     <None Remove="Bilder\vr_headset.png" />
@@ -60,6 +61,7 @@
 		<Resource Include="Bilder\pause_knapp.png" />
 		<Resource Include="Bilder\settings.png" />
 		<Resource Include="Bilder\speaker.png" />
+		<Resource Include="Bilder\speaker_popup.png" />
 		<Resource Include="Bilder\vrheadset.png" />
 		<Resource Include="Bilder\vrkontrollere.png" />
 		<Resource Include="Bilder\vr_headset.png" />

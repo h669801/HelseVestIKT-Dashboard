@@ -12,6 +12,8 @@ namespace HelseVestIKT_Dashboard
         public required string AppID { get; set; }
         public required string Title { get; set; } = string.Empty;
 		public BitmapImage? GameImage { get; set; }
+		
+		public List<string> Genres { get; set; } = new List<string>();
 
 		// Example booleans for filtering
 		public bool IsSinglePlayer { get; set; }
