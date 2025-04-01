@@ -377,12 +377,12 @@
 				</Grid.ColumnDefinitions>
 
 				<!--Spiller nå-->
-				<TextBlock Style="{StaticResource SourceSansFont}" Grid.Column="0" Text="Spiller nå:" VerticalAlignment="Center" Margin="10,0"/>
-				<TextBox Grid.Column="1" x:Name="CurrentGameTextBlock" Text="{Binding CurrentPlayer}" VerticalAlignment="Center" Width="Auto"/>
+				<!--<TextBlock Style="{StaticResource SourceSansFont}" Grid.Column="0" Text="Spiller nå:" VerticalAlignment="Center" Margin="10,0"/>
+				<TextBox Grid.Column="1" x:Name="CurrentGameTextBlock" Text="{Binding CurrentPlayer}" VerticalAlignment="Center" Width="Auto"/> -->
 
 				<!--Status-->
-				<TextBlock Style="{StaticResource SourceSansFont}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0"/>
-				<TextBox Grid.Column="3" x:Name="StatusTextBlock" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Left" Width="6"/>
+				<!--<TextBlock Style="{StaticResource SourceSansFont}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0"/>
+				<TextBox Grid.Column="3" x:Name="StatusTextBlock" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Left" Width="6"/> -->
 
 				<!--Knapper (Pause, Avslutt og Nødstopp -->
 				<StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0">

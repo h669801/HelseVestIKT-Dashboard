@@ -91,6 +91,8 @@ namespace HelseVestIKT_Dashboard
 
         private D3D11ImageSource _d3d11ImageSource;
 
+        private bool _vrActive = false;
+
         public MainWindow()
 		{
 			InitializeComponent();
@@ -125,21 +127,21 @@ namespace HelseVestIKT_Dashboard
 
         }
 
-        public void ToggleMirror(object sender, RoutedEventArgs e)
-        {
-            if (OpenVR.Compositor == null) return;
+        //public void ToggleMirror(object sender, RoutedEventArgs e)
+        //{
+        //    if (OpenVR.Compositor == null) return;
 
-            if (OpenVR.Compositor.IsMirrorWindowVisible())
-            {
-                OpenVR.Compositor.HideMirrorWindow();
-                Console.WriteLine("Mirror Window Hidden");
-            }
-            else
-            {
-                OpenVR.Compositor.ShowMirrorWindow();
-                Console.WriteLine("Mirror Window Shown");
-            }
-        }
+        //    if (OpenVR.Compositor.IsMirrorWindowVisible())
+        //    {
+        //        OpenVR.Compositor.HideMirrorWindow();
+        //        Console.WriteLine("Mirror Window Hidden");
+        //    }
+        //    else
+        //    {
+        //        OpenVR.Compositor.ShowMirrorWindow();
+        //        Console.WriteLine("Mirror Window Shown");
+        //    }
+        //}
 
         #region Wifi Connection
 
@@ -199,34 +201,37 @@ namespace HelseVestIKT_Dashboard
 		#endregion
 
 		private void InitializeOpenVR()
+        {
+            EVRInitError initError = EVRInitError.None;
+            vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Scene);
+            if (OpenVR.Compositor == null)
+            {
+                Console.WriteLine("OpenVR.Compositor er null.");
+            }
+            else
+            {
+                Console.WriteLine("OpenVR.Compositor er initialisert: " + OpenVR.Compositor.ToString());
+            }
+            if (initError != EVRInitError.None)
+            {
+                string errorMessage = OpenVR.GetStringForHmdError(initError);
+                MessageBox.Show("OpenVR Initialization failed: " + errorMessage);
+                return;
+            }
+
+            if (OpenVR.Compositor == null)
+            {
+                MessageBox.Show("OpenVR.Compositor er null. Kontroller at SteamVR kjører og at et VR-headset (eller en dummy-driver) er tilkoblet.");
+            }
+            else
+            {
+                Console.WriteLine("OpenVR initialisert! Headset funnet.");
+            }
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			EVRInitError initError = EVRInitError.None;
-			vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Scene);
-			if (initError != EVRInitError.None)
-			{
-				string errorMessage = OpenVR.GetStringForHmdError(initError);
-				System.Windows.MessageBox.Show("OpenVR Initialization failed: " + errorMessage);
-				// Optionally, close the application:
-				//this.Close();
-			}
-			//Test for å se at openVR kjører
-			EVRInitError error = EVRInitError.None;
-			vrSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
-
-			if (error != EVRInitError.None)
-			{
-				Console.WriteLine($"Feil ved initiering av OpenVR: {error}");
-			}
-			else
-			{
-				Console.WriteLine("OpenVR initialisert! Headset funnet.");
-			}
-
-		}
-
-		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-			InitializeOpenVR();
+			//InitializeOpenVR();
 			if (_gamesLoaded)
 				return;
 
@@ -258,35 +263,35 @@ namespace HelseVestIKT_Dashboard
             }
             // Få vindushåndtak
             IntPtr windowHandle = new WindowInteropHelper(System.Windows.Application.Current.MainWindow).Handle;
-            var d3d9Interop = new D3D9Interop(windowHandle);
+            //var d3d9Interop = new D3D9Interop(windowHandle);
 
             // Opprett D3D11ImageSource med den D3D9-enheten
-            _d3d11ImageSource = new D3D11ImageSource(d3d9Interop.D3D9Device);
+            //_d3d11ImageSource = new D3D11ImageSource(d3d9Interop.D3D9Device);
 
-            var d3dDevice = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware);
-            var dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
-            var vrMirrorTextureProvider = new VRMirrorTextureProvider();
+            //var d3dDevice = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware);
+            //var dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+            //var vrMirrorTextureProvider = new VRMirrorTextureProvider();
 
 
             // Hent D3D11 mirror texture fra OpenVR
             // Forutsatt at du har en metode GetMirrorTexture som returnerer en SharpDX.Direct3D11.Texture2D:
-            SharpDX.Direct3D11.Texture2D mirrorTexture11 = vrMirrorTextureProvider.GetMirrorTexture(dxgiDevice, EVREye.Eye_Left);
+            //SharpDX.Direct3D11.Texture2D mirrorTexture11 = vrMirrorTextureProvider.GetMirrorTexture(dxgiDevice, EVREye.Eye_Left);
 
             // Sett teksturen i D3D11ImageSource
-            _d3d11ImageSource.SetD3D11SharedTexture(mirrorTexture11);
+            //_d3d11ImageSource.SetD3D11SharedTexture(mirrorTexture11);
 
             // Sett D3DImage som kilde for Image-kontrollen
-            MirrorImage.Source = _d3d11ImageSource;
+            //MirrorImage.Source = _d3d11ImageSource;
 
             // Start render-loopen; her bruker vi CompositionTarget.Rendering som eksempel
-            CompositionTarget.Rendering += UpdateMirrorImage;
+            //CompositionTarget.Rendering += UpdateMirrorImage;
         }
 
-        private void UpdateMirrorImage(object sender, EventArgs e)
-        {
-            // Oppdater bildet
-            _d3d11ImageSource?.InvalidateD3DImage();
-        }
+        //private void UpdateMirrorImage(object sender, EventArgs e)
+        //{
+        //    // Oppdater bildet
+        //    _d3d11ImageSource?.InvalidateD3DImage();
+        //}
 
 
 
@@ -768,22 +773,22 @@ namespace HelseVestIKT_Dashboard
 
 
 		//Dette omhandler Spillgrid seksjonen av vinduet
-		private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (sender is Button button && button.DataContext is Game game)
-			{
-				// Use the AppID from the game object dynamically
-				SteamLauncher.LaunchSteamGame(game.AppID);
-			}
+		//private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+		//{
+		//	if (sender is Button button && button.DataContext is Game game)
+		//	{
+		//		// Use the AppID from the game object dynamically
+		//		SteamLauncher.LaunchSteamGame(game.AppID);
+		//	}
 
-			// Hide header and game library, show the Return button in the toolbar.
-			HeaderGrid.Visibility = Visibility.Visible;
-			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
-			ReturnButton.Visibility = Visibility.Visible;
+		//	// Hide header and game library, show the Return button in the toolbar.
+		//	HeaderGrid.Visibility = Visibility.Visible;
+		//	GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+		//	ReturnButton.Visibility = Visibility.Visible;
 
-			await Task.Delay(5000);
-			await EmbedSteamVRSpectatorAsync();
-		}
+		//	await Task.Delay(5000);
+		//	//await EmbedSteamVRSpectatorAsync();
+		//}
 
 
 		//Henter VR View vinduet fra SteamVR og setter det inn/embedder i WPF vinduet
@@ -877,6 +882,117 @@ namespace HelseVestIKT_Dashboard
 			// Skjuler knappen for å vise sidemenyen igjen
 			VisKnapp.Visibility = Visibility.Collapsed;
 		}
-	}
+
+
+
+
+
+        private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is Game game)
+            {
+                // Use the AppID from the game object dynamically
+                SteamLauncher.LaunchSteamGame(game.AppID);
+            }
+
+			// ... kode for å lansere spillet ...
+            _vrActive = true;  // Sett flagget for at VR-delen skal vises
+
+            // Kjør VR-oppstartskoden om den ikke allerede er kjørt:
+            if (_d3d11ImageSource == null)
+            {
+                // Initialiser VR mirror texture osv.
+                await InitializeVRSpeil();
+            }
+
+			// Hide header and game library, show the Return button in the toolbar.
+            HeaderGrid.Visibility = Visibility.Visible;
+            GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
+            ReturnButton.Visibility = Visibility.Visible;
+            // Skjul UI-elementer om nødvendig, vis VR-visning, etc.
+        }
+
+        private async Task InitializeVRSpeil()
+        {
+
+
+            // Vent slik at spillet får tid til å starte opp i VR.
+            await Task.Delay(8000);
+
+            // Initialiser OpenVR i bakgrunnsmodus slik at du ikke tar over VR-kompositøren.
+            EVRInitError initError = EVRInitError.None;
+            var vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Background);
+            if (initError != EVRInitError.None)
+            {
+                MessageBox.Show("VR-initialisering i bakgrunn feilet: " + OpenVR.GetStringForHmdError(initError));
+                return;
+            }
+
+            if (OpenVR.Compositor == null)
+            {
+                MessageBox.Show("OpenVR.Compositor er fortsatt null.");
+                return;
+            }
+
+
+            // Få vindushåndtak, opprett D3D9-enhet, D3D11-enhet, mirror texture, osv.
+            IntPtr windowHandle = new WindowInteropHelper(System.Windows.Application.Current.MainWindow).Handle;
+            var d3d9Interop = new D3D9Interop(windowHandle);
+            _d3d11ImageSource = new D3D11ImageSource(d3d9Interop.D3D9Device);
+
+            var d3dDevice = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport);
+            var dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+            var vrMirrorTextureProvider = new VRMirrorTextureProvider();
+            SharpDX.Direct3D11.Texture2D mirrorTexture11 = vrMirrorTextureProvider.GetMirrorTexture(dxgiDevice, EVREye.Eye_Right);
+            //if (mirrorTexture11 == null)
+            //{
+            //             Console.WriteLine("Mirror texture er null. VR-miljøet eller OpenVR-kompositøren kan ikke levere en gyldig texture.");
+            //             // Håndter feilen, for eksempel ved å deaktivere VR-visning eller gå til fallback-modus.
+            //	await Task.Delay(5000);
+            //	Console.WriteLine("Prøver på nytt...");
+            //             mirrorTexture11 = vrMirrorTextureProvider.GetMirrorTexture(dxgiDevice, EVREye.Eye_Right);
+            //         }
+
+
+            int attempt = 0;
+            int maxAttempts = 5;
+
+            while (mirrorTexture11 == null && attempt < maxAttempts)
+            {
+                Console.WriteLine($"Forsøk {attempt + 1}: Prøver å hente mirror texture med øyet {EVREye.Eye_Right}...");
+                mirrorTexture11 = vrMirrorTextureProvider.GetMirrorTexture(dxgiDevice, EVREye.Eye_Right);
+
+                if (mirrorTexture11 == null)
+                {
+                    Console.WriteLine("Mirror texture er null. Vent 5 sekunder før nytt forsøk...");
+                    await Task.Delay(5000);
+                }
+
+                attempt++;
+            }
+
+            if (mirrorTexture11 == null)
+            {
+                Console.WriteLine("Klarte ikke å hente en gyldig mirror texture etter flere forsøk.");
+            }
+            else
+            {
+                Console.WriteLine("Gyldig mirror texture hentet!");
+            }
+
+            await Task.Delay(6000);  // Vent litt for å sikre at SteamVR er klart
+
+            _d3d11ImageSource.SetD3D11SharedTexture(mirrorTexture11);
+            MirrorImage.Source = _d3d11ImageSource;
+        }
+
+        private void UpdateMirrorImage(object sender, EventArgs e)
+        {
+            if (_vrActive)
+            {
+                _d3d11ImageSource?.InvalidateD3DImage();
+            }
+        }
+    }
 	}
 

@@ -29,38 +29,46 @@ namespace HelseVestIKT_Dashboard
         /// <param name="d3d11Texture">D3D11 delt tekstur</param>
         public void SetD3D11SharedTexture(SharpDX.Direct3D11.Texture2D d3d11Texture)
         {
-            // Hent det delte håndtaket fra D3D11-teksturen via DXGI
-            using (var resource = d3d11Texture.QueryInterface<SharpDX.DXGI.Resource>())
+            try
             {
-                IntPtr sharedHandle = resource.SharedHandle;
-                if (sharedHandle == IntPtr.Zero)
-                    throw new Exception("Teksturen er ikke delt (SharedHandle er null).");
-
-                // Hent teksturens dimensjoner (du må kjenne til format og størrelse)
                 var desc = d3d11Texture.Description;
-                // Merk: Formatkonvertering kan være nødvendig. Her antar vi Format.A8R8G8B8.
-                Format format9 = Format.A8R8G8B8;
-
-                // Opprett en D3D9-tekstur ved å bruke den delte handle
-                _d3d9SharedTexture = new Texture(
-                    _d3d9Device,
-                    desc.Width,
-                    desc.Height,
-                    1,
-                    Usage.RenderTarget,
-                    format9,
-                    Pool.Default,
-                    ref sharedHandle);
-
-                // Hent overflaten (surface) fra D3D9-teksturen
-                using (var surface = _d3d9SharedTexture.GetSurfaceLevel(0))
+                if ((desc.OptionFlags & SharpDX.Direct3D11.ResourceOptionFlags.Shared) == 0)
                 {
-                    _d3d9SurfacePtr = surface.NativePointer;
-                    // Sett denne overflaten som back buffer for D3DImage
-                    Lock();
-                    SetBackBuffer(D3DResourceType.IDirect3DSurface9, _d3d9SurfacePtr);
-                    Unlock();
+                    throw new Exception("Teksturen ble ikke opprettet med Shared flagget.");
                 }
+                else
+                {
+                    Console.WriteLine("Teksturen har Shared flagget.");
+                }
+
+                using (var resource = d3d11Texture.QueryInterface<SharpDX.DXGI.Resource>())
+                {
+                    IntPtr sharedHandle = resource.SharedHandle;
+                    if (sharedHandle == IntPtr.Zero)
+                        throw new Exception("Teksturen er ikke delt (SharedHandle er null).");
+
+                    _d3d9SharedTexture = new Texture(
+                        _d3d9Device,
+                        desc.Width,
+                        desc.Height,
+                        1,
+                        Usage.RenderTarget,
+                        Format.A8R8G8B8,
+                        Pool.Default,
+                        ref sharedHandle);
+
+                    using (var surface = _d3d9SharedTexture.GetSurfaceLevel(0))
+                    {
+                        _d3d9SurfacePtr = surface.NativePointer;
+                        Lock();
+                        SetBackBuffer(D3DResourceType.IDirect3DSurface9, _d3d9SurfacePtr);
+                        Unlock();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show("Feil i SetD3D11SharedTexture: " + ex.Message);
             }
         }
 
