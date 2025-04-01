@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
-        Title="Helse Vest IKT" Height="800" Width="1300">
+        Title="Helse Vest IKT" Height="800" Width="1300"
+        WindowState="Maximized">
 	<Window.Resources>
 		
 	
@@ -480,7 +481,11 @@ Margin="0,0,5,0" Visibility="Collapsed">
 									  Color="Black"
 									  Opacity="0.9"/>
 				</Grid.Effect>
-				<ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible"
+                <!-- Midlertidig test for D3DImage mirror -->
+                <Image x:Name="MirrorImage" Visibility="Visible" 
+           HorizontalAlignment="Center" VerticalAlignment="Center" 
+           Width="800" Height="600"/>
+                <ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 					<ItemsControl x:Name="GamesItemsControl" ItemsSource="{Binding Games}"

@@ -21,5 +21,11 @@ namespace HelseVestIKT_Dashboard
 
 		public string Genre { get; set; } = string.Empty;
 
-	}
+        // Nytt: Sti til installert spill (for ikke-Steam-spill)
+        public string InstallPath { get; set; } = string.Empty;
+
+        // Nytt: Skille mellom Steam og ikke-Steam-spill
+        public bool IsSteamGame { get; set; }
+
+    }
 }

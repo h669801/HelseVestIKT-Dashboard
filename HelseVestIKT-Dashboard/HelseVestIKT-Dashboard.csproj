@@ -78,6 +78,10 @@
 	<ItemGroup>
 	  <PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="SharpDX" Version="4.2.0" />
+	  <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
+	  <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+	  <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
 	  <PackageReference Include="SimpleWifi.netstandard" Version="2.0.0" />
 	  <PackageReference Include="SteamKit2" Version="3.0.2" />
 	  <PackageReference Include="ValveKeyValue" Version="0.12.0.391" />

@@ -87,8 +87,11 @@ namespace HelseVestIKT_Dashboard
 
 		private DispatcherTimer searchTimer;
 
+		private Wifi _wifi;
 
-		public MainWindow()
+        private D3D11ImageSource _d3d11ImageSource;
+
+        public MainWindow()
 		{
 			InitializeComponent();
 			StartMonitoringWifiSignal();
@@ -114,18 +117,38 @@ namespace HelseVestIKT_Dashboard
 			_vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 			_wifiSignalTimer = new DispatcherTimer();
 
-			InitializeOpenVR();
+			//InitializeOpenVR();
 			StartVRStatusTimer();
 			StartMonitoringWifiSignal();
-		}
+            //OpenVR.Compositor.ShowMirrorWindow();
+            
 
-		#region Wifi Connection
+        }
 
-		private void StartMonitoringWifiSignal()
+        public void ToggleMirror(object sender, RoutedEventArgs e)
+        {
+            if (OpenVR.Compositor == null) return;
+
+            if (OpenVR.Compositor.IsMirrorWindowVisible())
+            {
+                OpenVR.Compositor.HideMirrorWindow();
+                Console.WriteLine("Mirror Window Hidden");
+            }
+            else
+            {
+                OpenVR.Compositor.ShowMirrorWindow();
+                Console.WriteLine("Mirror Window Shown");
+            }
+        }
+
+        #region Wifi Connection
+
+        private void StartMonitoringWifiSignal()
 		{
-			_wifiSignalTimer = new DispatcherTimer
+            _wifi = new Wifi();
+            _wifiSignalTimer = new DispatcherTimer
 			{
-				Interval = TimeSpan.FromSeconds(5) // update every 2 seconds
+				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
 			};
 			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
 			_wifiSignalTimer.Start();
@@ -153,8 +176,7 @@ namespace HelseVestIKT_Dashboard
 
 		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
 		{
-			Wifi wifi = new();
-			var accessPoints = wifi.GetAccessPoints();
+			var accessPoints = _wifi.GetAccessPoints();
 			var connected = accessPoints.FirstOrDefault(ap => ap.IsConnected);
 
 			if (connected != null)
@@ -204,23 +226,73 @@ namespace HelseVestIKT_Dashboard
 
 		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
+			InitializeOpenVR();
 			if (_gamesLoaded)
 				return;
 
 			_gamesLoaded = true;
 
-			SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
-			var fetchedGames = await steamApi.GetSteamGamesAsync();
-			foreach (var game in fetchedGames)
-			{
-				Games.Add(game);
-			}
+            //SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
+            //var fetchedGames = await steamApi.GetSteamGamesAsync();
+            //foreach (var game in fetchedGames)
+            //{
+            //	Games.Add(game);
+            //}
 
-			await LoadGameAsync(steamApi);
+            //offline henting av spill
+            OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
+            List<Game> allGames = steamGamesManager.GetOfflineSteamGames(@"C:\Program Files (x86)\Steam");
+            Console.WriteLine($"Found {allGames.Count} games.");
+            foreach (var game in allGames)
+            {
+                Games.Add(game);
+				if (game.IsSteamGame)
+				{
+					game.GameImage = GameImage.LoadLocalGameImage(game.AppID);
+				}
+				else
+				{
+					game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
+				}
+                Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
+            }
+            // Få vindushåndtak
+            IntPtr windowHandle = new WindowInteropHelper(System.Windows.Application.Current.MainWindow).Handle;
+            var d3d9Interop = new D3D9Interop(windowHandle);
 
-		}
+            // Opprett D3D11ImageSource med den D3D9-enheten
+            _d3d11ImageSource = new D3D11ImageSource(d3d9Interop.D3D9Device);
 
-		public event PropertyChangedEventHandler? PropertyChanged;
+            var d3dDevice = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware);
+            var dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+            var vrMirrorTextureProvider = new VRMirrorTextureProvider();
+
+
+            // Hent D3D11 mirror texture fra OpenVR
+            // Forutsatt at du har en metode GetMirrorTexture som returnerer en SharpDX.Direct3D11.Texture2D:
+            SharpDX.Direct3D11.Texture2D mirrorTexture11 = vrMirrorTextureProvider.GetMirrorTexture(dxgiDevice, EVREye.Eye_Left);
+
+            // Sett teksturen i D3D11ImageSource
+            _d3d11ImageSource.SetD3D11SharedTexture(mirrorTexture11);
+
+            // Sett D3DImage som kilde for Image-kontrollen
+            MirrorImage.Source = _d3d11ImageSource;
+
+            // Start render-loopen; her bruker vi CompositionTarget.Rendering som eksempel
+            CompositionTarget.Rendering += UpdateMirrorImage;
+        }
+
+        private void UpdateMirrorImage(object sender, EventArgs e)
+        {
+            // Oppdater bildet
+            _d3d11ImageSource?.InvalidateD3DImage();
+        }
+
+
+
+
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 		protected void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -652,22 +724,36 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-		private async Task LoadGameAsync(SteamApi steamApi)
+		private async Task LoadGameAsync()
 		{
-			var loadedGames = await steamApi.GetSteamGamesAsync();
+            //var loadedGames = await steamApi.GetSteamGamesAsync();
 
 
-			AllGames.Clear();
-			Games.Clear();
+            //AllGames.Clear();
+            //Games.Clear();
 
-			foreach (var game in loadedGames)
-			{
-				AllGames.Add(game);
-				Games.Add(game);
-			}
+            //foreach (var game in loadedGames)
+            //{
+            //AllGames.Add(game);
+            //Games.Add(game);
+            //}
 
 
-		}
+            OfflineSteamGamesManager offlineManager = new OfflineSteamGamesManager();
+            string steamPath = @"C:\Program Files (x86)\Steam"; // Endre hvis nødvendig
+
+            var offlineGames = offlineManager.GetOfflineSteamGames(steamPath);
+
+            AllGames.Clear();
+            Games.Clear();
+
+            foreach (var game in offlineGames)
+            {
+                AllGames.Add(game);
+                Games.Add(game);
+            }
+
+        }
 
 		#endregion
 
