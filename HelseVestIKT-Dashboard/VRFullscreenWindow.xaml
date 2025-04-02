@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HelseVestIKT_Dashboard"
+		xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
         mc:Ignorable="d"
         Title="VRFullscreenWindow" Height="450" Width="800"
 		WindowStyle="None"
@@ -11,5 +12,8 @@
 
 	<Grid x:Name="FullscreenGrid" ClipToBounds="True">
 		<TextBlock Text="LIVE VIEW" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+		<!-- VR-Live-visning -->
+		<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed"
+              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 	</Grid>
 </Window>

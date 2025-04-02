@@ -27,7 +27,15 @@ using SimpleWifi;
 using System.Linq;
 using WPoint = System.Windows.Point;
 using System.Configuration;
-using System.Runtime.InteropServices;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using System.Windows.Forms.Integration;
+using SteamKit2.Internal;
+using NAudio.CoreAudioApi;
+using Application = System.Windows.Application;
 
 namespace HelseVestIKT_Dashboard
 {
@@ -109,7 +117,7 @@ namespace HelseVestIKT_Dashboard
 
 		private bool _gamesLoaded = false;
 
-		public VREquipmentStatusViewModel VREquipmentStatus { get; set; } = new VREquipmentStatusViewModel();
+		public VRStatusManager VREquipmentStatus { get; set; } = new VRStatusManager();
 		private DispatcherTimer? vrStatusTimer;
 
 		private ThreadingTimer? _vrStatusTimer;
@@ -125,7 +133,41 @@ namespace HelseVestIKT_Dashboard
 
 		private DispatcherTimer searchTimer;
 
-		private VRFullscreenWindow? _fullScreenWindow = null;
+		private bool isFullscreen = false;
+		private VRFullscreenWindow vrFullscreenWindow;
+
+		private Wifi wifi;
+
+		private string _currentPlayer;
+		public string CurrentPlayer
+		{
+			get => _currentPlayer;
+			set
+			{
+				if (_currentPlayer != value)
+				{
+					_currentPlayer = value;
+					OnPropertyChanged(nameof(CurrentPlayer));
+				}
+			}
+		}
+
+		private string _currentStatus;
+		public string CurrentStatus
+		{
+			get => _currentStatus;
+			set
+			{
+				if (_currentStatus != value)
+				{
+					_currentStatus = value;
+					OnPropertyChanged(nameof(CurrentStatus));
+				}
+			}
+		}
+
+		private GameStatusManager _gameStatusManager;
+		_gameStatusManager = new GameStatusManager(AllGames);
 
 
 		public MainWindow()
@@ -142,6 +184,14 @@ namespace HelseVestIKT_Dashboard
 			// Oppretter timeren og sett intervall til 500ms
 			searchTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
 			searchTimer.Tick += SearchTimer_Tick;
+
+			_gameStatusManager = new GameStatusManager();
+
+			// Set up a timer to periodically update the game status
+			DispatcherTimer gameStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+			gameStatusTimer.Tick += (s, e) => UpdateGameStatus();
+			gameStatusTimer.Start();
+
 			// Oppdaterer CurrentTime hvert sekund
 			DispatcherTimer timer = new DispatcherTimer();
 			timer.Interval = TimeSpan.FromSeconds(1);
@@ -159,13 +209,23 @@ namespace HelseVestIKT_Dashboard
 			StartMonitoringWifiSignal();
 		}
 
-		#region Wifi Connection
+		private void UpdateGameStatus()
+		{
+			// Use the GameStatusManager to update the game and status
+			_gameStatusManager.UpdateCurrentGameAndStatus();
+
+			// Update the UI with the current game and status
+			CurrentPlayer = _gameStatusManager.CurrentPlayer;
+			CurrentStatus = _gameStatusManager.CurrentStatus;
+		}
+
 
 		private void StartMonitoringWifiSignal()
 		{
+			wifi = new Wifi();
 			_wifiSignalTimer = new DispatcherTimer
 			{
-				Interval = TimeSpan.FromSeconds(5) // update every 2 seconds
+				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
 			};
 			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
 			_wifiSignalTimer.Start();
@@ -177,7 +237,8 @@ namespace HelseVestIKT_Dashboard
 
 			if (signalStrength >= 78)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_4.png";
-			else if (signalStrength >= 52)
+			else if (signalStrength >=
+				52)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_3.png";
 			else if (signalStrength >= 26)
 				iconPath = "pack://application:,,,/Bilder/wifi_bar_2.png";
@@ -193,7 +254,6 @@ namespace HelseVestIKT_Dashboard
 
 		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
 		{
-			Wifi wifi = new();
 			var accessPoints = wifi.GetAccessPoints();
 			var connected = accessPoints.FirstOrDefault(ap => ap.IsConnected);
 
@@ -212,9 +272,6 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-
-
-		#endregion
 
 		private void InitializeOpenVR()
 		{
@@ -248,19 +305,23 @@ namespace HelseVestIKT_Dashboard
 				return;
 
 			_gamesLoaded = true;
-
-			SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
+			string steamAPIKey = "384082C6759AAF7B6974A9CCE1ECF6CE";
+            string steamID = "76561198081888308";
+            SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
 			var fetchedGames = await steamApi.GetSteamGamesAsync();
-			foreach (var game in fetchedGames)
-			{
-				Games.Add(game);
-			}
+            GameDetailsFetcher gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
 
-			await LoadGameAsync(steamApi);
+            var tasks = fetchedGames.Select(async game =>
+            {
+                await gameDetailsFetcher.AddDetailsAsync(game);
+                Application.Current.Dispatcher.Invoke(() => Games.Add(game));
+            });
+            await Task.WhenAll(tasks);
+            await LoadGameAsync(steamApi);
 
-		}
+        }
 
-		public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 		protected void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -280,7 +341,7 @@ namespace HelseVestIKT_Dashboard
 			HeaderGrid.Visibility = Visibility.Visible;
 			GameLibraryScrollViewer.Visibility = Visibility.Visible;
 			ReturnButton.Visibility = Visibility.Collapsed;
-			VRHost.Visibility = Visibility.Collapsed;
+			//VRHost.Visibility = Visibility.Collapsed;
 		}
 
 		private void PauseKnapp_Click(object sender, RoutedEventArgs e)
@@ -383,7 +444,7 @@ namespace HelseVestIKT_Dashboard
 		private void StartVRStatusTimer()
 		{
 			vrStatusTimer = new DispatcherTimer();
-			vrStatusTimer.Interval = TimeSpan.FromSeconds(5);
+			vrStatusTimer.Interval = TimeSpan.FromSeconds(7);
 			vrStatusTimer.Tick += VrStatusTimer_Tick;
 			vrStatusTimer.Start();
 		}
@@ -439,6 +500,7 @@ namespace HelseVestIKT_Dashboard
 			{
 				ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
 				float battery = vrSystem.GetFloatTrackedDeviceProperty(rightIndex, ETrackedDeviceProperty.Prop_DeviceBatteryPercentage_Float, ref error);
+				Console.WriteLine($"Right Controller battery: {battery}, error {error}");
 				VREquipmentStatus.RightControllerBatteryPercentage = battery * 100;
 			}
 			else
@@ -505,14 +567,24 @@ namespace HelseVestIKT_Dashboard
 			VolumePopup.IsOpen = true;
 		}
 
-		private void VolumePopup_MouseLeave(object sender, MouseEventArgs e)
+		private async void VolumePopup_MouseLeave(object sender, MouseEventArgs e)
 		{
-			// When leaving the popup, close it.
-			VolumePopup.IsOpen = false;
+			await Task.Delay(100);
+
+			if (!VolumePopup.IsMouseOver && !SpeakerButton.IsMouseOver)
+			{
+				VolumePopup.IsOpen = false;
+			}
 		}
 
 		private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
+
+			float volumeScalar = (float)(e.NewValue / 100.0);
+			var enumerator = new MMDeviceEnumerator();
+			MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+			device.AudioEndpointVolume.MasterVolumeLevelScalar = volumeScalar;
+
 			if (VolumeStatusTextBlock == null)
 				return;
 
@@ -537,6 +609,7 @@ namespace HelseVestIKT_Dashboard
 				volumeStatusTimer.Stop();
 			}
 			volumeStatusTimer.Start();
+
 		}
 
 		private CustomPopupPlacement[] VolumePopupPlacementCallback(System.Windows.Size popupSize, System.Windows.Size targetSize, WPoint offset)
@@ -550,8 +623,32 @@ namespace HelseVestIKT_Dashboard
 
 		private void FullScreenButton_Click(object sender, RoutedEventArgs e)
 		{
-		
-			ToggleVRFullScreenMode();
+
+			if (!isFullscreen)
+			{
+				if (VRHost.Parent is System.Windows.Controls.Panel parentPanel)
+				{
+					parentPanel.Children.Remove(VRHost);
+				}
+
+				vrFullscreenWindow = new VRFullscreenWindow();
+				vrFullscreenWindow.SetVRContent(VRHost);
+
+				VRFullscreenContainer.Content = vrFullscreenWindow.Content;
+				VRFullscreenContainer.Visibility = Visibility.Visible;
+
+			}
+			else
+			{
+				// Avslutt fullskjerm: fjern VRHost fra VRFullscreenWindow
+				vrFullscreenWindow.RemoveVRContent(VRHost);
+				VRFullscreenContainer.Content = null;
+				VRFullscreenContainer.Visibility = Visibility.Collapsed;
+
+				// Legg VRHost tilbake i den opprinnelige containeren
+				MainContentGrid.Children.Add(VRHost);
+			}
+
 		}
 
 		private void ExitButton_Click(object sender, RoutedEventArgs e)
@@ -663,7 +760,7 @@ namespace HelseVestIKT_Dashboard
 		private void ApplyGenreFilter()
 		{
 			// For example, check if a specific genre checkbox is checked.
-			bool filterAction = CheckBoxFlerspill.IsChecked == true;
+			bool filterAction = CheckBoxAction.IsChecked == true;
 			bool filterAdventure = CheckBoxEventyr.IsChecked == true;
 
 			var filteredGames = AllGames.Where(game =>
@@ -727,8 +824,9 @@ namespace HelseVestIKT_Dashboard
 
 			// Hide header and game library, show the Return button in the toolbar.
 			HeaderGrid.Visibility = Visibility.Visible;
+			StatusBar.Visibility = Visibility.Visible;	
 			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
-			VRHost.Visibility = Visibility.Visible;
+			// VRHost.Visibility = Visibility.Visible;
 			ReturnButton.Visibility = Visibility.Visible;
 
 			await Task.Delay(5000);
@@ -865,13 +963,7 @@ namespace HelseVestIKT_Dashboard
 				{
 					return false;
 				}
-				// Example: apply checkbox filters
-				if (CheckBoxSteamSpill.IsChecked == true && !game.IsSinglePlayer)
-					return false;
-				if (CheckBoxHelseVestSpill.IsChecked == true && !game.IsMultiplayer)
-					return false;
-				// Add additional conditions as needed...
-
+				
 				return true;
 			}).ToList();
 
@@ -883,36 +975,6 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-		private void ToggleVRFullScreenMode()
-		{
-			if (_fullScreenWindow == null)
-			{
-				// Enter fullscreen mode:
-				// Remove the VRHost from its current parent.
-				var parent = VisualTreeHelper.GetParent(VRHost) as System.Windows.Controls.Panel;
-				if (parent != null)
-				{
-					parent.Children.Remove(VRHost);
-				}
-
-				// Create and show the fullscreen window.
-				_fullScreenWindow = new VRFullscreenWindow();
-				_fullScreenWindow.FullscreenGrid.Children.Add(VRHost);
-				_fullScreenWindow.Show();
-			}
-			else
-			{
-				// Exit fullscreen mode:
-				// Remove the VRHost from the fullscreen window.
-				_fullScreenWindow.FullscreenGrid.Children.Remove(VRHost);
-
-				// Re-add it to its original container (assumed here to be GameLibraryArea).
-				GameLibraryArea.Children.Add(VRHost);
-
-				_fullScreenWindow.Close();
-				_fullScreenWindow = null;
-			}
-		}
 
 		private void SimulerEscapeTasteTrykk()
 		{
@@ -950,4 +1012,3 @@ namespace HelseVestIKT_Dashboard
 
 	}
 }
-

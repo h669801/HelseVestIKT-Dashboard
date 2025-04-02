@@ -11,23 +11,41 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Forms.Integration;
 
 namespace HelseVestIKT_Dashboard
 {
-    /// <summary>
-    /// Interaction logic for VRFullscreenWindow.xaml
-    /// </summary>
-    /// 
+	/// <summary>
+	/// Interaction logic for VRFullscreenWindow.xaml
+	/// </summary>
+	/// 
 
-   
-    public partial class VRFullscreenWindow : Window
+
+	public partial class VRFullscreenWindow : Window
     {
 
-        public VRFullscreenWindow()
+		private VRFullscreenWindow _fullScreenWindow = null;
+	
+		public VRFullscreenWindow()
         {
             InitializeComponent();
         }
 
+		public void SetVRContent(WindowsFormsHost vrHost)
+		{
+			FullscreenGrid.Children.Clear();
+			FullscreenGrid.Children.Add(vrHost);
+			vrHost.Visibility = Visibility.Visible;	
+
+		}
+
+		public void RemoveVRContent(WindowsFormsHost vrHost)
+		{
+			if (FullscreenGrid.Children.Contains(vrHost))
+			{
+				FullscreenGrid.Children.Remove(vrHost);
+			}
+		}
 
 	}
 }
