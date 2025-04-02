@@ -5,7 +5,7 @@ using Valve.VR;
 
 namespace HelseVestIKT_Dashboard
 {
-	public class VREquipmentStatusViewModel : INotifyPropertyChanged
+	public class VRStatusManager : INotifyPropertyChanged
 	{
 		private bool _isHeadsetConnected;
 		public bool IsHeadsetConnected

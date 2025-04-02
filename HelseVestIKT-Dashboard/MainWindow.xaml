@@ -5,7 +5,7 @@
         Title="Helse Vest IKT" Height="800" Width="1300"
 		WindowState="Maximized">
 
-	<Window.Resources>
+	<Window.Resources> 
 
 		<FontFamily x:Key="SourceSansFont">Source Sans Pro</FontFamily>
 
@@ -88,9 +88,60 @@
 			<Setter Property="Foreground" Value="#003087"/>
 		</Style>
 
+       <!-- Test Style for checkbox -->
+		<Style TargetType="CheckBox">
+			<Setter Property="Template">
+				<Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="border"
+                    Width="24"
+                    Height="24"
+                    CornerRadius="6"
+                    Background="White"
+                    BorderThickness="2"
+                    BorderBrush="Gray">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Opacity="0.3"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <Rectangle x:Name="checkBackground"
+                               Fill="White"
+                               RadiusX="6" RadiusY="6"/>
+                                    <Path x:Name="checkMark"
+                          Data="M4,12 L10,18 L20,6"
+                          Stroke="Black"
+                          StrokeThickness="2"
+                          Visibility="Collapsed"/>
+                                </Grid>
+                            </Border>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <!-- Når CheckBox er sjekket -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkBackground" Property="Fill" Value="LightGray"/>
+                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <!-- Når musen er over CheckBox -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#EFEFEF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#003087"/>
+                            </Trigger>
+
+                            <!-- Når CheckBox er deaktivert -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
 		<!-- Base-stil for CheckBox med avrundede hjørner -->
-		<Style x:Key="RoundedCheckBoxStyle" TargetType="CheckBox">
+		 <Style x:Key="RoundedCheckBoxStyle" TargetType="CheckBox">
 			<Setter Property="Margin" Value="5"/>
 			<Setter Property="Template">
 				<Setter.Value>
@@ -129,7 +180,7 @@
 			<Setter Property="FontFamily" Value="{StaticResource SourceSansFont}"/>
 			<Setter Property="Foreground" Value="#003087"/>
 		</Style>
-
+		
 	</Window.Resources>
 
 	<Grid Background="#F6F6F6">
@@ -143,10 +194,10 @@
 		</Grid.RowDefinitions>
 
 		<!-- TOPPMENY / HEADER -->
-		<Border Grid.Row="0" Background="White" BorderThickness="0,0,0,1" BorderBrush="#DDD">
+		<Border x:Name="ToolbarGrid" Grid.Row="0" Background="White" BorderThickness="0,0,0,1" BorderBrush="#DDD">
 			<Border.Effect>
 				<DropShadowEffect BlurRadius="6"
-								  ShadowDepth="10"
+								  ShadowDepth="4"
 								  Direction="270"
 								  Color="Black"
 								  Opacity="0.9"/>
@@ -169,10 +220,10 @@
 						<!-- Headset -->
 						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,10">
 							<Border x:Name="HeadsetStatusBorder" BorderThickness="5" CornerRadius="25"
-                                Width="60" Height="60" BorderBrush="Red">
+                                Width="60" Height="60">
 								<Border.Style>
 									<Style TargetType="Border">
-										<Setter Property="BorderBrush" Value="Green"/>
+										<Setter Property="BorderBrush" Value="Red"/>
 										<Style.Triggers>
 											<!-- Rød kant hvis ikke tilkoblet -->
 											<DataTrigger Binding="{Binding VREquipmentStatus.IsHeadsetConnected}" Value="True">
@@ -189,18 +240,32 @@
 									<Image Source="Bilder/vr_headset.png" Width="32" Height="32"/>
 								</Button>
 							</Border>
+							
 							<!-- Viser batteriprosent -->
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}"
-                                   HorizontalAlignment="Center" FontSize="12" Margin="0,5"/>
+							<TextBlock 
+									   HorizontalAlignment="Center" FontSize="12" Margin="0,5">
+								<TextBlock.Style>
+									<Style TargetType="TextBlock" BasedOn="{StaticResource SourceSansTextBlockStyle}">
+										<Setter Property="Text" 
+												Value="{Binding VREquipmentStatus.HeadsetBatteryPercentage, StringFormat={}{0:F0}%}"/>
+										<Style.Triggers>
+											<!-- Dersom headset ikk er koblet til "Ikke tilkoblet" -->
+											<DataTrigger Binding="{Binding VREquipmentStatus.IsHeadsetConnected}" Value="False">
+												<Setter Property="Text" Value="Ikke tilkoblet"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
 						</StackPanel>
 
 						<!-- Venstre kontroller -->
 						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,10">
 							<Border x:Name="LeftControllerStatusBorder" BorderThickness="5" CornerRadius="25"
-                                Width="60" Height="60" BorderBrush="Red">
+                                Width="60" Height="60">
 								<Border.Style>
 									<Style TargetType="Border">
-										<Setter Property="BorderBrush" Value="Green"/>
+										<Setter Property="BorderBrush" Value="Red"/>
 										<Style.Triggers>
 											<DataTrigger Binding="{Binding VREquipmentStatus.IsLeftControllerConnected}" Value="True">
 												<Setter Property="BorderBrush" Value="Green"/>
@@ -215,17 +280,33 @@
 									<Image Source="Bilder/kontroller_venstre.png" Width="31" Height="31"/>
 								</Button>
 							</Border>
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}"
-                                   HorizontalAlignment="Center" FontSize="12" Margin="0,5"/>
+							
+							<!-- Viser batteriprosent/status -->
+							<!-- Viser batteriprosent -->
+							<TextBlock 
+								   HorizontalAlignment="Center" FontSize="12" Margin="0,5">
+								<TextBlock.Style>
+									<Style TargetType="TextBlock" BasedOn="{StaticResource SourceSansTextBlockStyle}">
+										<Setter Property="Text" 
+											Value="{Binding VREquipmentStatus.LeftControllerBatteryPercentage, StringFormat={}{0:F0}%}"/>
+										<Style.Triggers>
+											<!-- Dersom headset ikk er koblet til "Ikke tilkoblet" -->
+											<DataTrigger Binding="{Binding VREquipmentStatus.IsLeftControllerConnected}" Value="False">
+												<Setter Property="Text" Value="Ikke tilkoblet"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
 						</StackPanel>
 
 						<!-- Høyre kontroller -->
 						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="10,10">
 							<Border x:Name="RightControllerStatusBorder" BorderThickness="5" CornerRadius="25"
-                                Width="60" Height="60" BorderBrush="Red">
+                                Width="60" Height="60">
 								<Border.Style>
 									<Style TargetType="Border">
-										<Setter Property="BorderBrush" Value="Green"/>
+										<Setter Property="BorderBrush" Value="Red"/>
 										<Style.Triggers>
 											<DataTrigger Binding="{Binding VREquipmentStatus.IsRightControllerConnected}" Value="True">
 												<Setter Property="BorderBrush" Value="Green"/>
@@ -240,38 +321,59 @@
 									<Image Source="Bilder/kontroller.png" Width="31" Height="31"/>
 								</Button>
 							</Border>
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding VREquipmentStatus.RightControllerBatteryPercentage, StringFormat={}{0:F0}%}"
-                                   HorizontalAlignment="Center" FontSize="12" Margin="0,5"/>
+							
+							<!-- Viser batteriprosent -->
+							<!-- Viser batteriprosent -->
+							<!-- Viser batteriprosent -->
+							<TextBlock 
+								   HorizontalAlignment="Center" FontSize="12" Margin="0,5">
+								<TextBlock.Style>
+									<Style TargetType="TextBlock" BasedOn="{StaticResource SourceSansTextBlockStyle}">
+										<Setter Property="Text" 
+											Value="{Binding VREquipmentStatus.RightControllerBatteryPercentage, StringFormat={}{0:F0}%}"/>
+										<Style.Triggers>
+											<!-- Dersom headset ikk er koblet til "Ikke tilkoblet" -->
+											<DataTrigger Binding="{Binding VREquipmentStatus.IsRightControllerConnected}" Value="False">
+												<Setter Property="Text" Value="Ikke tilkoblet"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
 						</StackPanel>
 					</StackPanel>
 
-					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Click="Romkalibrering_Click" Height="45" Margin="0,0,0,15">
+					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Click="Romkalibrering_Click" Height="45" Margin="10,0,0,15">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/>
 							<Image Source="/Bilder/accessibility.png" Width="30" Height="30" HorizontalAlignment="Right" Margin="10,0,0,0" />
 						</StackPanel>
 					</Button>
 
-					<Popup x:Name="KalibreringPopup" Placement="Center" StaysOpen="True" PlacementTarget="{Binding ElementName=GameLibraryScrollViewer}" Visibility="Collapsed">
-						<Border CornerRadius="8" Background="White" BorderBrush="Gray" BorderThickness="1" Padding="5">
+					<Popup x:Name="KalibreringPopup"
+       Placement="Center"
+       StaysOpen="True"
+       PlacementTarget="{Binding ElementName=GameLibraryScrollViewer}"
+       Visibility="Collapsed">
+						<Border CornerRadius="8" Background="White" BorderBrush="Gray" BorderThickness="1" Padding="10">
 							<Border.Effect>
-								<DropShadowEffect BlurRadius="6"
-												  ShadowDepth="2"
-												  Direction="270"
-												  Color="Black"
-												  Opacity="0.9"/>
+								<DropShadowEffect BlurRadius="10"
+                              ShadowDepth="4"
+                              Direction="270"
+                              Color="Black"
+                              Opacity="0.5"/>
 							</Border.Effect>
-							<StackPanel Orientation="Horizontal" Height="Auto">
-								<Button Style="{StaticResource SquareRoundedButtonStyle}">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering" Margin="5,7,0,0"/>
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
 								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering" Margin="5,7,0,0"/>
+								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering"/>
 								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill" Margin="5,7,0,0"/>
+								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill"/>
 								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="ResetButton_Click" Margin="5,7,0,0">
+								<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="ResetButton_Click" Margin="5">
 									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Tilbake"/>
 								</Button>
 							</StackPanel>
@@ -281,13 +383,12 @@
 
 
 
+
 					<Button x:Name="VisKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Height="45" Margin="10,0,0,15" Visibility="Collapsed" Click="VisKnapp_Click">
 						<StackPanel>
 							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Vis sidemeny"/>
 						</StackPanel>
 					</Button>
-
-
 				</StackPanel>
 
 
@@ -361,36 +462,38 @@
 				<!-- Høyre del: wifi, volum, klokke, avslutt-knapp (alle pilleformet) -->
 				<StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
 					<!-- Klokke -->
-
 					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding CurrentTime}" VerticalAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="10,0"/>
-					<!-- Wifi signal-->
-					<Image x:Name="WifiSignalIcon" Width="30" Height="30"/>
-
+					
 					<!-- Volumknapp -->
 					<Button Style="{StaticResource SquareRoundedButtonStyle}" BorderThickness="0" x:Name="SpeakerButton"
-                  MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
+MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 						<StackPanel Orientation="Horizontal">
 							<Image Source="Bilder/speaker_popup.png" Width="24" Height="24"/>
 						</StackPanel>
 					</Button>
 
+					<!-- Wifi signal-->
+					<Image x:Name="WifiSignalIcon" Width="30" Height="30" Margin="0,0,10,0"/>
+
+					
+
 					<!-- Popup for volum -->
 					<Popup x:Name="VolumePopup" Placement="Custom"
                  CustomPopupPlacementCallback="VolumePopupPlacementCallback"
                  PlacementTarget="{Binding ElementName=SpeakerButton}"
-                 AllowsTransparency="True" StaysOpen="False"
+                 AllowsTransparency="True" 
                  MouseEnter="VolumePopup_MouseEnter" MouseLeave="VolumePopup_MouseLeave">
 						<Border CornerRadius="8" Background="White" BorderBrush="Gray" BorderThickness="1" Padding="5">
 							<StackPanel>
 								<Slider x:Name="VolumeSlider" Width="100" Minimum="0" Maximum="100" Value="50"
                         ToolTip="Juster volum" ValueChanged="VolumeSlider_ValueChanged"/>
-								<TextBlock x:Name="VolumeStatusTextBlock" Text="50%" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+								<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" x:Name="VolumeStatusTextBlock" Text="50%" HorizontalAlignment="Center" Margin="5,5,0,0"/>
 							</StackPanel>
 						</Border>
 					</Popup>
 
 					<!-- Fullskjerm knapp -->
-					<Button x:Name="FullscreenButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="42" Height="40" Click="FullScreenButton_Click">
+					<Button x:Name="FullScreenButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="42" Height="40" Click="FullScreenButton_Click">
 						<Image Source="/Bilder/fullskjerm.png" Width="21" Height="24"/>
 					</Button>
 					<!-- Avslutt-knapp -->
@@ -403,7 +506,7 @@
 
 		<!-- Status, Spiller nå, knapper -->
 
-		<Grid Grid.Row="1" Height="50" Background="White" >
+		<Grid x:Name="StatusBar" Grid.Row="1" Height="50" Background="White" Visibility="Collapsed" >
 			<Grid.Effect>
 				<DropShadowEffect BlurRadius="6"
 								  ShadowDepth="2"
@@ -454,7 +557,7 @@ Margin="0,0,5,0" Visibility="Collapsed">
 					</StackPanel>
 				</Button>
 
-				<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="NodStoppKnapp" Width="105" Click="NodStoppKnapp_Click">
+				<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="NodStoppKnapp" Width="105" Click="Nodstopp_Click">
 					<StackPanel Orientation="Horizontal">
 						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Nødstopp" Margin="0,0,0,0"/>
 						<Image Source="/Bilder/nodstopp_knapp.png" Height="18" Width="18"/>
@@ -466,7 +569,7 @@ Margin="0,0,5,0" Visibility="Collapsed">
 		</Grid>
 
 		<!-- HOVEDINNHOLD -->
-		<Grid Grid.Row="2">
+		<Grid Grid.Row="2" x:Name="MainContentGrid">
 			<Grid.ColumnDefinitions>
 				<!-- Sidemeny: Bredden settes til 250 når den er synlig -->
 				<ColumnDefinition x:Name="SideMenyColumn" Width="250"/>
@@ -476,38 +579,42 @@ Margin="0,0,5,0" Visibility="Collapsed">
 
 			<!-- SIDEMENY -->
 			<Border x:Name="SideMenu" Grid.Column="0" Background="White" BorderThickness="0,0,1,0" BorderBrush="#DDD">
-				<Border.Effect>
-					<DropShadowEffect BlurRadius="6" ShadowDepth="10" Direction="270" Color="Black" Opacity="0.9"/>
-				</Border.Effect>
-				<StackPanel Orientation="Vertical">
-					<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
-                 Text="Søk etter spill..."
-                 Foreground="#888"
-                 GotFocus="SearchBox_GotFocus"
-                 LostFocus="SearchBox_LostFocus"
-                 TextChanged="SearchBox_TextChanged"/>
-					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxHelseVestSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Helse Vest Spill" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxDiverseSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Diverse spill" Margin="10,5,0,0"/>
+		<Border.Effect>
+			<DropShadowEffect BlurRadius="0" ShadowDepth="5" Direction="0" Color="Black" Opacity="0.9"/>
+		</Border.Effect>
+		<StackPanel Orientation="Vertical">
+			<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
+         Text="Søk etter spill..."
+         Foreground="#888"
+         GotFocus="SearchBox_GotFocus"
+         LostFocus="SearchBox_LostFocus"
+         TextChanged="SearchBox_TextChanged"/>
+			<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0" />
+            <CheckBox x:Name="CheckBoxHelseVestSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre Spill" Margin="10,5,0,0" />
+            <Separator Margin="10,10,10,10"/>
+			<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
+            <CheckBox x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
+            <CheckBox x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
+            <CheckBox x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
+            <CheckBox x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
+            <CheckBox x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
+            <CheckBox x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
+            <Separator Margin="10,10,10,10"/>
+			<CheckBox x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
+			<CheckBox x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
 					<Separator Margin="10,10,10,10"/>
-					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxHelse" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Helse" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxTrening" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Trening" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspill" Margin="10,5,0,0"/>
-					<Separator Margin="10,10,10,10"/>
-					<CheckBox x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
-					<CheckBox x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
-					<Separator Margin="10,10,10,10"/>
-					<ComboBox ItemsSource="{Binding SpillKategorier}" SelectedItem="{Binding ValgtKategorier}" DisplayMemberPath="Name" Width="200" Margin="10"/>
 					<Button Content="Filtrer" Style="{DynamicResource SquareRoundedButtonStyle}"
-        HorizontalAlignment="Center" VerticalAlignment="Center" Click="ApplyFilter_Click"/>
-					<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
-                HorizontalAlignment="Center" VerticalAlignment="Center" Click="SkjulKnapp_Click"/>
-				</StackPanel>
-			</Border>
+HorizontalAlignment="Center" VerticalAlignment="Center" Click="ApplyFilter_Click"/>
+			<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
+        HorizontalAlignment="Center" VerticalAlignment="Center" Click="SkjulKnapp_Click"/>
+		</StackPanel>
+	</Border>
 
 			<ItemsControl ItemsSource="{Binding ValgtKategori.Games}">
 				<ItemsControl.ItemTemplate>
@@ -529,8 +636,7 @@ Margin="0,0,5,0" Visibility="Collapsed">
 				<ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-					<ItemsControl x:Name="GamesItemsControl" ItemsSource="{Binding Games}"
-              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+					<ItemsControl x:Name="GamesItemsControl" ItemsSource="{Binding Games}" HorizontalContentAlignment="Stretch">
 						<ItemsControl.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel HorizontalAlignment="Stretch"/>
@@ -555,10 +661,10 @@ Margin="0,0,5,0" Visibility="Collapsed">
 						</ItemsControl.ItemTemplate>
 					</ItemsControl>
 				</ScrollViewer>
-				<!-- VR-Live-visning -->
 				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed"
-                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 			</Grid>
+			<ContentControl x:Name="VRFullscreenContainer" Visibility="Collapsed"/>
 		</Grid>
 	</Grid>
 </Window>
