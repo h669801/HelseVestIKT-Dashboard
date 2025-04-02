@@ -87,5 +87,56 @@ namespace HelseVestIKT_Dashboard
 				return null;
 			}
 		}
-	}
+
+        // Metode for å laste ikon fra en exe-fil
+        public static BitmapImage? LoadIconFromExe(string exePath)
+        {
+            // Fjern null-tegn (U+0000) fra banen
+            exePath = exePath.Replace("\0", "").Trim();
+
+            Console.WriteLine("Testing File.Exists in LoadIconFromExe for: " + exePath);
+            Console.WriteLine("Path length: " + exePath.Length);
+            foreach (char c in exePath)
+            {
+                Console.WriteLine($"Char: '{c}' (U+{((int)c):X4})");
+            }
+            Console.WriteLine("Exists? " + File.Exists(exePath));
+
+            if (!File.Exists(exePath))
+            {
+                Console.WriteLine($"Exe file not found: {exePath}");
+                return null;
+            }
+
+            try
+            {
+                System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                if (icon != null)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        using (var bmp = icon.ToBitmap())
+                        {
+                            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                        }
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        BitmapImage bitmapImage = new BitmapImage();
+                        bitmapImage.BeginInit();
+                        bitmapImage.StreamSource = ms;
+                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmapImage.EndInit();
+                        bitmapImage.Freeze(); // For trådsikkerhet.
+                        return bitmapImage;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading icon from exe {exePath}: {ex.Message}");
+                return null;
+            }
+        }
+    }
 }

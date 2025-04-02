@@ -167,7 +167,6 @@ namespace HelseVestIKT_Dashboard
 		}
 
 		private GameStatusManager _gameStatusManager;
-		_gameStatusManager = new GameStatusManager(AllGames);
 
 
 		public MainWindow()
@@ -185,7 +184,7 @@ namespace HelseVestIKT_Dashboard
 			searchTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
 			searchTimer.Tick += SearchTimer_Tick;
 
-			_gameStatusManager = new GameStatusManager();
+			_gameStatusManager = new GameStatusManager(AllGames);
 
 			// Set up a timer to periodically update the game status
 			DispatcherTimer gameStatusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
@@ -275,16 +274,6 @@ namespace HelseVestIKT_Dashboard
 
 		private void InitializeOpenVR()
 		{
-			EVRInitError initError = EVRInitError.None;
-			vrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Scene);
-			if (initError != EVRInitError.None)
-			{
-				string errorMessage = OpenVR.GetStringForHmdError(initError);
-				System.Windows.MessageBox.Show("OpenVR Initialization failed: " + errorMessage);
-				// Optionally, close the application:
-				//this.Close();
-			}
-			//Test for å se at openVR kjører
 			EVRInitError error = EVRInitError.None;
 			vrSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
 
@@ -318,6 +307,23 @@ namespace HelseVestIKT_Dashboard
             });
             await Task.WhenAll(tasks);
             await LoadGameAsync(steamApi);
+
+            OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
+            List<Game> allGames = steamGamesManager.GetNonSteamGames(@"C:\Program Files (x86)\Steam");
+            Console.WriteLine($"Found {allGames.Count} games.");
+            foreach (var game in allGames)
+            {
+                Games.Add(game);
+                if (game.IsSteamGame)
+                {
+                    game.GameImage = GameImage.LoadLocalGameImage(game.AppID);
+                }
+                else
+                {
+                    game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
+                }
+                Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
+            }
 
         }
 

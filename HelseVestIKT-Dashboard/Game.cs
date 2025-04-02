@@ -24,5 +24,7 @@ namespace HelseVestIKT_Dashboard
         public bool IsFavorite { get; set; }
         public bool IsRecentlyPlayed { get; set; }
 
-	}
+		public string InstallPath { get; set; } = string.Empty;
+
+    }
 }

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using HelseVestIKT_Dashboard;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using ValveKeyValue;
 
 namespace HelseVestIKT_Dashboard
@@ -18,7 +21,7 @@ namespace HelseVestIKT_Dashboard
 			var games = new List<Game>();
 
 			// Build the path to libraryfolders.vdf (usually under steamapps)
-			string libraryFoldersPath = Path.Combine(steamPath, "steamapps", "libraryfolders.vdf");
+			string libraryFoldersPath = System.IO.Path.Combine(steamPath, "steamapps", "libraryfolders.vdf");
 			if (!File.Exists(libraryFoldersPath))
 			{
 				Console.WriteLine("libraryfolders.vdf not found at: " + libraryFoldersPath);
@@ -49,7 +52,7 @@ namespace HelseVestIKT_Dashboard
 						if (string.IsNullOrEmpty(folderPath))
 							continue;
 
-						string appsPath = Path.Combine(folderPath, "steamapps");
+						string appsPath = System.IO.Path.Combine(folderPath, "steamapps");
 						if (!Directory.Exists(appsPath))
 							continue;
 
@@ -87,5 +90,127 @@ namespace HelseVestIKT_Dashboard
 			}
 			return games;
 		}
-	}
+
+        public List<Game> GetNonSteamGames(string steamPath)
+        {
+            var games = new List<Game>();
+            string shortcutsPath = GetShortcutsPath(steamPath);
+            if (!string.IsNullOrEmpty(shortcutsPath) && File.Exists(shortcutsPath))
+            {
+                byte[] bytes = File.ReadAllBytes(shortcutsPath);
+        // Prøv både UTF8 og Encoding.Default hvis UTF8 ikke fungerer
+        string content = Encoding.UTF8.GetString(bytes);
+        Console.WriteLine("Contents of shortcuts.vdf:");
+                Console.WriteLine(content);
+
+                // Preprosesser filen ved å erstatte kontrolltegn med linjeskift
+                // 0x01 og 0x02 er vanlige avgrenser i denne filen
+                string processedContent = content.Replace("\x01", "\n").Replace("\x02", "\n");
+        Console.WriteLine("Processed shortcuts.vdf content:");
+                Console.WriteLine(processedContent);
+
+                // Split opp i linjer
+                var lines = processedContent.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+        string currentAppName = null;
+        string currentExe = null;
+        int shortcutIndex = 0;
+
+                foreach (var line in lines)
+                {
+                    var trimmed = line.Trim();
+
+                    // Sjekk etter "AppName"
+                    if (trimmed.StartsWith("AppName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Fjern "AppName" og eventuelle anførselstegn
+                        currentAppName = trimmed.Substring("AppName".Length).Trim().Trim('"');
+    }
+                    // Sjekk etter "Exe"
+                    else if (trimmed.StartsWith("Exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        currentExe = trimmed.Substring("Exe".Length).Trim().Trim('"');
+}
+
+// Hvis vi har både appName og exe, legg til spillet og nullstill variablene
+if (!string.IsNullOrEmpty(currentAppName) && !string.IsNullOrEmpty(currentExe))
+{
+    // Fjern eventuelle anførselstegn og null-tegn
+    currentExe = currentExe.Replace("\0", "").Trim().Trim('"');
+    Console.WriteLine($"Clean exe path: {currentExe}");
+    Console.WriteLine($"Found non-steam game: {currentAppName} with exe: {currentExe}");
+
+    BitmapImage? icon = GameImage.LoadIconFromExe(currentExe);
+    if (icon == null)
+    {
+        Console.WriteLine($"No icon extracted for exe: {currentExe}");
+    }
+    else
+    {
+        Console.WriteLine($"Icon extracted for exe: {currentExe}");
+    }
+    games.Add(new Game
+    {
+        AppID = "NonSteam-" + shortcutIndex,
+        Title = currentAppName,
+        InstallPath = currentExe,
+        IsSteamGame = false,
+        GameImage = icon
+    });
+    shortcutIndex++;
+    currentAppName = null;
+    currentExe = null;
+}
+
+                }
+            }
+            else
+{
+    Console.WriteLine("No shortcuts.vdf found.");
+}
+
+
+return games;
+
+
+        }
+
+        private string GetShortcutsPath(string steamPath)
+{
+    string userdataPath = System.IO.Path.Combine(steamPath, "userdata");
+    Console.WriteLine("Sjekker userdata-mappen: " + userdataPath);
+
+    if (!Directory.Exists(userdataPath))
+    {
+        Console.WriteLine("Userdata-mappen finnes ikke.");
+        return "";
+    }
+
+    // Iterer gjennom alle undermapper (brukerkontoer)
+    foreach (var userFolder in Directory.GetDirectories(userdataPath))
+    {
+        Console.WriteLine("Fant brukermappe: " + userFolder);
+        string configFolder = System.IO.Path.Combine(userFolder, "config");
+        if (!Directory.Exists(configFolder))
+        {
+            Console.WriteLine("  Config-mappen finnes ikke i: " + userFolder);
+            continue;
+        }
+
+        string shortcutsFile = System.IO.Path.Combine(configFolder, "shortcuts.vdf");
+        Console.WriteLine("  Sjekker: " + shortcutsFile);
+        if (File.Exists(shortcutsFile))
+        {
+            Console.WriteLine("  Fant shortcuts.vdf i: " + shortcutsFile);
+            return shortcutsFile;
+        }
+    }
+
+    Console.WriteLine("Fant ingen shortcuts.vdf i userdata-mappen.");
+    return "";
+}
+
+
+
+    }
 }
