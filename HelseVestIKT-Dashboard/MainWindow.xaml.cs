@@ -203,7 +203,16 @@ namespace HelseVestIKT_Dashboard
 			_vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 			_wifiSignalTimer = new DispatcherTimer();
 
-			InitializeOpenVR();
+            // Lukk SteamVR
+            Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
+
+            // Vent litt før du starter på nytt
+            System.Threading.Thread.Sleep(3000);
+
+            // Start SteamVR på nytt
+            Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
+
+            InitializeOpenVR();
 			StartVRStatusTimer();
 			StartMonitoringWifiSignal();
 		}
@@ -854,7 +863,7 @@ namespace HelseVestIKT_Dashboard
 
 			for (int attempt = 0; attempt < maxAttempts; attempt++)
 			{
-				spectatorHandle = FindWindow(null, "VR View");
+				spectatorHandle = FindWindow(null, "VR-visning");
 				if (spectatorHandle != IntPtr.Zero)
 				{
 					Console.WriteLine("Found Steam VR Spectator Window");
@@ -868,7 +877,7 @@ namespace HelseVestIKT_Dashboard
 			{
 				var helper = new WindowInteropHelper(this);
 				SetParent(spectatorHandle, helper.Handle);
-                //VRHost.Visibility = Visibility.Visible;
+                VRHost.Visibility = Visibility.Visible;
                 Console.WriteLine("Embedded Steam VR Spectator Window");
 			}
 			else
