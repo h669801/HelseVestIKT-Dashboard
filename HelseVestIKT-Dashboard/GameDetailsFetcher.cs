@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,16 +15,19 @@ namespace HelseVestIKT_Dashboard
         private static readonly HttpClient client = new HttpClient();
         private const int MaxRetries = 5;
         private const int DelayMilliseconds = 1000;
+        private static readonly Dictionary<string, HttpResponseMessage> cache = new Dictionary<string, HttpResponseMessage>();
+        private static readonly string cacheFilePath = "cache.json";
 
         public GameDetailsFetcher(string apiKey, string userID)
         {
             APIKey = apiKey;
             UserID = userID;
+            LoadCache();
         }
 
         public async Task AddDetailsAsync(Game game)
         {
-            string url = $"https://store.steampowered.com/api/appdetails?appids={game.AppID}&key={APIKey}";
+            string url = $"https://store.steampowered.com/api/appdetails?appids={game.AppID}";
             HttpResponseMessage response = await SendHttpRequestWithRetryAsync(url);
 
             if (response != null)
@@ -42,13 +46,27 @@ namespace HelseVestIKT_Dashboard
             await CheckRecentlyPlayedAsync(game); // Checks if the game is recently played
         }
 
+        static GameDetailsFetcher()
+        {
+            client.DefaultRequestHeaders.Add("User-Agent", "YourAppName/1.0");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.Add("Referer", "https://store.steampowered.com");
+        }
+
         private async Task<HttpResponseMessage> SendHttpRequestWithRetryAsync(string url)
         {
+            if (cache.ContainsKey(url))
+            {
+                return cache[url];
+            }
+
             for (int i = 0; i < MaxRetries; i++)
             {
                 HttpResponseMessage response = await client.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
+                    cache[url] = response;
+                    SaveCache();
                     return response;
                 }
                 else if (response.StatusCode == (System.Net.HttpStatusCode)429)
@@ -57,6 +75,16 @@ namespace HelseVestIKT_Dashboard
                 }
                 else
                 {
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Request to {url} failed with status code {response.StatusCode}. Response content: {responseContent}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        Console.WriteLine("403 Forbidden: Check if the API key is valid and has the necessary permissions.");
+                        // Add a delay before retrying to avoid immediate repeated failures
+                        await Task.Delay(DelayMilliseconds * (i + 1));
+                    }
+
                     response.EnsureSuccessStatusCode();
                 }
             }
@@ -107,6 +135,33 @@ namespace HelseVestIKT_Dashboard
                     game.IsRecentlyPlayed = true;
                 }
             }
+        }
+
+        private void LoadCache()
+        {
+            if (File.Exists(cacheFilePath))
+            {
+                var cacheContent = File.ReadAllText(cacheFilePath);
+                var cachedResponses = JObject.Parse(cacheContent);
+                foreach (var item in cachedResponses)
+                {
+                    var response = new HttpResponseMessage
+                    {
+                        Content = new StringContent(item.Value.ToString())
+                    };
+                    cache[item.Key] = response;
+                }
+            }
+        }
+
+        private void SaveCache()
+        {
+            var cacheContent = new JObject();
+            foreach (var item in cache)
+            {
+                cacheContent[item.Key] = item.Value.Content.ReadAsStringAsync().Result;
+            }
+            File.WriteAllText(cacheFilePath, cacheContent.ToString());
         }
     }
 }

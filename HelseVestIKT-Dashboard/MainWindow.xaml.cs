@@ -314,17 +314,9 @@ namespace HelseVestIKT_Dashboard
             foreach (var game in allGames)
             {
                 Games.Add(game);
-                if (game.IsSteamGame)
-                {
-                    game.GameImage = GameImage.LoadLocalGameImage(game.AppID);
-                }
-                else
-                {
-                    game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
-                }
+                game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
                 Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
             }
-
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -863,7 +855,8 @@ namespace HelseVestIKT_Dashboard
 			{
 				var helper = new WindowInteropHelper(this);
 				SetParent(spectatorHandle, helper.Handle);
-				Console.WriteLine("Embedded Steam VR Spectator Window");
+                //VRHost.Visibility = Visibility.Visible;
+                Console.WriteLine("Embedded Steam VR Spectator Window");
 			}
 			else
 			{
