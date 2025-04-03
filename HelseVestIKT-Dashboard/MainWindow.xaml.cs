@@ -816,9 +816,22 @@ namespace HelseVestIKT_Dashboard
 		{
 			if (sender is Button button && button.DataContext is Game game)
 			{
-				// Use the AppID from the game object dynamically
-				SteamLauncher.LaunchSteamGame(game.AppID);
-			}
+				//start non-steam spill
+                if (!game.IsSteamGame)
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = game.InstallPath,
+                        WorkingDirectory = System.IO.Path.GetDirectoryName(game.InstallPath)
+                    };
+                    Process.Start(psi);
+                }
+				else
+				{
+					// Start Steam-spill
+					SteamLauncher.LaunchSteamGame(game.AppID);
+				}
+            }
 
 			// Hide header and game library, show the Return button in the toolbar.
 			HeaderGrid.Visibility = Visibility.Visible;
