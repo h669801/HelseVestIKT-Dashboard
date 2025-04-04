@@ -55,7 +55,7 @@ namespace HelseVestIKT_Dashboard
 		[DllImport("user32.dll")]
 		static extern bool SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
-		#region sinmulering av tastetrykk "ESC" for å pause et spill
+		#region Simulering av tastetrykk "ESC" for å pause et spill
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 		// Constants for input type and key flags.
@@ -91,6 +91,7 @@ namespace HelseVestIKT_Dashboard
 		}
 		#endregion
 
+		#region Egenskaper og Variabler
 		private string _currentTime = string.Empty;
 		public string CurrentTime
 		{
@@ -104,39 +105,6 @@ namespace HelseVestIKT_Dashboard
 				}
 			}
 		}
-
-		// Deklarer volumeStatusTimer som nullable.
-		private DispatcherTimer? volumeStatusTimer = null;
-
-		private CVRSystem? vrSystem;
-
-		public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
-		public ObservableCollection<SpillKategori> SpillKategorier { get; set; } = new ObservableCollection<SpillKategori>();
-		public SpillKategori? ValgtKategori { get; set; }
-		public object? WifiConnectionButton { get; private set; }
-
-		private bool _gamesLoaded = false;
-
-		public VRStatusManager VREquipmentStatus { get; set; } = new VRStatusManager();
-		private DispatcherTimer? vrStatusTimer;
-
-		private ThreadingTimer? _vrStatusTimer;
-
-		public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
-
-		public object? WifiSignalProgressBar { get; private set; }
-
-		private DispatcherTimer? _wifiSignalTimer;
-
-		private ObservableCollection<Game> AllGames = new ObservableCollection<Game>();
-		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
-
-		private DispatcherTimer searchTimer;
-
-		private bool isFullscreen = false;
-		private VRFullscreenWindow vrFullscreenWindow;
-
-		private Wifi wifi;
 
 		private string _currentPlayer;
 		public string CurrentPlayer
@@ -166,9 +134,39 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
+
+
+		public ObservableCollection<Game> Games { get; set; } = new ObservableCollection<Game>();
+		public ObservableCollection<SpillKategori> SpillKategorier { get; set; } = new ObservableCollection<SpillKategori>();
+		public SpillKategori? ValgtKategori { get; set; }
+		private ObservableCollection<Game> AllGames = new ObservableCollection<Game>();
+		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
+		private bool _gamesLoaded = false;
 		private GameStatusManager _gameStatusManager;
 
 
+		public object? WifiConnectionButton { get; private set; }
+		public object? WifiSignalProgressBar { get; private set; }
+		private Wifi wifi;
+		private DispatcherTimer? _wifiSignalTimer;
+
+
+		private DispatcherTimer? volumeStatusTimer = null;
+		public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
+
+
+		private bool isFullscreen = false;
+		private VRFullscreenWindow vrFullscreenWindow;
+		private DispatcherTimer? vrStatusTimer;
+		private ThreadingTimer? _vrStatusTimer;
+		private CVRSystem? vrSystem;
+		public VRStatusManager VREquipmentStatus { get; set; } = new VRStatusManager();
+
+		private DispatcherTimer searchTimer;
+
+		#endregion
+
+		#region MainWindow Konstruktør
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -203,19 +201,21 @@ namespace HelseVestIKT_Dashboard
 			_vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 			_wifiSignalTimer = new DispatcherTimer();
 
-            // Lukk SteamVR
-            Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
+			// Lukk SteamVR
+			Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
 
-            // Vent litt før du starter på nytt
-            System.Threading.Thread.Sleep(3000);
+			// Vent litt før du starter på nytt
+			System.Threading.Thread.Sleep(3000);
 
-            // Start SteamVR på nytt
-            Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
+			// Start SteamVR på nytt
+			Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
 
-            InitializeOpenVR();
+			InitializeOpenVR();
 			StartVRStatusTimer();
 			StartMonitoringWifiSignal();
 		}
+		#endregion
+
 
 		private void UpdateGameStatus()
 		{
@@ -227,59 +227,44 @@ namespace HelseVestIKT_Dashboard
 			CurrentStatus = _gameStatusManager.CurrentStatus;
 		}
 
-
-		private void StartMonitoringWifiSignal()
+		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			wifi = new Wifi();
-			_wifiSignalTimer = new DispatcherTimer
+			if (_gamesLoaded)
+				return;
+
+			_gamesLoaded = true;
+			string steamAPIKey = "384082C6759AAF7B6974A9CCE1ECF6CE";
+			string steamID = "76561198081888308";
+			SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
+			var fetchedGames = await steamApi.GetSteamGamesAsync();
+			GameDetailsFetcher gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
+
+			var tasks = fetchedGames.Select(async game =>
 			{
-				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
-			};
-			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
-			_wifiSignalTimer.Start();
-		}
+				await gameDetailsFetcher.AddDetailsAsync(game);
+				Application.Current.Dispatcher.Invoke(() => Games.Add(game));
+			});
+			await Task.WhenAll(tasks);
+			await LoadGameAsync(steamApi);
 
-		private void UpdateWifiIcon(uint signalStrength)
-		{
-			string iconPath;
-
-			if (signalStrength >= 78)
-				iconPath = "pack://application:,,,/Bilder/wifi_bar_4.png";
-			else if (signalStrength >=
-				52)
-				iconPath = "pack://application:,,,/Bilder/wifi_bar_3.png";
-			else if (signalStrength >= 26)
-				iconPath = "pack://application:,,,/Bilder/wifi_bar_2.png";
-			else if (signalStrength >= 1)
-				iconPath = "pack://application:,,,/Bilder/wifi_bar_1.png";
-			else
-				iconPath = "pack://application:,,,/Bilder/wifi_bar_0.png";
-
-
-			// Update the Image control source
-			WifiSignalIcon.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
-		}
-
-		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
-		{
-			var accessPoints = wifi.GetAccessPoints();
-			var connected = accessPoints.FirstOrDefault(ap => ap.IsConnected);
-
-			if (connected != null)
+			OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
+			List<Game> allGames = steamGamesManager.GetNonSteamGames(@"C:\Program Files (x86)\Steam");
+			Console.WriteLine($"Found {allGames.Count} games.");
+			foreach (var game in allGames)
 			{
-				// Optionally, cast the uint signal strength to int if needed
-				int signalQuality = (int)connected.SignalStrength;
-				// Set text to blank when a connection is present
-				// Update the icon based on the signal strength
-				UpdateWifiIcon(connected.SignalStrength);
-			}
-			else
-			{
-				// Optionally show the "no signal" icon
-				UpdateWifiIcon(0);
+				Games.Add(game);
+				game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
+				Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
 			}
 		}
 
+		public event PropertyChangedEventHandler? PropertyChanged;
+		protected void OnPropertyChanged(string propertyName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		#region OpenVR og VR Status
 
 		private void InitializeOpenVR()
 		{
@@ -297,147 +282,7 @@ namespace HelseVestIKT_Dashboard
 
 		}
 
-		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-			if (_gamesLoaded)
-				return;
-
-			_gamesLoaded = true;
-			string steamAPIKey = "384082C6759AAF7B6974A9CCE1ECF6CE";
-            string steamID = "76561198081888308";
-            SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
-			var fetchedGames = await steamApi.GetSteamGamesAsync();
-            GameDetailsFetcher gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
-
-            var tasks = fetchedGames.Select(async game =>
-            {
-                await gameDetailsFetcher.AddDetailsAsync(game);
-                Application.Current.Dispatcher.Invoke(() => Games.Add(game));
-            });
-            await Task.WhenAll(tasks);
-            await LoadGameAsync(steamApi);
-
-            OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
-            List<Game> allGames = steamGamesManager.GetNonSteamGames(@"C:\Program Files (x86)\Steam");
-            Console.WriteLine($"Found {allGames.Count} games.");
-            foreach (var game in allGames)
-            {
-                Games.Add(game);
-                game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
-                Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
-            }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-		protected void OnPropertyChanged(string propertyName)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
-
-		private void Spill1_Click(object sender, RoutedEventArgs e)
-		{
-			// Hide header and game library, show the Return button in the toolbar.
-			HeaderGrid.Visibility = Visibility.Collapsed;
-			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
-			ReturnButton.Visibility = Visibility.Visible;
-		}
-
-		private void ReturnButton_Click(object sender, RoutedEventArgs e)
-		{
-			// Restore header and game library, hide the Return button.
-			HeaderGrid.Visibility = Visibility.Visible;
-			GameLibraryScrollViewer.Visibility = Visibility.Visible;
-			ReturnButton.Visibility = Visibility.Collapsed;
-			//VRHost.Visibility = Visibility.Collapsed;
-		}
-
-		private void PauseKnapp_Click(object sender, RoutedEventArgs e)
-		{
-			// Restore header and game library areas.
-			HeaderGrid.Visibility = Visibility.Visible;
-			GameLibraryScrollViewer.Visibility = Visibility.Visible;
-
-			// Hide the Return button (if it was used to go back to the library).
-			PauseKnapp.Visibility = Visibility.Visible;
-
-			SimulerEscapeTasteTrykk();
-		}
-
-		// Hente informasjon om hvilket spill som kjøres og returnere spill tittel inne i denne textblocken
-		private void SpillerNaa(Game game, SteamApi steamapi)
-		{
-			// Setter opp metoden for å displaye spillnavn i textblock
-
-			
-		}
-
-		//Denne knappen lukker/Avslutter spillvinduet gjennom applikasjonen
-		private void AvsluttKnapp_Click(object sender, RoutedEventArgs e)
-		{
-			// Metode for å avslutte spillet ved å trykke på knappen uten å exite applikasjonen
-			HeaderGrid.Visibility = Visibility.Visible;
-
-			
-		}
-
-		private void NodStoppKnapp_Click(object sender, RoutedEventArgs e)
-		{
-			// Emergency stop button if application is not responding and VR functions are not working
-			// This is a last resort to close the application
-			if (MessageBox.Show("Er du sikker på at du vil avslutte programmet?", "Avslutt programmet", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-				System.Windows.Application.Current.Shutdown();
-		}
-
-		private void ResetButton_Click(object sender, RoutedEventArgs e)
-		{
-			// Restore header and game library areas.
-			HeaderGrid.Visibility = Visibility.Visible;
-			GameLibraryScrollViewer.Visibility = Visibility.Visible;
-
-			// Hide the Return button (if it was used to go back to the library).
-			ReturnButton.Visibility = Visibility.Collapsed;
-
-			// Gjemmer Kalibrering popup
-			KalibreringPopup.IsOpen = false;
-
-			// Exit full-screen mode if currently active.
-			if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
-			{
-				this.WindowStyle = WindowStyle.SingleBorderWindow;
-				this.WindowState = WindowState.Normal;
-			}
-
-			// Reset the search box text to the placeholder.
-			SearchBox.Text = "Søk etter spill...";
-
-			// Reset the game list: repopulate the UI-bound collection (Games)
-			// from the backup (AllGames) so that any filtering is undone.
-			Games.Clear();
-			foreach (var game in AllGames)
-			{
-				Games.Add(game);
-			}
-
-			// Optionally, reset the scroll position of the game library.
-			GameLibraryScrollViewer.ScrollToHome();
-
-			// Reset any other UI elements or state as needed.
-
-			// Lukk SteamVR
-			Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
-
-			// Vent litt før du starter på nytt
-			System.Threading.Thread.Sleep(3000);
-
-			// Start SteamVR på nytt
-			Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
-		}
-
-
-
-
 		//VR Status: Henter informasjon om headset og kontrollere fra SteamAPI.
-
 		private void VRStatusCallback(object? state)
 		{
 			UpdateVREquipmentStatus();
@@ -522,35 +367,96 @@ namespace HelseVestIKT_Dashboard
 			base.OnClosed(e);
 		}
 
+		#endregion
 
-		private void LeftControllerButton_Click(object sender, RoutedEventArgs e)
+		#region Wifi Signal Monitorering
+		private void StartMonitoringWifiSignal()
 		{
-			// Handle left hand button click
-			Console.WriteLine("Left controller button clicked");
+			wifi = new Wifi();
+			_wifiSignalTimer = new DispatcherTimer
+			{
+				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
+			};
+			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
+			_wifiSignalTimer.Start();
 		}
 
-		private void RightControllerButton_Click(object sender, RoutedEventArgs e)
+		private void UpdateWifiIcon(uint signalStrength)
 		{
-			// Handle right hand button click
-			Console.WriteLine("Right controller button clicked");
+			string iconPath;
+
+			if (signalStrength >= 78)
+				iconPath = "pack://application:,,,/Bilder/wifi_bar_4.png";
+			else if (signalStrength >=
+				52)
+				iconPath = "pack://application:,,,/Bilder/wifi_bar_3.png";
+			else if (signalStrength >= 26)
+				iconPath = "pack://application:,,,/Bilder/wifi_bar_2.png";
+			else if (signalStrength >= 1)
+				iconPath = "pack://application:,,,/Bilder/wifi_bar_1.png";
+			else
+				iconPath = "pack://application:,,,/Bilder/wifi_bar_0.png";
+
+
+			// Update the Image control source
+			WifiSignalIcon.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
 		}
 
-		private void HeadsetButton_Click(object sender, RoutedEventArgs e)
+		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
 		{
-			// Handle headset button click
-			Console.WriteLine("Headset button clicked");
+			var accessPoints = wifi.GetAccessPoints();
+			var connected = accessPoints.FirstOrDefault(ap => ap.IsConnected);
+
+			if (connected != null)
+			{
+				// Optionally, cast the uint signal strength to int if needed
+				int signalQuality = (int)connected.SignalStrength;
+				// Set text to blank when a connection is present
+				// Update the icon based on the signal strength
+				UpdateWifiIcon(connected.SignalStrength);
+			}
+			else
+			{
+				// Optionally show the "no signal" icon
+				UpdateWifiIcon(0);
+			}
+		}
+
+		#endregion
+
+		#region Fullscreen og VR Embedding
+
+		private async void FullScreenButton_Click(object sender, RoutedEventArgs e)
+		{
+
+			if (!isFullscreen)
+			{
+				if (VRHost.Parent is System.Windows.Controls.Panel parentPanel)
+				{
+					parentPanel.Children.Remove(VRHost);
+				}
+
+				vrFullscreenWindow = new VRFullscreenWindow();
+				vrFullscreenWindow.SetVRContent(VRHost);
+				vrFullscreenWindow.Show();
+
+				await vrFullscreenWindow.EmbedSteamVRSpeactatorAsync();
+
+			}
+			else
+			{
+				// Avslutt fullskjerm: fjern VRHost fra VRFullscreenWindow
+				vrFullscreenWindow.RemoveVRContent(VRHost);
+				// Legg VRHost tilbake i den opprinnelige containeren
+				MainContentGrid.Children.Add(VRHost);
+			}
+
 		}
 
 
-		//Høyre side av toolbar: VolumeSlider,Innstillinger, Fullscreen og ExitButton
+		#endregion
 
-		private void Settings_Click(object sender, RoutedEventArgs e)
-		{
-			MessageBox.Show("Innstillinger klikket");
-
-		}
-
-		// Ny event handler for volumslideren
+		#region Toolbar og Volum kontroller
 		private void SpeakerButton_MouseEnter(object sender, MouseEventArgs e)
 		{
 			VolumePopup.IsOpen = true;
@@ -616,47 +522,16 @@ namespace HelseVestIKT_Dashboard
 				volumeStatusTimer.Stop();
 			}
 			volumeStatusTimer.Start();
-
 		}
 
 		private CustomPopupPlacement[] VolumePopupPlacementCallback(System.Windows.Size popupSize, System.Windows.Size targetSize, WPoint offset)
 		{
 			double horizontalOffset = (targetSize.Width - popupSize.Width) / 2;
 			double verticalOffset = targetSize.Height;
-			var palcement = new CustomPopupPlacement(new WPoint(horizontalOffset, verticalOffset), PopupPrimaryAxis.Horizontal);
-			return new CustomPopupPlacement[] { palcement };
-
+			var placement = new CustomPopupPlacement(new WPoint(horizontalOffset, verticalOffset), PopupPrimaryAxis.Horizontal);
+			return new CustomPopupPlacement[] { placement };
 		}
 
-		private void FullScreenButton_Click(object sender, RoutedEventArgs e)
-		{
-
-			if (!isFullscreen)
-			{
-				if (VRHost.Parent is System.Windows.Controls.Panel parentPanel)
-				{
-					parentPanel.Children.Remove(VRHost);
-				}
-
-				vrFullscreenWindow = new VRFullscreenWindow();
-				vrFullscreenWindow.SetVRContent(VRHost);
-
-				VRFullscreenContainer.Content = vrFullscreenWindow.Content;
-				VRFullscreenContainer.Visibility = Visibility.Visible;
-
-			}
-			else
-			{
-				// Avslutt fullskjerm: fjern VRHost fra VRFullscreenWindow
-				vrFullscreenWindow.RemoveVRContent(VRHost);
-				VRFullscreenContainer.Content = null;
-				VRFullscreenContainer.Visibility = Visibility.Collapsed;
-
-				// Legg VRHost tilbake i den opprinnelige containeren
-				MainContentGrid.Children.Add(VRHost);
-			}
-
-		}
 
 		private void ExitButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -665,13 +540,20 @@ namespace HelseVestIKT_Dashboard
 			{ this.Close(); }
 		}
 
+		#endregion
 
-		#region VR Verktøylinje knapper
-		//Andre rad i MainWindow: Inkl. Filter/Sorter, Header(Alle Spill) og en searchbar for søke etter spill.
+		#region VR Statuslinje og knappersk
 
-		
+		//Denne knappen lukker/Avslutter spillvinduet gjennom applikasjonen
+		private void AvsluttKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			// Metode for å avslutte spillet ved å trykke på knappen uten å exite applikasjonen
+			HeaderGrid.Visibility = Visibility.Visible;
 
-		private void Nodstopp_Click(object sender, RoutedEventArgs e)
+
+		}
+
+			private void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
 			// Emergency stop button if application is not responding and VR functions are not working
 			// This is a last resort to close the application
@@ -679,32 +561,35 @@ namespace HelseVestIKT_Dashboard
 			if (MessageBox.Show("Er du sikker på at du vil avslutte programmet?", "Avslutt programmet", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
 				System.Windows.Application.Current.Shutdown();
 		}
-		private void VRConnectButton_Click(object sender, RoutedEventArgs e)
+
+		private void ReturnButton_Click(object sender, RoutedEventArgs e)
 		{
-			// TODO: Implement logic to connect VR equipment
-			MessageBox.Show("VR Connect clicked");
+			// Restore header and game library, hide the Return button.
+			HeaderGrid.Visibility = Visibility.Visible;
+			GameLibraryScrollViewer.Visibility = Visibility.Visible;
+			ReturnButton.Visibility = Visibility.Collapsed;
+			//VRHost.Visibility = Visibility.Collapsed;
 		}
 
-		private void VRDisconnectButton_Click(object sender, RoutedEventArgs e)
+		private void PauseKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			// TODO: Implement logic to disconnect VR equipment
-			MessageBox.Show("VR Disconnect clicked");
+			// Restore header and game library areas.
+			HeaderGrid.Visibility = Visibility.Visible;
+			GameLibraryScrollViewer.Visibility = Visibility.Visible;
+
+			// Hide the Return button (if it was used to go back to the library).
+			PauseKnapp.Visibility = Visibility.Visible;
+
+			SimulerEscapeTasteTrykk();
 		}
 
-		private void VRSettingsButton_Click(object sender, RoutedEventArgs e)
+		private void TilbakeKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			// TODO: Implement logic to open VR settings
-			MessageBox.Show("VR Settings clicked");
+
 		}
 		#endregion
 
-		#region Filter Button
-
-		
-		#endregion
-
-
-		#region Søkeboks logikk
+		#region Søkeboks logikk og filtrering
 
 		private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
 		{
@@ -755,7 +640,7 @@ namespace HelseVestIKT_Dashboard
 				.Where(g => g.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
 				.ToList();
 
-	
+
 			// Reset the Games collection with filtered results
 			Games.Clear();
 			foreach (var game in filteredGames)
@@ -764,32 +649,6 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-		private void ApplyGenreFilter()
-		{
-			// For example, check if a specific genre checkbox is checked.
-			bool filterAction = CheckBoxAction.IsChecked == true;
-			bool filterAdventure = CheckBoxEventyr.IsChecked == true;
-
-			var filteredGames = AllGames.Where(game =>
-			{
-				// If filtering by Action, check if the game's genres include "Action"
-				if (filterAction && !game.Genres.Contains("Action"))
-					return false;
-				// Similarly for Adventure, add more conditions as needed
-				if (filterAdventure && !game.Genres.Contains("Adventure"))
-					return false;
-
-				// Additional filters can be added here
-
-				return true;
-			}).ToList();
-
-			Games.Clear();
-			foreach (var game in filteredGames)
-			{
-				Games.Add(game);
-			}
-		}
 
 		private async Task LoadGameAsync(SteamApi steamApi)
 		{
@@ -805,11 +664,11 @@ namespace HelseVestIKT_Dashboard
 				Games.Add(game);
 			}
 
-
 		}
 
 		#endregion
 
+		#region Spillbibliotek og Logg
 
 		// Egen log knapp for å sjekke diverse feil i programmet.
 		private void LogButton_Click(object sender, RoutedEventArgs e)
@@ -819,74 +678,42 @@ namespace HelseVestIKT_Dashboard
 			logWindow.ShowDialog();
 		}
 
-
-		//Dette omhandler Spillgrid seksjonen av vinduet
-		private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+			//Dette omhandler Spillgrid seksjonen av vinduet
+		private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (sender is Button button && button.DataContext is Game game)
 			{
 				//start non-steam spill
-                if (!game.IsSteamGame)
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = game.InstallPath,
-                        WorkingDirectory = System.IO.Path.GetDirectoryName(game.InstallPath)
-                    };
-                    Process.Start(psi);
-                }
+				if (!game.IsSteamGame)
+				{
+					var psi = new ProcessStartInfo
+					{
+						FileName = game.InstallPath,
+						WorkingDirectory = System.IO.Path.GetDirectoryName(game.InstallPath)
+					};
+					Process.Start(psi);
+				}
 				else
 				{
 					// Start Steam-spill
 					SteamLauncher.LaunchSteamGame(game.AppID);
 				}
-            }
+			}
 
 			// Hide header and game library, show the Return button in the toolbar.
 			HeaderGrid.Visibility = Visibility.Visible;
-			StatusBar.Visibility = Visibility.Visible;	
+			StatusBar.Visibility = Visibility.Visible;
 			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
 			// VRHost.Visibility = Visibility.Visible;
 			ReturnButton.Visibility = Visibility.Visible;
 
-			await Task.Delay(5000);
-			await EmbedSteamVRSpectatorAsync();
+			//await Task.Delay(5000);
+			//await EmbedSteamVRSpectatorAsync();
 		}
 
+		#endregion
 
-		//Henter VR View vinduet fra SteamVR og setter det inn/embedder i WPF vinduet
-		private async Task EmbedSteamVRSpectatorAsync()
-		{
-			const int maxAttempts = 20;
-			const int delayMs = 5000;
-			IntPtr spectatorHandle = IntPtr.Zero;
-
-			for (int attempt = 0; attempt < maxAttempts; attempt++)
-			{
-				spectatorHandle = FindWindow(null, "VR-visning");
-				if (spectatorHandle != IntPtr.Zero)
-				{
-					Console.WriteLine("Found Steam VR Spectator Window");
-					break;
-				}
-				Console.WriteLine($"Attempt {attempt + 1}: Steam VR Spectator Window not found. Waiting...");
-				await Task.Delay(delayMs);
-			}
-
-			if (spectatorHandle != IntPtr.Zero)
-			{
-				var helper = new WindowInteropHelper(this);
-				SetParent(spectatorHandle, helper.Handle);
-                VRHost.Visibility = Visibility.Visible;
-                Console.WriteLine("Embedded Steam VR Spectator Window");
-			}
-			else
-			{
-				MessageBox.Show("Kunne ikke finne SteamVR Specator Window etter venting");
-			}
-		}
-
-		#region VR-Kalibreringsknapper og funksjoner
+		#region VR-Kalibrering og Funksjoner
 
 		private void Romkalibrering_Click(object sender, RoutedEventArgs e)
 		{
@@ -923,18 +750,9 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-		// Denne metoden skal pause et spill som kjører i VR
-		private void PauseSpillKnapp_Click(Object sender, RoutedEventArgs e)
-		{ 
-
-		}
 		#endregion
 
-		private void SearchBox_KeyDown_1(object sender, System.Windows.Input.KeyEventArgs e)
-		{
-
-		}
-
+		#region Diverse Brukergrensesnitt funksjoner
 		// Denne knappen skal skjule sidemenyen og vise en knapp for å vise den igjen
 		private void SkjulKnapp_Click(object sender, RoutedEventArgs e)
 		{
@@ -952,7 +770,7 @@ namespace HelseVestIKT_Dashboard
 			// Skjuler knappen for å vise sidemenyen igjen
 			VisKnapp.Visibility = Visibility.Collapsed;
 		}
-	
+
 		// Denne metoden legger til et spill i en valgt kategori
 		public void LeggTilSpillIKategori(SpillKategori kategori, Game game)
 		{
@@ -971,7 +789,6 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-
 		private void ApplyFilter_Click(object sender, RoutedEventArgs e)
 		{
 			// Build a filter object from the MainWindow UI elements (e.g., CheckBoxes)
@@ -984,7 +801,7 @@ namespace HelseVestIKT_Dashboard
 				{
 					return false;
 				}
-				
+
 				return true;
 			}).ToList();
 
@@ -995,7 +812,6 @@ namespace HelseVestIKT_Dashboard
 				Games.Add(game);
 			}
 		}
-
 
 		private void SimulerEscapeTasteTrykk()
 		{
@@ -1030,6 +846,59 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
+		#endregion
+
+		#region Kommentert ut en metode om ResetButton_Click
+
+		/*
+			private void ResetButton_Click(object sender, RoutedEventArgs e)
+			{
+				// Restore header and game library areas.
+				HeaderGrid.Visibility = Visibility.Visible;
+				GameLibraryScrollViewer.Visibility = Visibility.Visible;
+
+				// Hide the Return button (if it was used to go back to the library).
+				ReturnButton.Visibility = Visibility.Collapsed;
+
+				// Gjemmer Kalibrering popup
+				KalibreringPopup.IsOpen = false;
+
+				// Exit full-screen mode if currently active.
+				if (this.WindowStyle == WindowStyle.None && this.WindowState == WindowState.Maximized)
+				{
+					this.WindowStyle = WindowStyle.SingleBorderWindow;
+					this.WindowState = WindowState.Normal;
+				}
+
+				// Reset the search box text to the placeholder.
+				SearchBox.Text = "Søk etter spill...";
+
+				// Reset the game list: repopulate the UI-bound collection (Games)
+				// from the backup (AllGames) so that any filtering is undone.
+				Games.Clear();
+				foreach (var game in AllGames)
+				{
+					Games.Add(game);
+				}
+
+				// Optionally, reset the scroll position of the game library.
+				GameLibraryScrollViewer.ScrollToHome();
+
+				// Reset any other UI elements or state as needed.
+
+				// Lukk SteamVR
+				Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
+
+				// Vent litt før du starter på nytt
+				System.Threading.Thread.Sleep(3000);
+
+				// Start SteamVR på nytt
+				Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
+			}
+
+			*/
+
+		#endregion
 
 	}
 }

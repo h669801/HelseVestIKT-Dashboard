@@ -196,8 +196,8 @@
 		<!-- TOPPMENY / HEADER -->
 		<Border x:Name="ToolbarGrid" Grid.Row="0" Background="White" BorderThickness="0,0,0,1" BorderBrush="#DDD">
 			<Border.Effect>
-				<DropShadowEffect BlurRadius="6"
-								  ShadowDepth="4"
+				<DropShadowEffect BlurRadius="4"
+								  ShadowDepth="3"
 								  Direction="270"
 								  Color="Black"
 								  Opacity="0.9"/>
@@ -233,7 +233,7 @@
 									</Style>
 								</Border.Style>
 								<!-- Knapp for Headset -->
-								<Button x:Name="HeadsetButton" Click="HeadsetButton_Click"
+								<Button x:Name="HeadsetButton"
                                     Style="{StaticResource SquareRoundedButtonStyle}"
                                     Background="Transparent" BorderThickness="0"
                                     Width="50" Height="32" Margin="0,0">
@@ -273,7 +273,7 @@
 										</Style.Triggers>
 									</Style>
 								</Border.Style>
-								<Button x:Name="LeftControllerButton" Click="LeftControllerButton_Click"
+								<Button x:Name="LeftControllerButton"
                                     Style="{StaticResource SquareRoundedButtonStyle}"
                                     Background="Transparent" BorderThickness="0"
                                     Width="50" Height="32" Margin="0,0">
@@ -314,7 +314,7 @@
 										</Style.Triggers>
 									</Style>
 								</Border.Style>
-								<Button x:Name="RightControllerButton" Click="RightControllerButton_Click"
+								<Button x:Name="RightControllerButton" 
                                     Style="{StaticResource SquareRoundedButtonStyle}"
                                     Background="Transparent" BorderThickness="0"
                                     Width="50" Height="32" Margin="0,0">
@@ -373,7 +373,7 @@
 								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
 									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill"/>
 								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="ResetButton_Click" Margin="5">
+								<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="TilbakeKnapp_Click" Margin="5">
 									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Tilbake"/>
 								</Button>
 							</StackPanel>
@@ -475,8 +475,6 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 					<!-- Wifi signal-->
 					<Image x:Name="WifiSignalIcon" Width="30" Height="30" Margin="0,0,10,0"/>
 
-					
-
 					<!-- Popup for volum -->
 					<Popup x:Name="VolumePopup" Placement="Custom"
                  CustomPopupPlacementCallback="VolumePopupPlacementCallback"
@@ -506,7 +504,7 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 
 		<!-- Status, Spiller nå, knapper -->
 
-		<Grid x:Name="StatusBar" Grid.Row="1" Height="50" Background="White" Visibility="Collapsed" >
+		<Grid x:Name="StatusBar" Grid.Row="1" Height="50" Background="White" Visibility="Visible" >
 			<Grid.Effect>
 				<DropShadowEffect BlurRadius="6"
 								  ShadowDepth="2"
@@ -580,7 +578,7 @@ Margin="0,0,5,0" Visibility="Collapsed">
 			<!-- SIDEMENY -->
 			<Border x:Name="SideMenu" Grid.Column="0" Background="White" BorderThickness="0,0,1,0" BorderBrush="#DDD">
 		<Border.Effect>
-			<DropShadowEffect BlurRadius="0" ShadowDepth="5" Direction="0" Color="Black" Opacity="0.9"/>
+			<DropShadowEffect BlurRadius="3" ShadowDepth="3" Direction="0" Color="Black" Opacity="0.9"/>
 		</Border.Effect>
 		<StackPanel Orientation="Vertical">
 			<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
@@ -593,7 +591,7 @@ Margin="0,0,5,0" Visibility="Collapsed">
 			<CheckBox x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0" />
             <CheckBox x:Name="CheckBoxHelseVestSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre Spill" Margin="10,5,0,0" />
             <Separator Margin="10,10,10,10"/>
-			<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
+			<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier:" FontWeight="Bold" Margin="10,5,0,0"/>
 			<CheckBox x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
 			<CheckBox x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
 			<CheckBox x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
@@ -661,7 +659,7 @@ HorizontalAlignment="Center" VerticalAlignment="Center" Click="ApplyFilter_Click
 						</ItemsControl.ItemTemplate>
 					</ItemsControl>
 				</ScrollViewer>
-				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed"
+				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Visible"
       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 			</Grid>
 			<ContentControl x:Name="VRFullscreenContainer" Visibility="Collapsed"/>

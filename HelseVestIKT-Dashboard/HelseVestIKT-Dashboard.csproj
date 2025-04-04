@@ -65,9 +65,15 @@
 		<Resource Include="Bilder\vrheadset.png" />
 		<Resource Include="Bilder\vrkontrollere.png" />
 		<Resource Include="Bilder\vr_headset.png" />
-		<Resource Include="Bilder\wifi_bar_0.png" />
-		<Resource Include="Bilder\wifi_bar_1.png" />
-		<Resource Include="Bilder\wifi_bar_2.png" />
+		<Resource Include="Bilder\wifi_bar_0.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Bilder\wifi_bar_1.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Bilder\wifi_bar_2.png">
+		  <CopyToOutputDirectory></CopyToOutputDirectory>
+		</Resource>
 		<Resource Include="Bilder\wifi_bar_3.png" />
 		<Resource Include="Bilder\wifi_bar_4.png" />
 		<Resource Include="Resources.xaml" />

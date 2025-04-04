@@ -6,14 +6,11 @@
         xmlns:local="clr-namespace:HelseVestIKT_Dashboard"
 		xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
         mc:Ignorable="d"
-        Title="VRFullscreenWindow" Height="450" Width="800"
-		WindowStyle="None"
+        Title="VRFullscreenWindow" Height="650" Width="1000"
+		WindowStyle="SingleBorderWindow"
 		Topmost="True">
 
 	<Grid x:Name="FullscreenGrid" ClipToBounds="True">
-		<TextBlock Text="LIVE VIEW" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-		<!-- VR-Live-visning -->
-		<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Collapsed"
-              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+		<wfi:WindowsFormsHost x:Name="VRHostFullscreen" Visibility="Visible"/>
 	</Grid>
 </Window>
