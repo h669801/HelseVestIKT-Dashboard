@@ -68,7 +68,7 @@ namespace HelseVestIKT_Dashboard
 					break;
 
 				}
-				Console.WriteLine($"Attempt {attempt + 1}: Steam VR Spectator Vindu ikke funnet");
+				Console.WriteLine($"Attempt {attempt + 1}: Steam VR Spectator vindu ikke funnet");
 				await Task.Delay(dealyMs);
 			}
 
@@ -83,7 +83,7 @@ namespace HelseVestIKT_Dashboard
 					if (hostHandle != IntPtr.Zero)
 					{
 						SetParent(spectatorHandle, hostHandle);
-						Console.WriteLine("Embedded Steam VR Spectator Window");
+						Console.WriteLine("Embedded Steam VR Spectator vindu");
 					}
 					else
 					{
@@ -96,7 +96,7 @@ namespace HelseVestIKT_Dashboard
 				{
 					IntPtr hostHandle = source.Handle;
 					SetParent(spectatorHandle, hostHandle);
-					Console.WriteLine("Embedded Steam VR Spectator Window");
+					Console.WriteLine("Embedded Steam VR Spectator vindu");
 				}
 				else
 				{
@@ -114,7 +114,6 @@ namespace HelseVestIKT_Dashboard
 			FullscreenGrid.Children.Clear();
 			FullscreenGrid.Children.Add(vrHost);
 			vrHost.Visibility = Visibility.Visible;	
-
 		}
 
 		public void RemoveVRContent(WindowsFormsHost vrHost)

@@ -36,6 +36,7 @@ using System.Windows.Forms.Integration;
 using SteamKit2.Internal;
 using NAudio.CoreAudioApi;
 using Application = System.Windows.Application;
+using CheckBox = System.Windows.Controls.CheckBox;
 
 namespace HelseVestIKT_Dashboard
 {
@@ -46,7 +47,9 @@ namespace HelseVestIKT_Dashboard
 	public partial class MainWindow : Window, INotifyPropertyChanged
 	{
 
-		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+     
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
 		private static extern bool AllocConsole();
 
 		[DllImport("user32.dll")]
@@ -143,9 +146,10 @@ namespace HelseVestIKT_Dashboard
 		public ObservableCollection<Game> FilteredGames { get; set; } = new ObservableCollection<Game>();
 		private bool _gamesLoaded = false;
 		private GameStatusManager _gameStatusManager;
+        private FilterHandler filterHandler = new FilterHandler();
+        private GameDetailsFetcher gameDetailsFetcher;
 
-
-		public object? WifiConnectionButton { get; private set; }
+        public object? WifiConnectionButton { get; private set; }
 		public object? WifiSignalProgressBar { get; private set; }
 		private Wifi wifi;
 		private DispatcherTimer? _wifiSignalTimer;
@@ -237,17 +241,21 @@ namespace HelseVestIKT_Dashboard
 			string steamID = "76561198081888308";
 			SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
 			var fetchedGames = await steamApi.GetSteamGamesAsync();
-			GameDetailsFetcher gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
+			gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
 
-			var tasks = fetchedGames.Select(async game =>
-			{
-				await gameDetailsFetcher.AddDetailsAsync(game);
-				Application.Current.Dispatcher.Invoke(() => Games.Add(game));
-			});
-			await Task.WhenAll(tasks);
 			await LoadGameAsync(steamApi);
 
-			OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
+            var tasks = fetchedGames.Select(async game =>
+            {
+                await gameDetailsFetcher.AddDetailsAsync(game);
+                Application.Current.Dispatcher.Invoke(() => { AllGames.Add(game); Games.Add(game); });
+
+            });
+
+            await Task.WhenAll(tasks);
+
+
+            OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
 			List<Game> allGames = steamGamesManager.GetNonSteamGames(@"C:\Program Files (x86)\Steam");
 			Console.WriteLine($"Found {allGames.Count} games.");
 			foreach (var game in allGames)
@@ -264,9 +272,44 @@ namespace HelseVestIKT_Dashboard
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		#region OpenVR og VR Status
+        #region FilterEvent 
+        private void UpdateFilters(object sender, RoutedEventArgs e)
+        {
 
-		private void InitializeOpenVR()
+            List<CheckBox> genreFilters = new()
+            {
+                CheckBoxAction, CheckBoxEventyr, CheckBoxIndie, CheckBoxLettbeint, CheckBoxMassivtFlerspill,
+                CheckBoxSport, CheckBoxStrategi, CheckBoxRacing, CheckBoxRollespill, CheckBoxSimulering
+            };
+
+            List<CheckBox> typeFilters = new()
+            {
+                CheckBoxNyligSpilt, CheckBoxVRSpill, CheckFlerspiller, CheckBoxSteamSpill, CheckBoxAndreSpill, CheckBoxKunFavoritter
+            };
+
+            Games.Clear();
+
+            foreach (Game game in AllGames)
+            {
+
+                if (filterHandler.FilterGame(genreFilters, typeFilters, game))
+                {
+                    Console.WriteLine("Game Added: " + game.Title);
+                    Games.Add(game);
+                }
+            }
+            Console.WriteLine("Filters applied: " + ((CheckBox)sender).Content.ToString() + "\n\n");
+
+
+
+        }
+
+        #endregion
+
+
+        #region OpenVR og VR Status
+
+        private void InitializeOpenVR()
 		{
 			EVRInitError error = EVRInitError.None;
 			vrSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
@@ -281,6 +324,7 @@ namespace HelseVestIKT_Dashboard
 			}
 
 		}
+
 
 		//VR Status: Henter informasjon om headset og kontrollere fra SteamAPI.
 		private void VRStatusCallback(object? state)
@@ -583,10 +627,6 @@ namespace HelseVestIKT_Dashboard
 			SimulerEscapeTasteTrykk();
 		}
 
-		private void TilbakeKnapp_Click(object sender, RoutedEventArgs e)
-		{
-
-		}
 		#endregion
 
 		#region Søkeboks logikk og filtrering
@@ -714,6 +754,18 @@ namespace HelseVestIKT_Dashboard
 		#endregion
 
 		#region VR-Kalibrering og Funksjoner
+
+		private void KalibrerKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			KalibreringPopup.IsOpen = true;
+
+		}
+
+		private void TilbakeKnapp_Click(object sender, RoutedEventArgs e)
+		{
+			KalibreringPopup.IsOpen = false;
+
+		}
 
 		private void Romkalibrering_Click(object sender, RoutedEventArgs e)
 		{

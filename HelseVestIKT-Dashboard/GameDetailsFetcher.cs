@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace HelseVestIKT_Dashboard
         private static readonly HttpClient client = new HttpClient();
         private const int MaxRetries = 5;
         private const int DelayMilliseconds = 1000;
-        private static readonly Dictionary<string, HttpResponseMessage> cache = new Dictionary<string, HttpResponseMessage>();
+        private static readonly ConcurrentDictionary<string, HttpResponseMessage> cache = new ConcurrentDictionary<string, HttpResponseMessage>();
         private static readonly string cacheFilePath = "cache.json";
 
         public GameDetailsFetcher(string apiKey, string userID)
@@ -55,9 +56,9 @@ namespace HelseVestIKT_Dashboard
 
         private async Task<HttpResponseMessage> SendHttpRequestWithRetryAsync(string url)
         {
-            if (cache.ContainsKey(url))
+            if (cache.TryGetValue(url, out HttpResponseMessage cachedResponse))
             {
-                return cache[url];
+                return cachedResponse;
             }
 
             for (int i = 0; i < MaxRetries; i++)
@@ -81,7 +82,6 @@ namespace HelseVestIKT_Dashboard
                     if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                     {
                         Console.WriteLine("403 Forbidden: Check if the API key is valid and has the necessary permissions.");
-                        // Add a delay before retrying to avoid immediate repeated failures
                         await Task.Delay(DelayMilliseconds * (i + 1));
                     }
 
