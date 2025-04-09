@@ -661,7 +661,11 @@ HorizontalAlignment="Center" VerticalAlignment="Center" Click="ApplyFilter_Click
 				</ScrollViewer>
 				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Visible"
       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-			</Grid>
+                <Grid>
+                    <!-- Image-kontrollen for å vise D3D-innholdet -->
+                    <Image x:Name="D3DImageHost" Stretch="Uniform" />
+                </Grid>
+            </Grid>
 			<ContentControl x:Name="VRFullscreenContainer" Visibility="Collapsed"/>
 		</Grid>
 	</Grid>

@@ -10,7 +10,12 @@
 		WindowStyle="SingleBorderWindow"
 		Topmost="True">
 
-	<Grid x:Name="FullscreenGrid" ClipToBounds="True">
+    <Grid>
+        <!-- Image-kontrollen for å vise D3D-innholdet -->
+        <Image x:Name="D3DImageHost" Stretch="Uniform" />
+    </Grid>
+
+    <!--<Grid x:Name="FullscreenGrid" ClipToBounds="True">
 		<wfi:WindowsFormsHost x:Name="VRHostFullscreen" Visibility="Visible"/>
-	</Grid>
+	</Grid> -->
 </Window>

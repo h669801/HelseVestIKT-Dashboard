@@ -46,7 +46,11 @@ namespace HelseVestIKT_Dashboard
 	public partial class MainWindow : Window, INotifyPropertyChanged
 	{
 
-		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private OpenXRManager _openXRManager;
+
+        private D3DImage _d3dImage;
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
 		private static extern bool AllocConsole();
 
 		[DllImport("user32.dll")]
@@ -202,10 +206,10 @@ namespace HelseVestIKT_Dashboard
 			_wifiSignalTimer = new DispatcherTimer();
 
 			// Lukk SteamVR
-			Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
+			//Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
 
 			// Vent litt før du starter på nytt
-			System.Threading.Thread.Sleep(3000);
+			//System.Threading.Thread.Sleep(3000);
 
 			// Start SteamVR på nytt
 			Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
@@ -213,6 +217,7 @@ namespace HelseVestIKT_Dashboard
 			InitializeOpenVR();
 			StartVRStatusTimer();
 			StartMonitoringWifiSignal();
+			
 		}
 		#endregion
 
@@ -256,9 +261,39 @@ namespace HelseVestIKT_Dashboard
 				game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
 				Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
 			}
+
+
+			_openXRManager = new OpenXRManager();
+			bool success = await Task.Run(() => _openXRManager.Initialize());
+			if (!success)
+			{
+				MessageBox.Show("OpenXR initialisering feilet.");
+				return;
+			}
+
+			// Opprett D3DImage for interop med Direct3D11
+			_d3dImage = new D3DImage();
+			D3DImageHost.Source = _d3dImage;
+
+			// Starte en løkke eller timer for å oppdatere D3DImage med det rendrte innholdet.
+			// Dette er bare et eksempel; du må tilpasse oppdateringslogikken etter ditt behov.
+			CompositionTarget.Rendering += OnRendering;
 		}
 
-		public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnRendering(object sender, EventArgs e)
+        {
+            _d3dImage.Lock();
+            IntPtr sharedTexPtr = _openXRManager.GetSharedTexture();
+            // Pass på at du bruker riktig type for backbufferet; her antas D3DResourceType.IDirect3DSurface9,
+            // men konfigurasjonen avhenger av hvordan du setter opp delingen mellom D3D11 og D3D9.
+            _d3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, sharedTexPtr);
+            _d3dImage.AddDirtyRect(new Int32Rect(0, 0, _d3dImage.PixelWidth, _d3dImage.PixelHeight));
+            _d3dImage.Unlock();
+        }
+
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 		protected void OnPropertyChanged(string propertyName)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -429,27 +464,27 @@ namespace HelseVestIKT_Dashboard
 		private async void FullScreenButton_Click(object sender, RoutedEventArgs e)
 		{
 
-			if (!isFullscreen)
-			{
-				if (VRHost.Parent is System.Windows.Controls.Panel parentPanel)
-				{
-					parentPanel.Children.Remove(VRHost);
-				}
+			//if (!isFullscreen)
+			//{
+			//	if (VRHost.Parent is System.Windows.Controls.Panel parentPanel)
+			//	{
+			//		parentPanel.Children.Remove(VRHost);
+			//	}
 
-				vrFullscreenWindow = new VRFullscreenWindow();
-				vrFullscreenWindow.SetVRContent(VRHost);
-				vrFullscreenWindow.Show();
+			//	vrFullscreenWindow = new VRFullscreenWindow();
+			//	vrFullscreenWindow.SetVRContent(VRHost);
+			//	vrFullscreenWindow.Show();
 
-				await vrFullscreenWindow.EmbedSteamVRSpeactatorAsync();
+			//	await vrFullscreenWindow.EmbedSteamVRSpeactatorAsync();
 
-			}
-			else
-			{
-				// Avslutt fullskjerm: fjern VRHost fra VRFullscreenWindow
-				vrFullscreenWindow.RemoveVRContent(VRHost);
-				// Legg VRHost tilbake i den opprinnelige containeren
-				MainContentGrid.Children.Add(VRHost);
-			}
+			//}
+			//else
+			//{
+			//	// Avslutt fullskjerm: fjern VRHost fra VRFullscreenWindow
+			//	vrFullscreenWindow.RemoveVRContent(VRHost);
+			//	// Legg VRHost tilbake i den opprinnelige containeren
+			//	MainContentGrid.Children.Add(VRHost);
+			//}
 
 		}
 
