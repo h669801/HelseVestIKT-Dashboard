@@ -202,15 +202,18 @@ namespace HelseVestIKT_Dashboard
 			_wifiSignalTimer = new DispatcherTimer();
 
 			// Lukk SteamVR
-			Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
+			//Process.Start("cmd.exe", "/C taskkill /F /IM vrserver.exe /IM vrmonitor.exe");
 
 			// Vent litt før du starter på nytt
-			System.Threading.Thread.Sleep(3000);
+			//System.Threading.Thread.Sleep(3000);
 
 			// Start SteamVR på nytt
 			Process.Start("C:\\Program Files (x86)\\Steam\\Steam.exe", "-applaunch 250820");
 
-			InitializeOpenVR();
+            VulkanVRWindow vulkanWindow = new VulkanVRWindow();
+            vulkanWindow.Show();
+
+            InitializeOpenVR();
 			StartVRStatusTimer();
 			StartMonitoringWifiSignal();
 		}
