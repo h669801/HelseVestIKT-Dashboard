@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+		 xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
         Title="Helse Vest IKT" Height="800" Width="1300"
 		WindowState="Maximized">
 
@@ -323,8 +324,6 @@
 							</Border>
 							
 							<!-- Viser batteriprosent -->
-							<!-- Viser batteriprosent -->
-							<!-- Viser batteriprosent -->
 							<TextBlock 
 								   HorizontalAlignment="Center" FontSize="12" Margin="0,5">
 								<TextBlock.Style>
@@ -566,42 +565,42 @@ Margin="0,0,5,0" Visibility="Collapsed">
 
 			<!-- SIDEMENY -->
 			<Border x:Name="SideMenu" Grid.Column="0" Background="White" BorderThickness="0,0,1,0" BorderBrush="#DDD">
-		<Border.Effect>
-			<DropShadowEffect BlurRadius="3" ShadowDepth="3" Direction="0" Color="Black" Opacity="0.9"/>
-		</Border.Effect>
+				<Border.Effect>
+					<DropShadowEffect BlurRadius="3" ShadowDepth="3" Direction="0" Color="Black" Opacity="0.9"/>
+				</Border.Effect>
 				<StackPanel Orientation="Vertical">
-			<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
+					<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
          Text="Søk etter spill..."
          Foreground="#888"
          GotFocus="SearchBox_GotFocus"
          LostFocus="SearchBox_LostFocus"
          TextChanged="SearchBox_TextChanged"/>
-			<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0" />
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre Spill" Margin="10,5,0,0" />
-            <Separator Margin="10,10,10,10"/>
-			<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckFlerspiller" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
+					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0" />
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre Spill" Margin="10,5,0,0" />
+					<Separator Margin="10,10,10,10"/>
+					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckFlerspiller" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
 
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
-            <Separator Margin="10,10,10,10"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
-			<Separator Margin="10,10,10,10"/>
-			<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
+					<Separator Margin="10,10,10,10"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
+					<Separator Margin="10,10,10,10"/>
+					<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
         HorizontalAlignment="Center" VerticalAlignment="Center" Click="SkjulKnapp_Click"/>
-		</StackPanel>
-	</Border>
+				</StackPanel>
+			</Border>
 
 			<ItemsControl ItemsSource="{Binding ValgtKategori.Games}">
 				<ItemsControl.ItemTemplate>
@@ -648,10 +647,10 @@ Margin="0,0,5,0" Visibility="Collapsed">
 						</ItemsControl.ItemTemplate>
 					</ItemsControl>
 				</ScrollViewer>
-				<wfi:WindowsFormsHost x:Name="VRHost" Visibility="Visible"
-      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 			</Grid>
-			<ContentControl x:Name="VRFullscreenContainer" Visibility="Collapsed"/>
+			<WindowsFormsHost x:Name="VRHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="VRHost_SizeChanged" Visibility="Collapsed">
+				<wf:Panel x:Name="VRPanel"/>
+			</WindowsFormsHost>
 		</Grid>
-	</Grid>
+		</Grid>
 </Window>
