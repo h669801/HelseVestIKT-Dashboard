@@ -8,6 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	  <UseWindowsForms>true</UseWindowsForms>
+	  <AllowUnsafeCode>true</AllowUnsafeCode>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -87,13 +89,33 @@
 	  <PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
 	  <PackageReference Include="NAudio" Version="2.2.1" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+	  <PackageReference Include="Silk.NET.OpenXR" Version="2.22.0" />
+	  <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
 	  <PackageReference Include="SimpleWifi.netstandard" Version="2.0.0" />
 	  <PackageReference Include="SteamKit2" Version="3.0.2" />
 	  <PackageReference Include="ValveKeyValue" Version="0.12.0.391" />
+	  <PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
+	  <PackageReference Include="Vortice.DXGI" Version="3.6.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Folder Include="Native\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Properties\Settings.Designer.cs">
+	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Settings.settings</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Properties\Settings.settings">
+	    <Generator>SettingsSingleFileGenerator</Generator>
+	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+	  </None>
 	</ItemGroup>
 
 

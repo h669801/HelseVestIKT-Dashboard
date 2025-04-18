@@ -37,6 +37,13 @@ using SteamKit2.Internal;
 using NAudio.CoreAudioApi;
 using Application = System.Windows.Application;
 using CheckBox = System.Windows.Controls.CheckBox;
+using Vortice.Direct3D11;
+using Vortice.DXGI;
+using Vortice.Mathematics;
+using WpfPanel = System.Windows.Controls.Panel;
+using System.IO;
+using Path = System.IO.Path;
+
 
 namespace HelseVestIKT_Dashboard
 {
@@ -160,7 +167,6 @@ namespace HelseVestIKT_Dashboard
 
 
 		private bool isFullscreen = false;
-		private VRFullscreenWindow vrFullscreenWindow;
 		private DispatcherTimer? vrStatusTimer;
 		private ThreadingTimer? _vrStatusTimer;
 		private CVRSystem? vrSystem;
@@ -168,7 +174,34 @@ namespace HelseVestIKT_Dashboard
 
 		private DispatcherTimer searchTimer;
 
+		private DispatcherTimer _vrEmbedTimer;
+		private int _vrEmbedAttempts = 0;	
+		private const int MaxVREmbedAttempts = 20;
+
 		#endregion
+
+		#region VRMirrorTextureTest
+		// Define the delegate that maps to the OpenVR function.
+
+		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+		internal delegate EVRCompositorError _GetMirrorTextureD3D11(EVREye eEye, IntPtr pD3D11DeviceOrResource, ref IntPtr ppD3D11ShaderResourceView);
+
+		// This field will hold the function pointer as a delegate.
+		[MarshalAs(UnmanagedType.FunctionPtr)]
+		internal _GetMirrorTextureD3D11 GetMirrorTextureD3D11;
+
+		// The D3D11 device pointer acquired from your D3D11DeviceManager.
+		private IntPtr d3d11DevicePointer;
+		private D3DImage? d3dImage;
+		private DispatcherTimer renderTimer;
+		private ID3D11Device? d3d11Device;
+		private ID3D11Texture2D? _sharedTexture;
+		private D3D11DeviceManager? deviceManager;
+		private ID3D11RenderTargetView? shareTextureRTV;	
+
+		#endregion
+
+
 
 		#region MainWindow Konstruktør
 		public MainWindow()
@@ -217,9 +250,10 @@ namespace HelseVestIKT_Dashboard
 			InitializeOpenVR();
 			StartVRStatusTimer();
 			StartMonitoringWifiSignal();
+
+			
 		}
 		#endregion
-
 
 		private void UpdateGameStatus()
 		{
@@ -235,36 +269,46 @@ namespace HelseVestIKT_Dashboard
 		{
 			if (_gamesLoaded)
 				return;
-
 			_gamesLoaded = true;
+
+			// 1) Hent Steam-spill én gang
 			string steamAPIKey = "384082C6759AAF7B6974A9CCE1ECF6CE";
 			string steamID = "76561198081888308";
-			SteamApi steamApi = new SteamApi("384082C6759AAF7B6974A9CCE1ECF6CE", "76561198081888308");
-			var fetchedGames = await steamApi.GetSteamGamesAsync();
+			SteamApi steamApi = new SteamApi(steamAPIKey, steamID);
+
+			var steamGames = await steamApi.GetSteamGamesAsync();
+
+			// 2) Berik med detaljer
 			gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
+			await Task.WhenAll(steamGames.Select(g => gameDetailsFetcher.AddDetailsAsync(g)));
 
-			await LoadGameAsync(steamApi);
-
-            var tasks = fetchedGames.Select(async game =>
-            {
-                await gameDetailsFetcher.AddDetailsAsync(game);
-                Application.Current.Dispatcher.Invoke(() => { AllGames.Add(game); Games.Add(game); });
-
-            });
-
-            await Task.WhenAll(tasks);
-
-
-            OfflineSteamGamesManager steamGamesManager = new OfflineSteamGamesManager();
-			List<Game> allGames = steamGamesManager.GetNonSteamGames(@"C:\Program Files (x86)\Steam");
-			Console.WriteLine($"Found {allGames.Count} games.");
-			foreach (var game in allGames)
+			// 3) Fyll AllGames og Games én gang
+			AllGames.Clear();
+			Games.Clear();
+			foreach (var g in steamGames)
 			{
-				Games.Add(game);
-				game.GameImage = GameImage.LoadIconFromExe(game.InstallPath);
-				Console.WriteLine($"AppID: {game.AppID}, Title: {game.Title}, Path: {game.InstallPath}, Steam Game: {game.IsSteamGame}");
+				AllGames.Add(g);
+				Games.Add(g);
 			}
+
+			// 4) Hent non‑Steam-spill (og unngå duplikater)
+			var offlineGames = new OfflineSteamGamesManager()
+								   .GetNonSteamGames(@"C:\Program Files (x86)\Steam")
+								   .Where(g => !steamGames.Any(s => s.AppID == g.AppID));
+
+			foreach (var g in offlineGames)
+			{
+				AllGames.Add(g);
+				Games.Add(g);
+				g.GameImage = GameImage.LoadIconFromExe(g.InstallPath);
+			}
+
+			// Resten av initialiseringen
+			await Task.Delay(2000);
+			
 		}
+
+
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 		protected void OnPropertyChanged(string propertyName)
@@ -470,33 +514,67 @@ namespace HelseVestIKT_Dashboard
 
 		#region Fullscreen og VR Embedding
 
-		private async void FullScreenButton_Click(object sender, RoutedEventArgs e)
+		private void FullScreenButton_Click(object sender, RoutedEventArgs e)
 		{
+			// Skjul GameLibrary-området
+			GameLibraryArea.Visibility = Visibility.Collapsed;
 
-			if (!isFullscreen)
-			{
-				if (VRHost.Parent is System.Windows.Controls.Panel parentPanel)
-				{
-					parentPanel.Children.Remove(VRHost);
-				}
+			// Gjør VRHost synlig (det ligger allerede i MainContentGrid på riktig rad/kolonne i XAML)
+			VRHost.Visibility = Visibility.Visible;
 
-				vrFullscreenWindow = new VRFullscreenWindow();
-				vrFullscreenWindow.SetVRContent(VRHost);
-				vrFullscreenWindow.Show();
+			// Sørg for at det ligger øverst i z‑rekkefølgen
+			WpfPanel.SetZIndex(VRHost, 100);
 
-				await vrFullscreenWindow.EmbedSteamVRSpeactatorAsync();
-
-			}
-			else
-			{
-				// Avslutt fullskjerm: fjern VRHost fra VRFullscreenWindow
-				vrFullscreenWindow.RemoveVRContent(VRHost);
-				// Legg VRHost tilbake i den opprinnelige containeren
-				MainContentGrid.Children.Add(VRHost);
-			}
-
+			Console.WriteLine("VRHost er nå synlig over spillbiblioteket.");
 		}
 
+
+		// This method embeds the external VR view window into your host control.
+		private void EmbedVRView(IntPtr vrViewHandle)
+		{
+			// Get the handle for your WindowsFormsHost control.
+			// VRHost is your WindowsFormsHost defined in XAML.
+			IntPtr hostHandle = ((System.Windows.Forms.Control)VRHost.Child)?.Handle ?? IntPtr.Zero;
+			if (hostHandle == IntPtr.Zero)
+			{
+				Console.WriteLine("VRHost child not available.");
+				return;
+			}
+
+			// Re-parent the external VR View window.
+			IntPtr prevParent = Win32.SetParent(vrViewHandle, hostHandle);
+			if (prevParent == IntPtr.Zero)
+			{
+				Console.WriteLine("Failed to reparent the VR View window.");
+				return;
+			}
+
+			// Remove window borders and title.
+			int style = Win32.GetWindowLong(vrViewHandle, Win32.GWL_STYLE);
+			style &= ~(Win32.WS_CAPTION | Win32.WS_BORDER);
+			style |= Win32.WS_CHILD;
+			Win32.SetWindowLong(vrViewHandle, Win32.GWL_STYLE, style);
+
+			// Position and size the window to fill your host.
+			int width = (int)VRHost.ActualWidth;
+			int height = (int)VRHost.ActualHeight;
+			bool posResult = Win32.SetWindowPos(vrViewHandle, IntPtr.Zero, 0, 0, width, height, Win32.SWP_NOZORDER | Win32.SWP_NOACTIVATE);
+			if (!posResult)
+			{
+				Console.WriteLine("SetWindowPos failed for the VR View window.");
+			}
+			Console.WriteLine("VR View embedded successfully.");
+		}
+
+		private void VRHost_SizeChanged(object sender, EventArgs e)
+		{
+			IntPtr vrViewHandle = Win32.FindWindow(null, "VR View");
+			if (vrViewHandle == IntPtr.Zero) return;
+
+			int width = (int)VRHost.ActualWidth;
+			int height = (int)VRHost.ActualHeight;
+			Win32.SetWindowPos(vrViewHandle, IntPtr.Zero, 0, 0, width, height, Win32.SWP_NOZORDER | Win32.SWP_NOACTIVATE);
+		}
 
 		#endregion
 
@@ -718,38 +796,107 @@ namespace HelseVestIKT_Dashboard
 			logWindow.ShowDialog();
 		}
 
-			//Dette omhandler Spillgrid seksjonen av vinduet
-		private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
+		//Dette omhandler Spillgrid seksjonen av vinduet
+		private async void LaunchGameButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (sender is Button button && button.DataContext is Game game)
+			if (!(sender is Button btn && btn.DataContext is Game game))
+				return;
+
+			Console.WriteLine(">>> LaunchGameButton_Click fired");
+			Console.WriteLine($"Title: {game.Title}");
+			Console.WriteLine($"IsSteamGame: {game.IsSteamGame}");
+			Console.WriteLine($"InstallPath: '{game.InstallPath}'");
+			Console.WriteLine($"AppID: '{game.AppID}'");
+
+			// Sjekk om non‑Steam‑spill har en gyldig .exe-bane:
+			bool hasExe = !string.IsNullOrWhiteSpace(game.InstallPath)
+						  && File.Exists(game.InstallPath);
+
+			if (hasExe)
 			{
-				//start non-steam spill
-				if (!game.IsSteamGame)
+				// Non‑Steam: start direkte via exe
+				var psi = new ProcessStartInfo
 				{
-					var psi = new ProcessStartInfo
-					{
-						FileName = game.InstallPath,
-						WorkingDirectory = System.IO.Path.GetDirectoryName(game.InstallPath)
-					};
+					FileName = game.InstallPath,
+					WorkingDirectory = Path.GetDirectoryName(game.InstallPath)!
+				};
+				try
+				{
 					Process.Start(psi);
 				}
-				else
+				catch (Exception ex)
 				{
-					// Start Steam-spill
-					SteamLauncher.LaunchSteamGame(game.AppID);
+					MessageBox.Show($"Kunne ikke starte spillet: {ex.Message}", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
+					return;
 				}
 			}
+			else if (!string.IsNullOrWhiteSpace(game.AppID))
+			{
+				// Fallback for Steam‑spill: bruk steam://-URI
+				try
+				{
+					Process.Start(new ProcessStartInfo
+					{
+						FileName = $"steam://rungameid/{game.AppID}",
+						UseShellExecute = true
+					});
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show($"Kunne ikke starte Steam-spill: {ex.Message}", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
+					return;
+				}
+			}
+			else
+			{
+				// Hverken exe eller AppID → gi tydelig feilmelding
+				MessageBox.Show(
+				  $"Ingen gyldig kjørbar fil eller Steam‑ID funnet for «{game.Title}».",
+				  "Feil",
+				  MessageBoxButton.OK,
+				  MessageBoxImage.Error);
+				return;
+			}
 
-			// Hide header and game library, show the Return button in the toolbar.
+			// Dersom du ønsker å gå rett i VR‑visning:
+			FullScreenButton_Click(null, null);
+			await EmbedVRSpectatorAsync();
+			
+
+			// Oppdater UI
 			HeaderGrid.Visibility = Visibility.Visible;
 			StatusBar.Visibility = Visibility.Visible;
 			GameLibraryScrollViewer.Visibility = Visibility.Collapsed;
-			// VRHost.Visibility = Visibility.Visible;
+			VRHost.Visibility = Visibility.Visible;
 			ReturnButton.Visibility = Visibility.Visible;
-
-			//await Task.Delay(5000);
-			//await EmbedSteamVRSpectatorAsync();
 		}
+
+
+
+
+		private async Task EmbedVRSpectatorAsync()
+		{
+			int attempts = 0;
+			while (attempts < MaxVREmbedAttempts)
+			{
+				// Søk etter VR-vinduet, her benytter vi tittelen "VR View".
+				IntPtr vrViewHandle = Win32.FindWindow(null, "VR View");
+				if (vrViewHandle != IntPtr.Zero)
+				{
+					// Når vinduet er funnet, kall EmbedVRView og avslutt metoden.
+					EmbedVRView(vrViewHandle);
+					Console.WriteLine("VR View embedded successfully after {0} attempts.", attempts + 1);
+					return;
+				}
+
+				attempts++;
+				// Vent 500ms før neste forsøk. Juster ventetiden etter behov.
+				await Task.Delay(1000);
+			}
+
+			Console.WriteLine("Unable to embed VR View after multiple attempts.");
+		}
+
 
 		#endregion
 
