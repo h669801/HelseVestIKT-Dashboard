@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -11,6 +12,7 @@ namespace HelseVestIKT_Dashboard
     {
         public required string AppID { get; set; }
         public required string Title { get; set; } = string.Empty;
+		[JsonIgnore]
 		public BitmapImage? GameImage { get; set; }
 
 		public string ProcessName { get; set; } = string.Empty;
