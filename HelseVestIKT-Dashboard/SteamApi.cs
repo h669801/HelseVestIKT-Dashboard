@@ -20,50 +20,68 @@ namespace HelseVestIKT_Dashboard
 
 		public async Task<List<Game>> GetSteamGamesAsync()
 		{
-			List<Game> games = new List<Game>();
-			// Include app info to get image URLs.
-			string apiUrl = $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={steamApiKey}&steamid={steamUserId}&include_appinfo=true";
+			var games = new List<Game>();
 
-			using (HttpClient client = new HttpClient())
+			// 1) Call the Steam API
+			string apiUrl =
+			  $"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={steamApiKey}&steamid={steamUserId}&include_appinfo=true";
+			using var client = new HttpClient();
+			var response = await client.GetAsync(apiUrl);
+			if (!response.IsSuccessStatusCode)
 			{
-				HttpResponseMessage response = await client.GetAsync(apiUrl);
-				if (response.IsSuccessStatusCode)
+				Console.WriteLine("Kunne ikke hente spilldata.");
+				return games;
+			}
+
+			// 2) Parse JSON and build bare‐bones Game objects
+			var json = await response.Content.ReadAsStringAsync();
+			var data = JObject.Parse(json)["response"]["games"];
+			games = data
+			  .Select(g => new Game
+			  {
+				  AppID = (string)g["appid"],
+				  Title = (string)g["name"],
+				  GameImage = null  // fill in below
+			  })
+			  .ToList();
+
+			// 3) In parallel, load each image (local first, then Steam’s logo URL)
+			var loadTasks = games.Select(async game =>
+			{
+				// a) Local cache?
+				var local = GameImage.LoadLocalGameImage(game.AppID);
+				if (local != null)
 				{
-					string jsonResult = await response.Content.ReadAsStringAsync();
-					Console.WriteLine(jsonResult);
-					JObject data = JObject.Parse(jsonResult);
+					game.GameImage = local;
+					return;
+				}
 
-					foreach (var game in data["response"]["games"])
+				// b) Steam’s online logo suffix
+				var jsonObj = data.First(x => (string)x["appid"] == game.AppID);
+				var suffix = (string?)jsonObj["img_logo_url"];
+				if (!string.IsNullOrEmpty(suffix))
+				{
+					var url = $"https://cdn.cloudflare.steamstatic.com/steam/apps/{game.AppID}/{suffix}.jpg";
+					try
 					{
-						string title = game["name"].ToString();
-						string appID = game["appid"].ToString();
-
-						// Try to load the local image based on the appID.
-						BitmapImage? gameImage = GameImage.LoadLocalGameImage(appID);
-
-						// If the local image isn't available, fall back to using the online capsule image.
-						if (gameImage == null)
-						{
-							string? capsuleImageUrl = game["capsule_image"]?.ToString();
-							if (!string.IsNullOrEmpty(capsuleImageUrl))
-							{
-								gameImage = await GameImage.LoadOnlineGameImageAsync(capsuleImageUrl);
-							}
-						}
-
-						games.Add(new Game
-						{
-							AppID = appID,
-							Title = title,
-							GameImage = gameImage!
-						});
+						game.GameImage = await GameImage.LoadOnlineGameImageAsync(url);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine($"Feil ved lasting av bilde for {game.Title}: {ex.Message}");
 					}
 				}
-				else
+
+				// c) Fallback if still null
+				if (game.GameImage == null)
 				{
-					Console.WriteLine("Kunne ikke hente spilldata.");
+					game.GameImage = new BitmapImage(
+						new Uri("pack://application:,,,/Bilder/Helse_Vest_Kuler_Logo.png"));
 				}
-			}
+			});
+
+			await Task.WhenAll(loadTasks);
+
 			return games;
 		}
 	}

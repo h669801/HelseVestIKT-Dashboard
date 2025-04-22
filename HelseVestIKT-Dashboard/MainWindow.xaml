@@ -4,7 +4,8 @@
         xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
 		 xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
         Title="Helse Vest IKT" Height="800" Width="1300"
-		WindowState="Maximized">
+		WindowState="Maximized"
+		Topmost="True">
 
 	<Window.Resources> 
 
@@ -342,35 +343,12 @@
 						</StackPanel>
 					</StackPanel>
 
-					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Click="Romkalibrering_Click" Height="45" Margin="10,0,0,15">
+					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Click="KalibreringKnapp_Click" Height="45" Margin="10,0,0,15">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/>
 							<Image Source="/Bilder/accessibility.png" Width="30" Height="30" HorizontalAlignment="Right" Margin="10,0,0,0" />
 						</StackPanel>
 					</Button>
-
-					<Popup x:Name="KalibreringPopup"
-       Placement="Center"
-       StaysOpen="True"
-       PlacementTarget="{Binding ElementName=StatusBar}"
-       Visibility="Collapsed">
-						
-							<StackPanel Background="White" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
-								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering"/>
-								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill"/>
-								</Button>
-								<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="TilbakeKnapp_Click" Margin="5">
-									<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Tilbake"/>
-								</Button>
-							</StackPanel>
-					
-					</Popup>
 
 					<Button x:Name="VisKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Height="45" Margin="10,0,0,15" Visibility="Collapsed" Click="VisKnapp_Click">
 						<StackPanel>
@@ -461,8 +439,9 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 					</Button>
 
 					<!-- Wifi signal-->
-					<Image x:Name="WifiSignalIcon" Width="30" Height="30" Margin="0,0,10,0"/>
-
+					<StackPanel Orientation="Horizontal" Height="24" Width="24" Margin="0,0,10,0">
+						<Image x:Name="WifiSignalIcon" Width="20" Height="20" Margin="0,0,10,0" SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="HighQuality"/>
+					</StackPanel>
 					<!-- Popup for volum -->
 					<Popup x:Name="VolumePopup" Placement="Custom"
                  CustomPopupPlacementCallback="VolumePopupPlacementCallback"
@@ -507,6 +486,7 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 				<ColumnDefinition Width="Auto"/>
 				<ColumnDefinition Width="Auto"/>
 				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
 				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
 
@@ -518,18 +498,33 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 			<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0"/>
 			<TextBox Grid.Column="3" x:Name="StatusTextBlock" IsHitTestVisible="false" Background="Salmon" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Width="Auto"/>
 
+			<StackPanel x:Name="StatusBarKalibrering" Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="150,0,0,0">
+				<Button Click="RomKalibrering_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
+						</Button>
+						<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering"/>
+						</Button>
+						<Button Click="MidtstillView_Sittende_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill sittende"/>
+						</Button>
+				<Button Click="MidstillView_Staaende_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midstill Stående"/>
+				</Button>
+			</StackPanel>
+			
 			<!--Knapper (Pause, Avslutt og Nødstopp -->
-			<StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0">
+			<StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0">
 				<!-- Return-knapp for spillvisning (skjules initialt) -->
 				<Button x:Name="ReturnButton"  Click="ReturnButton_Click"
-Style="{StaticResource SquareRoundedButtonStyle}"
-HorizontalAlignment="Right" VerticalAlignment="Center" 
-Margin="0,0,5,0" Visibility="Collapsed">
-					<StackPanel Orientation="Horizontal">
+				Style="{StaticResource SquareRoundedButtonStyle}"
+				HorizontalAlignment="Right" VerticalAlignment="Center" 
+				Margin="0,0,5,0" Visibility="Collapsed">
+			<StackPanel Orientation="Horizontal">
 						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Hjem"/>
 					</StackPanel>
 				</Button>
-				<Button Style="{StaticResource SquareRoundedButtonStyle}" x:Name="PauseKnapp" Width="Auto" Click="PauseKnapp_Click">
+				<Button Style="{StaticResource SquareRoundedButtonStyle}" Click="PauseKnapp_Click" x:Name="PauseKnapp" Width="Auto">
 					<StackPanel Orientation="Horizontal">
 						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Pause" Margin="0,0,10,0"/>
 						<Image Source="/Bilder/pause_knapp.png" Height="18" Width="18" HorizontalAlignment="Right"/>
@@ -648,7 +643,8 @@ Margin="0,0,5,0" Visibility="Collapsed">
 					</ItemsControl>
 				</ScrollViewer>
 			</Grid>
-			<WindowsFormsHost x:Name="VRHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="VRHost_SizeChanged" Visibility="Collapsed">
+			<WindowsFormsHost x:Name="VRHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+							  SizeChanged="VRHost_SizeChanged" Visibility="Collapsed">
 				<wf:Panel x:Name="VRPanel"/>
 			</WindowsFormsHost>
 		</Grid>
