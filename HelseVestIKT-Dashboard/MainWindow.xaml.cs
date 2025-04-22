@@ -18,6 +18,7 @@ using SimpleWifi;
 using WPoint = System.Windows.Point;
 using NAudio.CoreAudioApi;
 using CheckBox = System.Windows.Controls.CheckBox;
+using Dialogs;
 using Vortice.Direct3D11;
 using WpfPanel = System.Windows.Controls.Panel;
 using System.IO;
@@ -213,6 +214,13 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 	
 		#endregion
+		private GameGroupHandler gameGroupHandler;
+
+
+        private bool isRenaming = false;
+		private GameGroup gameGroupToRename;
+
+        
 
 		#region VRMirrorTextureTest
 		// Define the delegate that maps to the OpenVR function.
@@ -315,7 +323,8 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 			// 2) Berik med detaljer
 			gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
-			await Task.WhenAll(steamGames.Select(g => gameDetailsFetcher.AddDetailsAsync(g)));
+            gameGroupHandler = new GameGroupHandler();
+            await Task.WhenAll(steamGames.Select(g => gameDetailsFetcher.AddDetailsAsync(g)));
 
 			// 3) Fyll AllGames og Games én gang
 			AllGames.Clear();
@@ -338,7 +347,6 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 				g.GameImage = GameImage.LoadIconFromExe(g.InstallPath);
 			}
 
-
 			var steamPath = GetSteamInstallPathFromRegistry();
 			foreach (var g in AllGames)
 			{
@@ -359,7 +367,7 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			gameStatusTimer.Tick += (s, e) => UpdateGameStatus();
 			gameStatusTimer.Start();
 
-
+      LoadGameGroups();
 			// Resten av initialiseringen
 			await Task.Delay(2000);
 			
@@ -399,6 +407,9 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
         #region FilterEvent 
         private void UpdateFilters(object sender, RoutedEventArgs e)
         {
+			
+			
+
 
             List<CheckBox> genreFilters = new()
             {
@@ -416,20 +427,162 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
             foreach (Game game in AllGames)
             {
 
-                if (filterHandler.FilterGame(genreFilters, typeFilters, game))
+                if (filterHandler.FilterGame(genreFilters, typeFilters,gameGroupHandler.GetGameGroups(), game))
                 {
                     Console.WriteLine("Game Added: " + game.Title);
                     Games.Add(game);
                 }
             }
-            Console.WriteLine("Filters applied: " + ((CheckBox)sender).Content.ToString() + "\n\n");
-
+			if(sender != null) { 
+            Console.WriteLine($"Filters {((sender as CheckBox).IsChecked.Value ? "applied":"unapplied")}: " + ((CheckBox)sender).Content.ToString() + "\n\n");
+            }
 
 
         }
 
         #endregion
 
+        #region GameGroups
+        private void CreateCategory_Click(object sender, RoutedEventArgs e)
+        {
+            NewCategoryTextBox.Visibility = Visibility.Visible;
+            NewCategoryTextBox.Focus();
+        }
+
+
+        private void NewCategoryTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (isRenaming)
+            {
+                if (!string.IsNullOrWhiteSpace(NewCategoryTextBox.Text))
+                {
+                    // Update the group name
+                    gameGroupToRename.GroupName = NewCategoryTextBox.Text;
+                    gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+
+                    // Directly update the checkbox text by using the game group reference
+                    var checkBoxToUpdate = gameGroupHandler.GetGameGroups()
+                                             .FirstOrDefault(g => g.Item2 == gameGroupToRename).Item1;
+                    if (checkBoxToUpdate != null)
+                    {
+                        checkBoxToUpdate.Content = NewCategoryTextBox.Text;
+                        checkBoxToUpdate.Visibility = Visibility.Visible; // Make sure it's visible after renaming
+                    }
+                }
+
+                isRenaming = false;
+                gameGroupToRename = null;
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(NewCategoryTextBox.Text))
+                {
+                    var newGroup = new GameGroup { GroupName = NewCategoryTextBox.Text };
+                    var checkBox = new CheckBox
+                    {
+                        Content = newGroup.GroupName,
+                        Style = (Style)FindResource("RoundedCheckBoxWithSourceSansFontStyle")
+                    };
+                    checkBox.Click += UpdateFilters;
+
+                    gameGroupHandler.AddGameGroup(checkBox, newGroup);
+                    AddGameGroupCheckBox(checkBox, newGroup);
+                    gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+                }
+            }
+            NewCategoryTextBox.Text = string.Empty;
+            NewCategoryTextBox.Visibility = Visibility.Collapsed;
+        }
+
+      
+
+
+
+
+
+
+        private void AddGameGroupCheckBox(CheckBox checkBox, GameGroup gameGroup)
+        {
+            var contextMenu = new ContextMenu();
+            var renameMenuItem = new MenuItem { Header = "Gi nytt navn" };
+            renameMenuItem.Click += (s, e) => RenameGameGroup(gameGroup);
+            var editMenuItem = new MenuItem { Header = "Rediger" };
+            editMenuItem.Click += (s, e) => EditGameGroup(gameGroup);
+            var deleteMenuItem = new MenuItem { Header = "Slett" };
+            deleteMenuItem.Click += (s, e) => DeleteGameGroup(gameGroup, checkBox);
+
+            contextMenu.Items.Add(renameMenuItem);
+            contextMenu.Items.Add(editMenuItem);
+            contextMenu.Items.Add(deleteMenuItem);
+            checkBox.ContextMenu = contextMenu;
+
+            GameCategoriesPanel.Children.Add(checkBox);
+
+            // Sort the checkboxes alphabetically
+            var sortedChildren = GameCategoriesPanel.Children.Cast<CheckBox>()
+                .OrderBy(cb => cb.Content.ToString())
+                .ToList();
+
+            GameCategoriesPanel.Children.Clear();
+            foreach (var child in sortedChildren)
+            {
+                GameCategoriesPanel.Children.Add(child);
+            }
+        }
+        private void RenameGameGroup(GameGroup gameGroup)
+        {
+            isRenaming = true;
+            gameGroupToRename = gameGroup;
+            NewCategoryTextBox.Text = gameGroup.GroupName;
+            NewCategoryTextBox.Visibility = Visibility.Visible;
+            NewCategoryTextBox.Focus();
+        }
+
+
+      
+
+
+        private void EditGameGroup(GameGroup gameGroup)
+        {
+
+            GameCategoryDialog dialog = new GameCategoryDialog(AllGames.ToList(),gameGroup);
+            dialog.GameGroupChanged += (s, e) =>
+            {
+                gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+                UpdateFilters(null, null); // Refresh the filters
+            };
+            
+			dialog.ShowDialog();
+
+
+
+        }
+
+
+
+        private void DeleteGameGroup(GameGroup gameGroup, CheckBox checkBox)
+        {
+            gameGroupHandler.RemoveGameGroup(gameGroup.GroupName);
+            GameCategoriesPanel.Children.Remove(checkBox);
+            gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+			UpdateFilters(null, null); // Refresh the filters
+        }
+
+
+        private void LoadGameGroups()
+        {
+            var checkBoxStyle = (Style)FindResource("RoundedCheckBoxWithSourceSansFontStyle");
+            var gameGroups = gameGroupHandler.LoadGroupsFromFile(UpdateFilters, checkBoxStyle,AllGames.ToList());
+            foreach (var (checkBox, group) in gameGroups)
+            {
+                AddGameGroupCheckBox(checkBox, group);
+            }
+        }
+
+
+
+
+        #endregion
 
         #region OpenVR og VR Status
 
@@ -731,6 +884,8 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			// Hent standard avspillingsenhet
 			var enumerator = new MMDeviceEnumerator();
 			MMDevice device = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+
+			device.AudioEndpointVolume.MasterVolumeLevelScalar = volumeScalar;
 
 			// Sett volumet
 			device.AudioEndpointVolume.MasterVolumeLevelScalar = volumeScalar;
