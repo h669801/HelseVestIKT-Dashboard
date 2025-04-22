@@ -17,6 +17,7 @@
     <None Remove="Bilder\exit_knapp.png" />
     <None Remove="Bilder\fullskjerm.png" />
     <None Remove="Bilder\fullskjerm_lukk.png" />
+    <None Remove="Bilder\Helse_Vest_Kuler_Logo.png" />
     <None Remove="Bilder\kontroller – Kopi.png" />
     <None Remove="Bilder\kontroller.png" />
     <None Remove="Bilder\kontroller_venstre.png" />
@@ -28,6 +29,10 @@
     <None Remove="Bilder\vrheadset.png" />
     <None Remove="Bilder\vrkontrollere.png" />
     <None Remove="Bilder\vr_headset.png" />
+    <None Remove="Bilder\wifi_0_bar.png" />
+    <None Remove="Bilder\wifi_1_bar.png" />
+    <None Remove="Bilder\wifi_2_bar.png" />
+    <None Remove="Bilder\wifi_3_bar.png" />
     <None Remove="Bilder\wifi_bar_0.png" />
     <None Remove="Bilder\wifi_bar_1.png" />
     <None Remove="Bilder\wifi_bar_2.png" />
@@ -54,6 +59,9 @@
 		</Resource>
 		<Resource Include="Bilder\fullskjerm.png" />
 		<Resource Include="Bilder\fullskjerm_lukk.png" />
+		<Resource Include="Bilder\Helse_Vest_Kuler_Logo.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
 		<Resource Include="Bilder\kontroller – Kopi.png" />
 		<Resource Include="Bilder\kontroller.png">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -67,6 +75,12 @@
 		<Resource Include="Bilder\vrheadset.png" />
 		<Resource Include="Bilder\vrkontrollere.png" />
 		<Resource Include="Bilder\vr_headset.png" />
+		<Resource Include="Bilder\wifi_0_bar.png" />
+		<Resource Include="Bilder\wifi_1_bar.png" />
+		<Resource Include="Bilder\wifi_2_bar.png" />
+		<Resource Include="Bilder\wifi_3_bar.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Resource>
 		<Resource Include="Bilder\wifi_bar_0.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Resource>
@@ -90,6 +104,7 @@
 	  <PackageReference Include="NAudio" Version="2.2.1" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	  <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+	  <PackageReference Include="Silk.NET.Core" Version="2.22.0" />
 	  <PackageReference Include="Silk.NET.OpenXR" Version="2.22.0" />
 	  <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
 	  <PackageReference Include="SimpleWifi.netstandard" Version="2.0.0" />
