@@ -12,47 +12,57 @@ namespace HelseVestIKT_Dashboard
 	{
 		// You can either return the values or use events to notify MainWindow
 		private readonly IEnumerable<Game> _allGames;
-		public string CurrentPlayer { get; private set; }
-		public string CurrentStatus { get; private set; }
+		public string CurrentPlayer { get; private set; } = "Ingen spill kjører";
+		public string CurrentStatus { get; private set; } = "";
 
-		public Game? _currentGame;
+		public Game? CurrentGame { get; private set; }
 
 		public GameStatusManager(IEnumerable<Game> allGames)
 		{
 			_allGames = allGames;
 		}
-
 		private Game? GetCurrentlyRunningGame()
 		{
-			foreach(var game in _allGames)
-					{
-				var processes = Process.GetProcessesByName(game.ProcessName);
-				if (processes.Length > 0)
-				{
+			// 1) Forsøk match på prosessnavn (raskest, mest pålitelig for VR‑apper uten vindu)
+			foreach (var game in _allGames.Where(g => !string.IsNullOrEmpty(g.ProcessName)))
+			{
+				var procs = Process.GetProcessesByName(game.ProcessName);
+				if (procs.Any(p => !p.HasExited))
 					return game;
-				}
 			}
-				return null;
+			// 2) Fallback til vindustittel‑match
+			foreach (var proc in Process.GetProcesses().Where(p => !string.IsNullOrEmpty(p.MainWindowTitle)))
+			{
+				string title = proc.MainWindowTitle;
+				var match = _allGames.FirstOrDefault(g =>
+					!string.IsNullOrEmpty(g.Title) &&
+					title.IndexOf(g.Title, StringComparison.OrdinalIgnoreCase) >= 0);
+				if (match != null)
+					return match;
 			}
+
+			return null;
+		}
+
+
 
 		public void UpdateCurrentGameAndStatus()
 		{
-			Game? currentGame = GetCurrentlyRunningGame();
-			if (currentGame != null)
-			{
-				// Update the game title
-				CurrentPlayer = currentGame.Title;
+			CurrentGame = GetCurrentlyRunningGame();
 
-				// Check performance (example: using the process's Responding property)
-				var processes = Process.GetProcessesByName(currentGame.ProcessName);
-				if (processes.Length > 0 && processes[0].Responding)
-				{
-					CurrentStatus = "OK";
-				}
-				else
-				{
-					CurrentStatus = "!OK";
-				}
+			if (CurrentGame != null)
+			{
+				CurrentPlayer = CurrentGame.Title;
+
+				// Sjekk om prosessen tikker
+				bool responding = Process
+					.GetProcesses()
+					.Where(p => !string.IsNullOrEmpty(p.MainWindowTitle))
+					.Any(p => p.MainWindowTitle
+							   .IndexOf(CurrentGame.Title, StringComparison.OrdinalIgnoreCase) >= 0
+							   && p.Responding);
+
+				CurrentStatus = responding ? "OK" : "!OK";
 			}
 			else
 			{
@@ -61,6 +71,5 @@ namespace HelseVestIKT_Dashboard
 			}
 		}
 
-		
 	}
 }
