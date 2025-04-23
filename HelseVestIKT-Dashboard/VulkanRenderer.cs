@@ -260,7 +260,7 @@ public unsafe class VulkanRenderer : IDisposable
         {
             throw new Exception("Required Vulkan extensions are not available.");
         }
-
+        Console.WriteLine(windowHandle);
         Win32SurfaceCreateInfoKHR surfaceCreateInfo = new Win32SurfaceCreateInfoKHR()
         {
             SType = StructureType.Win32SurfaceCreateInfoKhr,

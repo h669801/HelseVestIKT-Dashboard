@@ -31,20 +31,27 @@ namespace HelseVestIKT_Dashboard
         {
             InitializeComponent();
 
-            // Initialiser VulkanRenderer og opprett overflate/swapchain:
-            _vulkanRenderer = new VulkanRenderer();
-            // Hent vindushåndtak og HINSTANCE fra ditt vindu:
-            var windowHandle = new WindowInteropHelper(this).Handle;
-            var hInstance = Marshal.GetHINSTANCE(typeof(VulkanVRWindow).Module);
-            _vulkanRenderer.CreateSurface(windowHandle, hInstance);
-            _vulkanRenderer.Initialize();         // Eller kall eventuelt Initialize() før CreateSurface, avhengig av logikken.
-            _vulkanRenderer.CreateSwapchain();
+            this.Loaded += (s, e) =>
+            {
+                // Initialiser VulkanRenderer og opprett overflate/swapchain:
+                _vulkanRenderer = new VulkanRenderer();
 
-            _d3dInterop = new D3DInterop(SwapchainWidth, SwapchainHeight);
-            VulkanImageControl.Source = _d3dInterop.D3DImageSource;
+                // Hent vindushåndtak og HINSTANCE fra ditt vindu:
+                var windowHandle = new WindowInteropHelper(this).Handle;
+                var hInstance = Marshal.GetHINSTANCE(typeof(VulkanVRWindow).Module);
 
-            CompositionTarget.Rendering += CompositionTarget_Rendering;
+                Console.WriteLine(windowHandle); // Sjekk at det ikke er 0
+                _vulkanRenderer.CreateSurface(windowHandle, hInstance);
+                _vulkanRenderer.Initialize(); // Eller kall eventuelt Initialize() før CreateSurface, avhengig av logikken.
+                _vulkanRenderer.CreateSwapchain();
+
+                _d3dInterop = new D3DInterop(SwapchainWidth, SwapchainHeight);
+                VulkanImageControl.Source = _d3dInterop.D3DImageSource;
+
+                CompositionTarget.Rendering += CompositionTarget_Rendering;
+            };
         }
+
 
 
         private void CompositionTarget_Rendering(object sender, EventArgs e)
