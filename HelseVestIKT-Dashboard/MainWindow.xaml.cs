@@ -12,7 +12,6 @@ using System.Windows.Threading;
 using Valve.VR;
 using MessageBox = System.Windows.MessageBox;
 using Button = System.Windows.Controls.Button;
-using ThreadingTimer = System.Threading.Timer;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using SimpleWifi;
 using WPoint = System.Windows.Point;
@@ -26,6 +25,7 @@ using Path = System.IO.Path;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using System.Numerics;
+using System.Windows.Input;
 
 
 namespace HelseVestIKT_Dashboard
@@ -181,6 +181,35 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		return Path.GetFileNameWithoutExtension(chosen);
 	}
 
+		private static string? GetSteamExePath(string steamPath, string appId)
+		{
+			// katalogen der SteamVR og andre Steam-spill ligger
+			var common = Path.Combine(steamPath, "steamapps", "common");
+
+			// finn undermappen til dette appId
+			var manifest = Path.Combine(steamPath, "steamapps", $"appmanifest_{appId}.acf");
+			if (!File.Exists(manifest))
+				return null;
+
+			// les ut “installdir”
+			var text = File.ReadAllText(manifest);
+			var m = Regex.Match(text, "\"installdir\"\\s*\"(?<d>.*?)\"");
+			if (!m.Success) return null;
+			var dir = m.Groups["d"].Value;
+
+			var folder = Path.Combine(common, dir);
+			if (!Directory.Exists(folder)) return null;
+
+			// let etter exe i hele treet, velg største
+			var exes = Directory.GetFiles(folder, "*.exe", SearchOption.AllDirectories);
+			if (exes.Length == 0) return null;
+			return exes
+				.OrderByDescending(f => new FileInfo(f).Length)
+				.First();
+		}
+
+
+		private bool _isInNewOrRenameMode = false;
 
 		double eyeHeight = Properties.Settings.Default.Equals("EyeHeight") ? 1.8 : 0.0; // Default to 1.8m if not set
 
@@ -206,7 +235,6 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 		private bool isFullscreen = false;
 		private DispatcherTimer? vrStatusTimer;
-		private ThreadingTimer? _vrStatusTimer;
 		private CVRSystem? vrSystem;
 		public VRStatusManager VREquipmentStatus { get; set; } = new VRStatusManager();
 
@@ -274,7 +302,6 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			};
 			timer.Start();
 
-			_vrStatusTimer = new ThreadingTimer(VRStatusCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 			_wifiSignalTimer = new DispatcherTimer();
 
 			// Lukk SteamVR
@@ -356,7 +383,12 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 				}
 				else if (g.IsSteamGame)
 				{
-					g.ProcessName = GetProcessNameFromSteam(steamPath, g.AppID) ?? "";
+					var exe = GetSteamExePath(steamPath, g.AppID);
+					if (exe != null)
+					{
+						g.InstallPath = exe;
+						g.ProcessName = Path.GetFileNameWithoutExtension(exe);
+					}
 				}
 			}
 
@@ -367,12 +399,13 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			gameStatusTimer.Tick += (s, e) => UpdateGameStatus();
 			gameStatusTimer.Start();
 
-      LoadGameGroups();
+			LoadGameGroups();
 			// Resten av initialiseringen
 			await Task.Delay(2000);
 			
 		}
 
+		
 		/// <summary>
 		/// Reads Steam’s install path from the registry (HKCU\Software\Valve\Steam\SteamPath),
 		/// or falls back to the default Program Files location if not found.
@@ -424,33 +457,100 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
             Games.Clear();
 
-            foreach (Game game in AllGames)
-            {
-
-                if (filterHandler.FilterGame(genreFilters, typeFilters,gameGroupHandler.GetGameGroups(), game))
-                {
-                    Console.WriteLine("Game Added: " + game.Title);
-                    Games.Add(game);
-                }
-            }
-			if(sender != null) { 
+			foreach (Game game in AllGames)
+			{
+				if (filterHandler.FilterGame(
+					 genreFilters,
+					 typeFilters,
+					 gameGroupHandler.GetGameGroups(),
+					 game))
+				{
+					Games.Add(game);
+				}
+			}
+			if (sender != null) { 
             Console.WriteLine($"Filters {((sender as CheckBox).IsChecked.Value ? "applied":"unapplied")}: " + ((CheckBox)sender).Content.ToString() + "\n\n");
             }
 
 
         }
 
-        #endregion
+		#endregion
 
-        #region GameGroups
-        private void CreateCategory_Click(object sender, RoutedEventArgs e)
-        {
-            NewCategoryTextBox.Visibility = Visibility.Visible;
-            NewCategoryTextBox.Focus();
-        }
+		#region GameGroups
+		private void CreateCategory_Click(object sender, RoutedEventArgs e)
+		{
+			_isInNewOrRenameMode = true;
+			NewCategoryTextBox.Text = "";           // for ny kategori
+			NewCategoryTextBox.Visibility = Visibility.Visible;
+			NewCategoryTextBox.Focus();
+		}
 
+		// Håndter Enter/Escape istedenfor blind LostFocus
+		private void NewCategoryTextBox_KeyDown(object sender,System.Windows.Input.KeyEventArgs e)
+		{
+			if (!_isInNewOrRenameMode) return;
 
-        private void NewCategoryTextBox_LostFocus(object sender, RoutedEventArgs e)
+			if (e.Key == Key.Enter)
+			{
+				CommitNewOrRename();
+				e.Handled = true;
+			}
+			else if (e.Key == Key.Escape)
+			{
+				CancelNewOrRename();
+				e.Handled = true;
+			}
+		}
+
+		private void CommitNewOrRename()
+		{
+			var text = NewCategoryTextBox.Text.Trim();
+			if (!string.IsNullOrEmpty(text))
+			{
+				if (isRenaming)
+				{
+					// oppdater eksisterende
+					gameGroupToRename.GroupName = text;
+					// oppdater CheckBox-innhold
+					var pair = gameGroupHandler.GetGameGroups()
+											  .FirstOrDefault(g => g.Item2 == gameGroupToRename);
+					if (pair.box != null) pair.box.Content = text;
+					gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+
+					isRenaming = false;
+				}
+				else
+				{
+					// lag ny gruppe
+					var newGroup = new GameGroup { GroupName = text };
+					var cb = new CheckBox { Content = text, Style = (Style)FindResource("RoundedCheckBoxWithSourceSansFontStyle") };
+					cb.Click += UpdateFilters;
+					AddGameGroupCheckBox(cb, newGroup);
+					gameGroupHandler.AddGameGroup(cb, newGroup);
+					gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+
+				}
+			}
+			EndNewOrRename();
+		}
+
+		private void CancelNewOrRename()
+		{
+			// bare clean up
+			isRenaming = false;
+			gameGroupToRename = null;
+			EndNewOrRename();
+		}
+
+		private void EndNewOrRename()
+		{
+			NewCategoryTextBox.Visibility = Visibility.Collapsed;
+			NewCategoryTextBox.Text = "";
+			_isInNewOrRenameMode = false;
+		}
+
+		private void NewCategoryTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (isRenaming)
             {
@@ -529,38 +629,47 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
                 GameCategoriesPanel.Children.Add(child);
             }
         }
-        private void RenameGameGroup(GameGroup gameGroup)
-        {
-            isRenaming = true;
-            gameGroupToRename = gameGroup;
-            NewCategoryTextBox.Text = gameGroup.GroupName;
-            NewCategoryTextBox.Visibility = Visibility.Visible;
-            NewCategoryTextBox.Focus();
-        }
-
-
-      
-
-
-        private void EditGameGroup(GameGroup gameGroup)
-        {
-
-            GameCategoryDialog dialog = new GameCategoryDialog(AllGames.ToList(),gameGroup);
-            dialog.GameGroupChanged += (s, e) =>
-            {
-                gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
-                UpdateFilters(null, null); // Refresh the filters
-            };
-            
-			dialog.ShowDialog();
+		private void RenameGameGroup(GameGroup gameGroup)
+		{
+			_isInNewOrRenameMode = true;
+			gameGroupToRename = gameGroup;
+			NewCategoryTextBox.Text = gameGroup.GroupName;
+			NewCategoryTextBox.Visibility = Visibility.Visible;
+			NewCategoryTextBox.Focus();
+		}
 
 
 
-        }
+
+
+		private void EditGameGroup(GameGroup gameGroup)
+		{
+			// 1) Fjern Topmost på hovedvinduet slik at dialogen kan komme foran
+			bool wasTopmost = this.Topmost;
+			this.Topmost = false;
+
+			// 2) Opprett og vis dialogen – sett Owner slik at vinduene "henger sammen"
+			var dialog = new GameCategoryDialog(AllGames.ToList(), gameGroup)
+			{
+				Owner = this,
+				Topmost = true
+			};
+			bool? result = dialog.ShowDialog();
+
+			// 3) Gjenopprett Topmost på hovedvinduet
+			this.Topmost = wasTopmost;
+
+			// 4) (Evt. håndter resultat her…)
+			if (result == true)
+			{
+				// Oppdater filter / UI om noe har endret seg
+				UpdateFilters(null, null);
+			}
+		}
 
 
 
-        private void DeleteGameGroup(GameGroup gameGroup, CheckBox checkBox)
+		private void DeleteGameGroup(GameGroup gameGroup, CheckBox checkBox)
         {
             gameGroupHandler.RemoveGameGroup(gameGroup.GroupName);
             GameCategoriesPanel.Children.Remove(checkBox);
@@ -603,22 +712,11 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		}
 
 
-		//VR Status: Henter informasjon om headset og kontrollere fra SteamAPI.
-		private void VRStatusCallback(object? state)
-		{
-			UpdateVREquipmentStatus();
-
-			Dispatcher.Invoke(() =>
-			{
-				OnPropertyChanged(nameof(VREquipmentStatus));
-			});
-		}
-
 		private void StartVRStatusTimer()
 		{
 			vrStatusTimer = new DispatcherTimer();
 			vrStatusTimer.Interval = TimeSpan.FromSeconds(7);
-			vrStatusTimer.Tick += VrStatusTimer_Tick;
+			vrStatusTimer.Tick += (s, e) => UpdateVREquipmentStatus();
 			vrStatusTimer.Start();
 		}
 
@@ -684,7 +782,10 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 		protected override void OnClosed(EventArgs e)
 		{
-			_vrStatusTimer?.Dispose();
+			vrStatusTimer?.Stop();
+			_wifiSignalTimer?.Stop();
+			volumeStatusTimer?.Stop();
+			searchTimer?.Stop();
 			base.OnClosed(e);
 		}
 
@@ -1273,17 +1374,13 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 		private void KalibreringKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			KalibrerKnapp.Visibility = Visibility.Visible;
-		
-			if (StatusBarKalibrering.IsVisible)
-			{
-				StatusBarKalibrering.Visibility = Visibility.Collapsed;
-			}
-			else
-			{
-				StatusBarKalibrering.Visibility = Visibility.Visible;
-			}
+			// Toggle Visibility
+			StatusBarKalibrering.Visibility =
+				StatusBarKalibrering.Visibility == Visibility.Visible
+				? Visibility.Collapsed
+				: Visibility.Visible;
 		}
+
 
 
 		private async void RomKalibrering_Click(object sender, RoutedEventArgs e)
@@ -1371,51 +1468,30 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		// Shared helper you can call for both seated and standing
 		private void Recenter(ETrackingUniverseOrigin origin)
 		{
+			// 1) Steng eventuell gammel sesjon
+			OpenVR.Shutdown();
 
-			EnsureOverlaySession();
-
-			// 1) Sørg for at vi har tilgang til Compositor/Chaperone
-			if (OpenVR.Compositor == null || OpenVR.Chaperone == null)
+			// 2) Initier ny overlay-sesjon
+			EVRInitError initError = EVRInitError.None;
+			OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Overlay);
+			if (initError != EVRInitError.None)
 			{
-				Console.WriteLine("OpenVR ikke klart for recenter.");
+				Console.WriteLine($"Kunne ikke init Overlay-session: {initError}");
 				return;
 			}
 
-			// 2) Sett ønsket tracking space (sittende eller stående)
+			// 3) Sett ønsket tracking space (sittende eller stående)
 			OpenVR.Compositor.SetTrackingSpace(origin);
 
-			// 3) Nullstill zero‑pose i det valgte universet
+			// 4) Nullstill zero-pose i det valgte universet
 			OpenVR.Chaperone.ResetZeroPose(origin);
 
-			// 4) Tving compositoren til å hente oppdaterte poser umiddelbart
-			var emptyRender = new Valve.VR.TrackedDevicePose_t[0];
-			var emptyGame = new Valve.VR.TrackedDevicePose_t[0];
-			OpenVR.Compositor.WaitGetPoses(emptyRender, emptyGame);
+			// 5) Force compositor til å hente oppdaterte poser
+			OpenVR.Compositor.WaitGetPoses(null, null);
 
 			Console.WriteLine($"Recenter fullført: {origin}");
 		}
 
-
-		/// <summary>
-		/// Sørger for at vi har en gyldig OpenVR‑session som overlay.
-		/// </summary>
-		private void EnsureOverlaySession()
-		{
-			// Hvis Compositor eller Chaperone er null, initier på nytt som overlay‑app
-			if (OpenVR.Compositor == null || OpenVR.Chaperone == null)
-			{
-				EVRInitError initError = EVRInitError.None;
-				OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Overlay);
-				if (initError != EVRInitError.None)
-				{
-					Console.WriteLine($"Kunne ikke init Overlay‑session: {initError}");
-				}
-				else
-				{
-					Console.WriteLine("Overlay‑session initiert på nytt.");
-				}
-			}
-		}
 
 
 		#endregion

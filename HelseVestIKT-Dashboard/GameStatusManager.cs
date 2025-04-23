@@ -27,7 +27,7 @@ namespace HelseVestIKT_Dashboard
 			foreach (var game in _allGames.Where(g => !string.IsNullOrEmpty(g.ProcessName)))
 			{
 				var procs = Process.GetProcessesByName(game.ProcessName);
-				if (procs.Any(p => !p.HasExited))
+				if (procs.Any(p => !String.IsNullOrEmpty(p.MainWindowTitle)))
 					return game;
 			}
 			// 2) Fallback til vindustittel‑match
@@ -48,19 +48,21 @@ namespace HelseVestIKT_Dashboard
 
 		public void UpdateCurrentGameAndStatus()
 		{
+			// Finn spillet – prøver prosessnavn først, så vindustittel
 			CurrentGame = GetCurrentlyRunningGame();
 
 			if (CurrentGame != null)
 			{
 				CurrentPlayer = CurrentGame.Title;
 
-				// Sjekk om prosessen tikker
-				bool responding = Process
-					.GetProcesses()
-					.Where(p => !string.IsNullOrEmpty(p.MainWindowTitle))
-					.Any(p => p.MainWindowTitle
-							   .IndexOf(CurrentGame.Title, StringComparison.OrdinalIgnoreCase) >= 0
-							   && p.Responding);
+				// Sjekk om noen av prosessene med dette prosessnavnet responderer
+				bool responding = false;
+				if (!string.IsNullOrEmpty(CurrentGame.ProcessName))
+				{
+					responding = Process
+						.GetProcessesByName(CurrentGame.ProcessName)
+						.Any(p => p.Responding);
+				}
 
 				CurrentStatus = responding ? "OK" : "!OK";
 			}
@@ -70,6 +72,5 @@ namespace HelseVestIKT_Dashboard
 				CurrentStatus = "";
 			}
 		}
-
 	}
 }

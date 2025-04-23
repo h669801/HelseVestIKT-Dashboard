@@ -23,9 +23,14 @@ namespace HelseVestIKT_Dashboard
             GenreTranslation.Add("Strategi", "Strategy");
         }
 
-        public bool FilterGame(List<CheckBox> genres, List<CheckBox> types, List<(CheckBox box, GameGroup group)> gameGroups, Game game)
+        public bool FilterGame(List<CheckBox> genres,
+            List<CheckBox> types, 
+            List<(CheckBox box, GameGroup group)> gameGroups,
+            Game game)
         {
-            return FilterGameType(types, game) && FilterGameGenre(genres, game) && FilterGameGroups(gameGroups, game) ;
+            return FilterGameType(types, game) 
+                && FilterGameGenre(genres, game)
+                && FilterGameGroups(gameGroups, game);
         }
 
         private bool FilterGameGenre(List<CheckBox> filters, Game game)

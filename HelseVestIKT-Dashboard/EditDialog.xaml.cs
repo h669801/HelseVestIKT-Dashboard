@@ -28,18 +28,24 @@ namespace Dialogs
             gameItemsControl.ItemsSource = SelectedGames.OrderBy(a => a.Title); 
         }
 
-        private void okButton_Click(object sender, RoutedEventArgs e)
-        {
-            gameGroup.Games = SelectedGames
-                .Where(g => g.IsChecked)
-                .Select(g => AllGames.FirstOrDefault(game => game.Title == g.Title))
-                .ToList();
-           
-            this.DialogResult = true;
-            GameGroupChanged.Invoke(this, gameGroup);
-        }
+		private void okButton_Click(object sender, RoutedEventArgs e)
+		{
+			// 1) Filtrer bort null fra FirstOrDefault
+			var valgt = SelectedGames
+				.Where(g => g.IsChecked)
+				.Select(g => AllGames.FirstOrDefault(game => game.Title == g.Title))
+				.Where(game => game != null)    // kast bort null
+				.ToList()!;                     // nå er ingen null igjen
 
-        private void cancelButton_Click(object sender, RoutedEventArgs e)
+			gameGroup.Games = valgt!;          // sett listen
+
+			// 2) Null-sikker invokasjon av hendelsen
+			this.DialogResult = true;
+			GameGroupChanged?.Invoke(this, gameGroup);
+		}
+
+
+		private void cancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
         }

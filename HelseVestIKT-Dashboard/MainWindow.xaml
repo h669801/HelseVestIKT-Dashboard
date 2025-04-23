@@ -12,6 +12,8 @@
 		<FontFamily x:Key="SourceSansFont">Source Sans Pro</FontFamily>
 
 
+	
+
 		<Style x:Key="SquareRoundedButtonStyle" TargetType="Button">
 			<Setter Property="Template">
 				<Setter.Value>
@@ -149,7 +151,7 @@
 				<Setter.Value>
 					<ControlTemplate TargetType="CheckBox">
 						<StackPanel Orientation="Horizontal">
-							<Border x:Name="CheckBoxBorder" Width="16" Height="16"
+							<Border x:Name="CheckBoxBorder" Width="19" Height="19"
                                     CornerRadius="4"
                                     Background="White"
                                     BorderBrush="Gray"
@@ -181,6 +183,7 @@
 		<Style x:Key="RoundedCheckBoxWithSourceSansFontStyle" TargetType="CheckBox" BasedOn="{StaticResource RoundedCheckBoxStyle}">
 			<Setter Property="FontFamily" Value="{StaticResource SourceSansFont}"/>
 			<Setter Property="Foreground" Value="#003087"/>
+			<Setter Property="FontSize" Value="16"/>
 		</Style>
 
 
@@ -237,9 +240,9 @@
 			<Grid x:Name="HeaderGrid" Height="100">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="*"/>
 					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
 
 				<!-- Venstre del: pilleformet knapp for VR-kalibrering -->
@@ -271,7 +274,7 @@
 									<Image Source="Bilder/vr_headset.png" Width="32" Height="32"/>
 								</Button>
 							</Border>
-							
+
 							<!-- Viser batteriprosent -->
 							<TextBlock 
 									   HorizontalAlignment="Center" FontSize="12" Margin="0,5">
@@ -311,7 +314,7 @@
 									<Image Source="Bilder/kontroller_venstre.png" Width="31" Height="31"/>
 								</Button>
 							</Border>
-							
+
 							<!-- Viser batteriprosent/status -->
 							<!-- Viser batteriprosent -->
 							<TextBlock 
@@ -352,7 +355,7 @@
 									<Image Source="Bilder/kontroller.png" Width="31" Height="31"/>
 								</Button>
 							</Border>
-							
+
 							<!-- Viser batteriprosent -->
 							<TextBlock 
 								   HorizontalAlignment="Center" FontSize="12" Margin="0,5">
@@ -371,7 +374,9 @@
 							</TextBlock>
 						</StackPanel>
 					</StackPanel>
+				</StackPanel>
 
+				<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
 					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Click="KalibreringKnapp_Click" Height="45" Margin="10,0,0,15">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/>
@@ -388,7 +393,7 @@
 
 
 				<!-- Midtstilt logo/tekst -->
-				<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
 					<Grid Width="60" Height="60" Margin="15,0">
 						<!-- 3 rader og 3 kolonner -->
 						<Grid.RowDefinitions>
@@ -455,7 +460,7 @@
 				</StackPanel>
 
 				<!-- Høyre del: wifi, volum, klokke, avslutt-knapp (alle pilleformet) -->
-				<StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,10,0">
+				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,10,0">
 					<!-- Klokke -->
 					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding CurrentTime}" VerticalAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="10,0"/>
 					
@@ -469,7 +474,7 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 
 					<!-- Wifi signal-->
 					<StackPanel Orientation="Horizontal" Height="24" Width="24" Margin="0,0,10,0">
-						<Image x:Name="WifiSignalIcon" Width="20" Height="20" Margin="0,0,10,0" SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="HighQuality"/>
+						<Image x:Name="WifiSignalIcon" Width="20" Height="20" Margin="0,0,10,0" SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="HighQuality" Source="/Bilder/wifi_3_bar.png"/>
 					</StackPanel>
 					<!-- Popup for volum -->
 					<Popup x:Name="VolumePopup" Placement="Custom"
@@ -524,10 +529,10 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 			<TextBox Grid.Column="1" x:Name="CurrentGameTextBlock" Background="Salmon" IsHitTestVisible="false" Text="{Binding CurrentPlayer}" VerticalAlignment="Center" Width="Auto"/>
 
 			<!--Status-->
-			<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0"/>
-			<TextBox Grid.Column="3" x:Name="StatusTextBlock" IsHitTestVisible="false" Background="Salmon" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Width="Auto"/>
+			<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Grid.Column="2" Text="Status:" VerticalAlignment="Center" Margin="10,0,10,0"/>
+			<TextBox Grid.Column="3" x:Name="StatusTextBlock" IsHitTestVisible="false" Background="Salmon" Text="{Binding CurrentStatus}" VerticalAlignment="Center" Margin="0,0,175,0" Width="Auto"/>
 
-			<StackPanel x:Name="StatusBarKalibrering" Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="150,0,0,0">
+			<StackPanel x:Name="StatusBarKalibrering" Grid.Column="4" Visibility="Collapsed" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,10,0">
 				<Button Click="RomKalibrering_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
 							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
 						</Button>
@@ -628,7 +633,7 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
                         
                         <TextBlock Style="{DynamicResource SourceSansTextBlockStyle}"  Text="Legg til kategori" FontWeight="Bold" Margin="10,10,0,0"/>
                     </StackPanel>
-                    <TextBox x:Name="NewCategoryTextBox" Width="200" Margin="10,5,0,0" Visibility="Collapsed" LostFocus="NewCategoryTextBox_LostFocus"/>
+                    <TextBox x:Name="NewCategoryTextBox" Width="200" Margin="10,5,0,0" Visibility="Collapsed" KeyDown="NewCategoryTextBox_KeyDown"/>
                     <!-- StackPanel to hold dynamically created CheckBoxes -->
                     <StackPanel x:Name="GameCategoriesPanel" Orientation="Vertical" Margin="10,5,0,0"/>
                                         

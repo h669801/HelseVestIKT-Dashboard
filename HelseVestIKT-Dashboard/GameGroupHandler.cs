@@ -29,12 +29,9 @@ namespace HelseVestIKT_Dashboard
             gameGroups.RemoveAll(g => g.group.GroupName == groupName);
         }
 
-        public List<(CheckBox, GameGroup)> GetGameGroups()
-        {
-            return gameGroups;
-        }
+        public List<(CheckBox box, GameGroup group)> GetGameGroups() => gameGroups;
 
-        public GameGroup GetGameGroup(string groupName)
+		public GameGroup GetGameGroup(string groupName)
         {
             return gameGroups.FirstOrDefault(g => g.group.GroupName == groupName).group;
         }

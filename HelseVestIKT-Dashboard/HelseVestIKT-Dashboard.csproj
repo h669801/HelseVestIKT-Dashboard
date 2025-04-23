@@ -33,11 +33,6 @@
     <None Remove="Bilder\wifi_1_bar.png" />
     <None Remove="Bilder\wifi_2_bar.png" />
     <None Remove="Bilder\wifi_3_bar.png" />
-    <None Remove="Bilder\wifi_bar_0.png" />
-    <None Remove="Bilder\wifi_bar_1.png" />
-    <None Remove="Bilder\wifi_bar_2.png" />
-    <None Remove="Bilder\wifi_bar_3.png" />
-    <None Remove="Bilder\wifi_bar_4.png" />
     <None Remove="Native\openvr_api.dll" />
   </ItemGroup>
 
@@ -54,18 +49,12 @@
 
 	<ItemGroup>
 		<Resource Include="Bilder\accessibility.png" />
-		<Resource Include="Bilder\exit_knapp.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
+		<Resource Include="Bilder\exit_knapp.png" />
 		<Resource Include="Bilder\fullskjerm.png" />
 		<Resource Include="Bilder\fullskjerm_lukk.png" />
-		<Resource Include="Bilder\Helse_Vest_Kuler_Logo.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
+		<Resource Include="Bilder\Helse_Vest_Kuler_Logo.png" />
 		<Resource Include="Bilder\kontroller – Kopi.png" />
-		<Resource Include="Bilder\kontroller.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
+		<Resource Include="Bilder\kontroller.png" />
 		<Resource Include="Bilder\kontroller_venstre.png" />
 		<Resource Include="Bilder\nodstopp_knapp.png" />
 		<Resource Include="Bilder\pause_knapp.png" />
@@ -81,17 +70,6 @@
 		<Resource Include="Bilder\wifi_3_bar.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="Bilder\wifi_bar_0.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Bilder\wifi_bar_1.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Bilder\wifi_bar_2.png">
-		  <CopyToOutputDirectory></CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Bilder\wifi_bar_3.png" />
-		<Resource Include="Bilder\wifi_bar_4.png" />
 		<Resource Include="Resources.xaml" />
 	</ItemGroup>
 
@@ -116,6 +94,15 @@
 
 	<ItemGroup>
 	  <Folder Include="Native\" />
+	  <Folder Include="Assets\" />
+	  <Folder Include="Models\" />
+	  <Folder Include="Helpers\" />
+	  <Folder Include="Filters\" />
+	  <Folder Include="Infrastructure\" />
+	  <Folder Include="Services\" />
+	  <Folder Include="ViewModels\" />
+	  <Folder Include="Views\" />
+	  <Folder Include="Resources\" />
 	</ItemGroup>
 
 	<ItemGroup>
