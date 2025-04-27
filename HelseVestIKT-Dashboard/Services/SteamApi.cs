@@ -4,8 +4,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
+using HelseVestIKT_Dashboard.Models;
 
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Services
 {
 	public class SteamApi
 	{
@@ -76,7 +77,7 @@ namespace HelseVestIKT_Dashboard
 				if (game.GameImage == null)
 				{
 					game.GameImage = new BitmapImage(
-						new Uri("pack://application:,,,/Bilder/Helse_Vest_Kuler_Logo.png"));
+						new Uri("pack://application:,,,/Assets/Bilder/Helse_Vest_Kuler_Logo.png"));
 				}
 			});
 

@@ -13,27 +13,43 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Bilder\accessibility.png" />
-    <None Remove="Bilder\exit_knapp.png" />
-    <None Remove="Bilder\fullskjerm.png" />
-    <None Remove="Bilder\fullskjerm_lukk.png" />
-    <None Remove="Bilder\Helse_Vest_Kuler_Logo.png" />
-    <None Remove="Bilder\kontroller – Kopi.png" />
-    <None Remove="Bilder\kontroller.png" />
-    <None Remove="Bilder\kontroller_venstre.png" />
-    <None Remove="Bilder\nodstopp_knapp.png" />
-    <None Remove="Bilder\pause_knapp.png" />
-    <None Remove="Bilder\settings.png" />
-    <None Remove="Bilder\speaker.png" />
-    <None Remove="Bilder\speaker_popup.png" />
-    <None Remove="Bilder\vrheadset.png" />
-    <None Remove="Bilder\vrkontrollere.png" />
-    <None Remove="Bilder\vr_headset.png" />
-    <None Remove="Bilder\wifi_0_bar.png" />
-    <None Remove="Bilder\wifi_1_bar.png" />
-    <None Remove="Bilder\wifi_2_bar.png" />
-    <None Remove="Bilder\wifi_3_bar.png" />
-    <None Remove="Native\openvr_api.dll" />
+    <Compile Remove="EditDialog.xaml.cs" />
+    <Compile Remove="FilterHandler.cs" />
+    <Compile Remove="Game.cs" />
+    <Compile Remove="GameDetailsFetcher.cs" />
+    <Compile Remove="GameGroup.cs" />
+    <Compile Remove="GameGroupHandler.cs" />
+    <Compile Remove="GameImage.cs" />
+    <Compile Remove="GameStatusManager.cs" />
+    <Compile Remove="LogWindow.xaml.cs" />
+    <Compile Remove="MainWindow.xaml.cs" />
+    <Compile Remove="OfflineSteamGamesManager.cs" />
+    <Compile Remove="Services\SteamLauncher.cs" />
+    <Compile Remove="SpillFilter.cs" />
+    <Compile Remove="Win32.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\Bilder\accessibility.png" />
+    <None Remove="Assets\Bilder\exit_knapp.png" />
+    <None Remove="Assets\Bilder\fullskjerm.png" />
+    <None Remove="Assets\Bilder\fullskjerm_lukk.png" />
+    <None Remove="Assets\Bilder\Helse_Vest_Kuler_Logo.png" />
+    <None Remove="Assets\Bilder\kontroller – Kopi.png" />
+    <None Remove="Assets\Bilder\kontroller.png" />
+    <None Remove="Assets\Bilder\kontroller_venstre.png" />
+    <None Remove="Assets\Bilder\nodstopp_knapp.png" />
+    <None Remove="Assets\Bilder\pause_knapp.png" />
+    <None Remove="Assets\Bilder\settings.png" />
+    <None Remove="Assets\Bilder\speaker.png" />
+    <None Remove="Assets\Bilder\speaker_popup.png" />
+    <None Remove="Assets\Bilder\vrheadset.png" />
+    <None Remove="Assets\Bilder\vrkontrollere.png" />
+    <None Remove="Assets\Bilder\vr_headset.png" />
+    <None Remove="Assets\Bilder\wifi_0_bar.png" />
+    <None Remove="Assets\Bilder\wifi_1_bar.png" />
+    <None Remove="Assets\Bilder\wifi_2_bar.png" />
+    <None Remove="Assets\Bilder\wifi_3_bar.png" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -42,35 +58,74 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="openvr_api.dll">
+	  <None Include="Native\openvr_api.dll">
+		  <Link>openvr_api.dll</Link>
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+	  </None>
 	</ItemGroup>
 
 	<ItemGroup>
-		<Resource Include="Bilder\accessibility.png" />
-		<Resource Include="Bilder\exit_knapp.png" />
-		<Resource Include="Bilder\fullskjerm.png" />
-		<Resource Include="Bilder\fullskjerm_lukk.png" />
-		<Resource Include="Bilder\Helse_Vest_Kuler_Logo.png" />
-		<Resource Include="Bilder\kontroller – Kopi.png" />
-		<Resource Include="Bilder\kontroller.png" />
-		<Resource Include="Bilder\kontroller_venstre.png" />
-		<Resource Include="Bilder\nodstopp_knapp.png" />
-		<Resource Include="Bilder\pause_knapp.png" />
-		<Resource Include="Bilder\settings.png" />
-		<Resource Include="Bilder\speaker.png" />
-		<Resource Include="Bilder\speaker_popup.png" />
-		<Resource Include="Bilder\vrheadset.png" />
-		<Resource Include="Bilder\vrkontrollere.png" />
-		<Resource Include="Bilder\vr_headset.png" />
-		<Resource Include="Bilder\wifi_0_bar.png" />
-		<Resource Include="Bilder\wifi_1_bar.png" />
-		<Resource Include="Bilder\wifi_2_bar.png" />
-		<Resource Include="Bilder\wifi_3_bar.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Resource Include="Assets\Bilder\accessibility.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="Resources.xaml" />
+		<Resource Include="Assets\Bilder\exit_knapp.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\fullskjerm.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\fullskjerm_lukk.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\Helse_Vest_Kuler_Logo.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\kontroller – Kopi.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\kontroller.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\kontroller_venstre.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\nodstopp_knapp.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\pause_knapp.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\settings.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\speaker.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\speaker_popup.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\vrheadset.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\vrkontrollere.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\vr_headset.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\wifi_0_bar.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\wifi_1_bar.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\wifi_2_bar.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\wifi_3_bar.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Resources\Resources.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -93,16 +148,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Native\" />
-	  <Folder Include="Assets\" />
-	  <Folder Include="Models\" />
-	  <Folder Include="Helpers\" />
+	  <Folder Include="Infrastructure\Extensions\" />
 	  <Folder Include="Filters\" />
-	  <Folder Include="Infrastructure\" />
-	  <Folder Include="Services\" />
-	  <Folder Include="ViewModels\" />
-	  <Folder Include="Views\" />
-	  <Folder Include="Resources\" />
+	  <Folder Include="NewFolder\" />
 	</ItemGroup>
 
 	<ItemGroup>

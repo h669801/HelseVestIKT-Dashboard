@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using HelseVestIKT_Dashboard.Models;
 
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Services
 {
 	public class GameDetailsFetcher
 	{
