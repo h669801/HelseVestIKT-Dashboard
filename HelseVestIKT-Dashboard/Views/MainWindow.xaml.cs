@@ -104,6 +104,7 @@ namespace HelseVestIKT_Dashboard.Views
 		#endregion
 
 		#region Egenskaper og Variabler
+		private float _baseHeight;
 		private string _currentTime = string.Empty;
 		public string CurrentTime
 		{
@@ -422,18 +423,19 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 
         private void HeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-		{
-			// 1) Oppdater databinding og settings
-			EyeHeightSetting = e.NewValue;
-			Properties.Settings.Default.EyeHeight = EyeHeightSetting;
-			Properties.Settings.Default.Save();
+        {
+            // 1) Oppdater databinding og settings
+            var offset = (float)e.NewValue;
+            EyeHeightSetting = _baseHeight + offset;
+            Properties.Settings.Default.EyeHeight = EyeHeightSetting;
+            Properties.Settings.Default.Save();
 
-			// 2) Faktisk bruk av høyden i VR
-			ApplyHeightCalibration(EyeHeightSetting);
-		}
+            // 2) Faktisk bruk av høyden i VR
+            ApplyHeightCalibration(EyeHeightSetting);
+        }
 
 
-		private void StartGameStatusTimer()
+        private void StartGameStatusTimer()
 		{
 			var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
 			timer.Tick += (s, e) => UpdateGameStatus();  // UpdateGameStatus setter både CurrentPlayer og CurrentStatus
@@ -1727,38 +1729,37 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			Process.Start(@"C:\Program Files (x86)\Steam\Steam.exe", "-applaunch 250820");
 		}
 
-		/// <summary>
-		/// 4) Initialiserer OpenVR, henter base‐høyde og setter slider‐start.
-		/// </summary>
-		private void InitializeVrAndCalibration()
-		{
-			// Init OpenVR
-			EVRInitError initError = EVRInitError.None;
-			OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Background);
-			if (initError != EVRInitError.None)
-			{
-				MessageBox.Show($"Kan ikke initialisere OpenVR: {initError}");
-				return;
-			}
+        /// <summary>
+        /// 4) Initialiserer OpenVR, henter base‐høyde og setter slider‐start.
+        /// </summary>
+        private void InitializeVrAndCalibration()
+        {
+            // Init OpenVR
+            EVRInitError initError = EVRInitError.None;
+            OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Background);
+            if (initError != EVRInitError.None)
+            {
+                MessageBox.Show($"Kan ikke initialisere OpenVR: {initError}");
+                return;
+            }
 
-			// Hent CVRSystem‐instans
-			InitializeOpenVR();              // din eksisterende metode som setter vrSystem
+            // Hent CVRSystem‐instans
+            InitializeOpenVR();              // din eksisterende metode som setter vrSystem
 
-			// Last nåværende stående zero‐pose og seed slider
-			try
-			{
-				float baseHeight = LoadCurrentHeightCalibration();  // returnerer meter
-				EyeHeightSetting = baseHeight;
-				Properties.Settings.Default.EyeHeight = baseHeight;
-				Properties.Settings.Default.Save();
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Feil ved lasting av base‐høyde: " + ex.Message);
-			}
-		}
-
+            // Last nåværende stående zero‐pose og seed slider
+            try
+            {
+                _baseHeight = LoadCurrentHeightCalibration();  // returnerer meter
+                EyeHeightSetting = _baseHeight;
+                HeightSlider.Value = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Feil ved lasting av base‐høyde: " + ex.Message);
+            }
+        }
 
 
-	}
+
+    }
 }
