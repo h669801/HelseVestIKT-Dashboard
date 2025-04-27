@@ -32,6 +32,7 @@ using HelseVestIKT_Dashboard.Services;
 using HelseVestIKT_Dashboard.Helpers;
 using Dialogs.Views;
 using HelseVestIKT_Dashboard.Infrastructure;
+using SteamKit2;
 
 namespace HelseVestIKT_Dashboard.Views
 {
@@ -272,12 +273,16 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
         private bool isRenaming = false;
 		private GameGroup gameGroupToRename;
 
-        
+        private List<SteamProfile> _profiles;
+        private SteamProfile _currentProfile;
+		private SteamApi steamApi;
 
-		#region VRMirrorTextureTest
-		// Define the delegate that maps to the OpenVR function.
 
-		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+
+        #region VRMirrorTextureTest
+        // Define the delegate that maps to the OpenVR function.
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
 		internal delegate EVRCompositorError _GetMirrorTextureD3D11(EVREye eEye, IntPtr pD3D11DeviceOrResource, ref IntPtr ppD3D11ShaderResourceView);
 
 		// This field will hold the function pointer as a delegate.
@@ -310,7 +315,10 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			InitializeVrAndCalibration();
 
 			this.Loaded += MainWindow_Loaded;
-		}
+
+            this.Activated += MainWindow_Activated;
+            this.Deactivated += MainWindow_Deactivated;
+        }
 		#endregion
 
 		private void UpdateGameStatus()
@@ -324,62 +332,68 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		}
 
 
-		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Activated(object sender, EventArgs e)
+        {
+            // Når vinduet får fokus igjen, sett det øverst
+            this.Topmost = true;
+        }
+
+        private void MainWindow_Deactivated(object sender, EventArgs e)
+        {
+            // Når vinduet mister fokus (f.eks. nettleser åpner), fjern Topmost
+            this.Topmost = false;
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			if (_gamesLoaded) return;
-			_gamesLoaded = true;
+            if (_gamesLoaded) return;
+            _gamesLoaded = true;
 
-			// --- 1) Finn Steam-path ---
-			var steamPath = GetSteamInstallPathFromRegistry();
-			Console.WriteLine($"[DEBUG] Steam folder: {steamPath}");
+            // 1) Velg profil
+            var profiles = ProfileStore.Load();
+            var last = Properties.Settings.Default.LastProfileName;
+            var profile = profiles.FirstOrDefault(p => p.Name == last)
+                          ?? profiles.FirstOrDefault()
+                          ?? new SteamProfile { Name = "Default", ApiKey = "", UserId = "" };
 
-			// --- 2) Hent Steam-spill via Web-API ---
-			string steamAPIKey = "384082C6759AAF7B6974A9CCE1ECF6CE";
-			string steamID = "76561198081888308";
-			var steamApi = new SteamApi(steamAPIKey, steamID);
-			var steamGames = await steamApi.GetSteamGamesAsync();
-			Console.WriteLine($"[DEBUG] SteamGames count: {steamGames.Count}");
+            _currentProfile = profile;
+            Properties.Settings.Default.LastProfileName = profile.Name;
+            Properties.Settings.Default.Save();
 
-			// --- 3) Berik med detaljer (sjanger, VR, nylig spilt etc.) ---
-			gameDetailsFetcher = new GameDetailsFetcher(steamAPIKey, steamID);
-			await Task.WhenAll(steamGames.Select(g => gameDetailsFetcher.AddDetailsAsync(g)));
+            // 2) Init SteamApi og hent Steam-spill
+            steamApi = new SteamApi(profile.ApiKey, profile.UserId);
+            var steamGames = await steamApi.GetSteamGamesAsync();
 
-			// --- 4) Fyll inn i AllGames og Games ---
-			AllGames.Clear();
-			Games.Clear();
-			foreach (var g in steamGames)
-			{
-				// 4a) Sett prosessnavn / exe-sti
-				if (!string.IsNullOrEmpty(g.InstallPath) && File.Exists(g.InstallPath))
-				{
-					g.ProcessName = Path.GetFileNameWithoutExtension(g.InstallPath);
-				}
-				else if (g.IsSteamGame)
-				{
-					var exe = GetSteamExePath(steamPath, g.AppID);
-					if (exe != null)
-					{
-						g.InstallPath = exe;
-						g.ProcessName = Path.GetFileNameWithoutExtension(exe);
-					}
-				}
+            // 3) Berik med detaljer (valgfritt)
+            gameDetailsFetcher = new GameDetailsFetcher(profile.ApiKey, profile.UserId);
+            await Task.WhenAll(steamGames.Select(g => gameDetailsFetcher.AddDetailsAsync(g)));
 
-				AllGames.Add(g);
-				Games.Add(g);
-			}
+            // 4) Hent “lokale” spill med korrekt steamPath
+            var steamPath = GetSteamInstallPathFromRegistry();
+            var offlineGames = new OfflineSteamGamesManager()
+                .GetNonSteamGames(steamPath)
+                .Where(g => !steamGames.Any(s => s.AppID == g.AppID))
+                .ToList();
+            offlineGames.ForEach(g => g.GameImage = GameImage.LoadIconFromExe(g.InstallPath));
 
-			// --- 5) Legg til non-Steam-spill uten duplikater ---
-			var offline = new OfflineSteamGamesManager()
-							  .GetNonSteamGames(steamPath)
-							  .Where(g => !steamGames.Any(s => s.AppID == g.AppID));
-			foreach (var g in offline)
-			{
-				g.GameImage = GameImage.LoadIconFromExe(g.InstallPath);
-				AllGames.Add(g);
-				Games.Add(g);
-			}
+            // 5) Slå sammen alle spill, tøm og fyll dine lister i ett rykk
+            var all = steamGames.Concat(offlineGames).ToList();
+            AllGames.Clear();
+            Games.Clear();
+            foreach (var g in all)
+            {
+                AllGames.Add(g);
+                Games.Add(g);
+            }
 
-			gameGroupHandler = new GameGroupHandler();
+            // 6) Sett ProcessName om mulig
+            foreach (var g in AllGames)
+            {
+                if (!string.IsNullOrWhiteSpace(g.InstallPath))
+                    g.ProcessName = Path.GetFileNameWithoutExtension(g.InstallPath);
+            }
+
+            gameGroupHandler = new GameGroupHandler();
 			// --- 6) Start game-status-timer og fyll grupper etc. ---
 			_gameStatusManager = new GameStatusManager(AllGames);
 			StartGameStatusTimer();  // <– Du må implementere denne (se under)
@@ -389,7 +403,25 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			StartVRStatusTimer();
 		}
 
-		private void HeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+
+        public async Task SetProfileAsync(SteamProfile p)
+        {
+            // Lagre som sist brukte
+            Properties.Settings.Default.LastProfileName = p.Name;
+            Properties.Settings.Default.Save();
+
+            // Opprett ny SteamApi
+            steamApi = new SteamApi(p.ApiKey, p.UserId);
+
+            // Hent spill
+            var games = await steamApi.GetSteamGamesAsync();
+
+            // Bind til din ItemsControl / ListView, f.eks:
+            GamesItemsControl.ItemsSource = games;
+        }
+
+
+        private void HeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
 			// 1) Oppdater databinding og settings
 			EyeHeightSetting = e.NewValue;
@@ -1088,7 +1120,30 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		}
 
 
-		private void Nodstopp_Click(object sender, RoutedEventArgs e)
+        // Åpne innstillinger med trykk på innstillingsknappen
+        private async void OpenSettings(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SettingsWindow
+            {
+                Owner = this,                                        // Viktig!
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                // Les innstillingene på nytt
+                var apiKey = Properties.Settings.Default.SteamApiKey;
+                var userId = Properties.Settings.Default.SteamUserId;
+
+                // Gjenskape SteamApi-objektet (eller oppdatere det)
+                steamApi = new SteamApi(apiKey, userId);
+
+                // (Re)hent spillene, oppdater UI
+                var games = await steamApi.GetSteamGamesAsync();
+                // … bind til din ItemsControl / ListView …
+            }
+        }
+
+        private void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
 			// Emergency stop button if application is not responding and VR functions are not working
 			// This is a last resort to close the application

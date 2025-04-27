@@ -134,6 +134,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
+	  <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
 	  <PackageReference Include="NAudio" Version="2.2.1" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	  <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
@@ -150,6 +151,9 @@
 	<ItemGroup>
 	  <Folder Include="Infrastructure\Extensions\" />
 	  <Folder Include="Filters\" />
+	  <Folder Include="Infrastructure\" />
+	  <Folder Include="ViewModels\" />
+	  <Folder Include="Resources\" />
 	  <Folder Include="NewFolder\" />
 	</ItemGroup>
 

@@ -46,5 +46,41 @@ namespace HelseVestIKT_Dashboard.Properties {
                 this["Setting"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SteamApiKey {
+            get {
+                return ((string)(this["SteamApiKey"]));
+            }
+            set {
+                this["SteamApiKey"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SteamUserId {
+            get {
+                return ((string)(this["SteamUserId"]));
+            }
+            set {
+                this["SteamUserId"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastProfileName {
+            get {
+                return ((string)(this["LastProfileName"]));
+            }
+            set {
+                this["LastProfileName"] = value;
+            }
+        }
     }
 }

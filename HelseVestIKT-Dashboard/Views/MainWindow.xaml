@@ -516,7 +516,12 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 						</StackPanel>
 					</Button>
 
-					<!-- Wifi signal-->
+                    <!-- Innstillingsknapp -->
+                    <Button Style="{StaticResource TransparentButtonStyle}" Click="OpenSettings">
+                        <Image Source="/Assets/Bilder/Settings.png" Width="24" Height="24"/>
+                    </Button>
+
+                    <!-- Wifi signal-->
 					<StackPanel Orientation="Horizontal" Height="24" Width="24" Margin="0,0,10,0">
 						<Image x:Name="WifiSignalIcon" Width="20" Height="20" Margin="0,0,10,0" SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="HighQuality" Source="/Assets/Bilder/wifi_3_bar.png"/>
 					</StackPanel>

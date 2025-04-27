@@ -1,0 +1,52 @@
+﻿<Window x:Class="HelseVestIKT_Dashboard.Views.ProfileEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ny Steam-profil"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Profilnavn -->
+            <RowDefinition Height="Auto"/>
+            <!-- API-nøkkel -->
+            <RowDefinition Height="Auto"/>
+            <!-- User ID -->
+            <RowDefinition Height="Auto"/>
+            <!-- Hent-knapper -->
+            <RowDefinition Height="Auto"/>
+            <!-- Lagre/Avbryt -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Profilnavn:"      Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBox   x:Name="NameBox"       Grid.Row="0" Grid.Column="1" Margin="5"/>
+
+        <TextBlock Text="Steam API Key:"  Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,0,0"/>
+        <TextBox   x:Name="ApiKeyBox"     Grid.Row="1" Grid.Column="1" Margin="5,5,0,0"/>
+
+        <TextBlock Text="Steam User ID:"  Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="0,5,0,0"/>
+        <TextBox   x:Name="UserIdBox"     Grid.Row="2" Grid.Column="1" Margin="5,5,0,0"/>
+
+        <!-- Ny rad for “Hent Steam-ID” og “Hent API-nøkkel” -->
+        <Button Grid.Row="3" Grid.Column="1"
+            Content="Hent Steam-ID" 
+            Margin="5"
+            Click="OnFetchSteamId"/>
+        <Button Grid.Row="3" Grid.Column="2"
+            Content="Hent API-nøkkel" 
+            Margin="5"
+            Click="OnOpenSteamApiKeyPage"/>
+
+        <StackPanel Grid.Row="4" Grid.ColumnSpan="4" Orientation="Horizontal"
+                HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Avbryt" Width="75" Click="OnCancel"/>
+            <Button Content="Lagre" Width="75" Margin="5,0,0,0" Click="OnSave"/>
+        </StackPanel>
+    </Grid>
+</Window>
