@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Valve.VR;
 using System.IO;
+using HelseVestIKT_Dashboard.Models;
 
 
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Services
 {
 
 	public class GameStatusManager

@@ -6,8 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using HelseVestIKT_Dashboard.Models;
 
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Services
 {
    public class SpillKategori : INotifyPropertyChanged
     {

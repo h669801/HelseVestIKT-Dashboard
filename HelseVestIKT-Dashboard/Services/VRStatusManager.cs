@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using Valve.VR;
 
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Services
 {
 	public class VRStatusManager : INotifyPropertyChanged
 	{

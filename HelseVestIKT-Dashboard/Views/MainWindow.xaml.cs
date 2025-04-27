@@ -26,11 +26,14 @@ using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using System.Numerics;
 using System.Windows.Input;
-using System.Net.Sockets;
-using System.Net;
+using HelseVestIKT_Dashboard.Models;
+using HelseVestIKT_Dashboard.Views;
+using HelseVestIKT_Dashboard.Services;
+using HelseVestIKT_Dashboard.Helpers;
+using Dialogs.Views;
+using HelseVestIKT_Dashboard.Infrastructure;
 
-
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Views
 {
 
 	/// <summary>
@@ -41,10 +44,36 @@ namespace HelseVestIKT_Dashboard
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
 		private static extern bool AllocConsole();
 
-		
+		[DllImport("user32.dll")]
+		static extern IntPtr FindWindow(string? lpClassName, string lpWindowName);
+
+		[DllImport("user32.dll")]
+		static extern bool SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+
+		[DllImport("user32.dll")]
+		static extern bool SetForegroundWindow(IntPtr hWnd);
 
 		#region Simulering av tastetrykk "ESC" for å pause et spill
-		
+		[DllImport("user32.dll", SetLastError = true)]
+		static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+		// Constants for input type and key flags.
+		const int INPUT_KEYBOARD = 1;
+		const uint KEYEVENTF_KEYUP = 0x0002;
+		const ushort VK_ESCAPE = 0x1B;
+
+
+		[DllImport("user32.dll", SetLastError = true)]
+		static extern bool SetWindowPos(
+		IntPtr hWnd,
+		IntPtr hWndInsertAfter,
+		int X, int Y, int cx, int cy,
+		uint uFlags);
+
+		static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+		const uint SWP_NOMOVE = 0x0002;
+		const uint SWP_NOSIZE = 0x0001;
+
+
 		// Define the INPUT structure.
 		[StructLayout(LayoutKind.Sequential)]
 		struct INPUT
@@ -138,7 +167,7 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		var manifest = Path.Combine(steamPath, "steamapps", $"appmanifest_{appId}.acf");
 		if (!File.Exists(manifest)) return null;
 
-		string content = File.ReadAllText(manifest);
+			string content = File.ReadAllText(manifest);
 		// 2) Trekk ut installdir
 		var m = Regex.Match(content, "\"installdir\"\\s*\"(?<dir>.*?)\"");
 		if (!m.Success) return null;
@@ -277,6 +306,7 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			AllocateDebugConsole();
 
 			RestartSteamVR();
+			InitializeOpenVR();
 			InitializeVrAndCalibration();
 
 			this.Loaded += MainWindow_Loaded;
@@ -357,7 +387,6 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 			// Til slutt kan du så starte OpenVR-timere eller annet du trenger:
 			StartVRStatusTimer();
-			
 		}
 
 		private void HeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -761,6 +790,7 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			searchTimer?.Stop();
 			vrHealthTimer.Stop();
 			base.OnClosed(e);
+			OpenVR.Shutdown();
 		}
 
 		#endregion
@@ -782,13 +812,13 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			string iconPath;
 
 			if (signalStrength >= 78)
-				iconPath = "pack://application:,,,/Bilder/wifi_3_bar.png";
+				iconPath = "pack://application:,,,/Assets/Bilder/wifi_3_bar.png";
 			else if (signalStrength >= 52)
-				iconPath = "pack://application:,,,/Bilder/wifi_2_bar.png";
+				iconPath = "pack://application:,,,/Assets/Bilder/wifi_2_bar.png";
 			else if (signalStrength >= 1)
-				iconPath = "pack://application:,,,/Bilder/wifi_1_bar.png";
+				iconPath = "pack://application:,,,/Assets/Bilder/wifi_1_bar.png";
 			else
-				iconPath = "pack://application:,,,/Bilder/wifi_0_bar.png";
+				iconPath = "pack://application:,,,/Assets/Bilder/wifi_0_bar.png";
 
 
 			// Update the Image control source
@@ -1673,10 +1703,7 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			}
 		}
 
-		#region MAPPESTRUKTUR KODE UNDER
-		
 
-		#endregion
 
 	}
 }
