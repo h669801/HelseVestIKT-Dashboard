@@ -126,15 +126,17 @@ namespace HelseVestIKT_Dashboard.Services
 			string url = $"https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={APIKey}&steamid={UserID}&format=json";
 			HttpResponseMessage response = await SendHttpRequestWithRetryAsync(url);
 
-			if (response != null)
-			{
-				string responseBody = await response.Content.ReadAsStringAsync();
-				JObject json = JObject.Parse(responseBody);
+			if (response == null) return;
 
-				if (json["response"]["games"].Any(g => g["appid"].Value<string>() == game.AppID))
-				{
-					game.IsRecentlyPlayed = true;
-				}
+			string responseBody = await response.Content.ReadAsStringAsync();
+			JObject json = JObject.Parse(responseBody);
+
+			// Safely grab the "games" token as an array
+			var gamesToken = json["response"]?["games"] as JArray;
+			if (gamesToken != null &&
+				gamesToken.Any(g => (string)g["appid"] == game.AppID))
+			{
+				game.IsRecentlyPlayed = true;
 			}
 		}
 
