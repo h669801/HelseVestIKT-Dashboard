@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace HelseVestIKT_Dashboard.Infrastructure
 {
-    public class Win32
-    {
-  
+	public class Win32
+	{
+
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
@@ -31,7 +31,50 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 		public const int WS_BORDER = 0x00800000;
 		public const uint SWP_NOZORDER = 0x0004;
 		public const uint SWP_NOACTIVATE = 0x0010;
-	}
 
+
+		// Nye metoder for å finne vinduer basert på delstreng i vindustittel
+		public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetWindowTextLength(IntPtr hWnd);
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+		/// <summary>
+		/// Finn det første top-level vinduet hvis tittel inneholder noen av de oppgitte nøkkel-strengene.
+		/// </summary>
+		public static IntPtr FindWindowByTitleSubstrings(params string[] substrings)
+		{
+			IntPtr found = IntPtr.Zero;
+
+			EnumWindows((hWnd, _) =>
+			{
+				int len = GetWindowTextLength(hWnd);
+				if (len > 0)
+				{
+					var sb = new StringBuilder(len + 1);
+					GetWindowText(hWnd, sb, sb.Capacity);
+					string title = sb.ToString();
+					foreach (var part in substrings)
+					{
+						if (title.IndexOf(part, StringComparison.OrdinalIgnoreCase) >= 0)
+						{
+							found = hWnd;
+							return false; // stopp enum
+						}
+					}
+				}
+				return true; // fortsett enum
+			}, IntPtr.Zero);
+
+			return found;
+		}
+	}
 }
+
 

@@ -6,6 +6,7 @@
 		xmlns:vm="clr-namespace:HelseVestIKT_Dashboard.ViewModels"
         Title="Helse Vest IKT" Height="800" Width="1300"
 		WindowState="Maximized"
+		WindowStyle="None"
 		Topmost="True">
 
 

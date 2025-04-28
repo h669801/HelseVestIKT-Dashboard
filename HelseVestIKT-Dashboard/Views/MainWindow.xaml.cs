@@ -33,6 +33,9 @@ using HelseVestIKT_Dashboard.Helpers;
 using Dialogs.Views;
 using HelseVestIKT_Dashboard.Infrastructure;
 using SteamKit2;
+using System.Text;
+using System.Security.Cryptography.X509Certificates;
+using System;
 
 namespace HelseVestIKT_Dashboard.Views
 {
@@ -728,6 +731,11 @@ namespace HelseVestIKT_Dashboard.Views
 			{
 				// Oppdater filter / UI om noe har endret seg
 				UpdateFilters(null, null);
+
+				// Lagre de nye spill-medlemsskapene i JSON-filen:
+				gameGroupHandler.SaveGameGroupsToFile(
+				eventHandler: nameof(UpdateFilters),
+				styleName: "RoundedCheckBoxWithSourceSansFontStyle");
 			}
 		}
 
@@ -751,14 +759,9 @@ namespace HelseVestIKT_Dashboard.Views
                 AddGameGroupCheckBox(checkBox, group);
             }
         }
-
-
-
-
 		#endregion
 
 		#region OpenVR og VR Status
-
 		/// <summary>
 		/// Prøver å (gjen)initialisere OpenVR.
 		/// </summary>
@@ -973,7 +976,7 @@ namespace HelseVestIKT_Dashboard.Views
 
 		private void VRHost_SizeChanged(object sender, EventArgs e)
 		{
-			IntPtr vrViewHandle = Win32.FindWindow(null, "VR View");
+			IntPtr vrViewHandle = Win32.FindWindowByTitleSubstrings("VR View", "VR-visning");
 			if (vrViewHandle == IntPtr.Zero) return;
 
 			int width = (int)VRHost.ActualWidth;
@@ -998,7 +1001,7 @@ namespace HelseVestIKT_Dashboard.Views
 			if (_alreadyEmbedded) return;
 
 			_vrEmbedAttempts++;
-			IntPtr vrViewHandle = Win32.FindWindow(null, "VR View");
+			IntPtr vrViewHandle = Win32.FindWindowByTitleSubstrings("VR View", "VR-visning");
 			if (vrViewHandle != IntPtr.Zero)
 			{
 				_vrEmbedTimer.Stop();
@@ -1247,7 +1250,7 @@ namespace HelseVestIKT_Dashboard.Views
 
 		private void PauseKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			// Finn spillprosessen
+			// 1) Finn spillprosessen slik du allerede gjør
 			var proc = GetRunningGameProcess();
 			if (proc == null)
 			{
@@ -1255,12 +1258,33 @@ namespace HelseVestIKT_Dashboard.Views
 				return;
 			}
 
-			// Eksempel: åpne SteamVR dashbord
-			if (OpenVR.Applications != null)
+			// 2) Sjekk at OpenVR.Applications er initialisert
+			var applications = OpenVR.Applications;
+			if (applications == null)
 			{
-				OpenVR.Applications.LaunchDashboardOverlay("");
+				MessageBox.Show("OpenVR.Applications er ikke tilgjengelig.", "Pause", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
+
+			// 3) Prøv å åpne SteamVR‐dashboard overlay
+			//    Argumentet er appKey for det SteamVR-dashboard‐overlayet du vil vise.
+			//    Her bruker vi tom streng for å vise brukerens standard dashboard.
+			EVRApplicationError err = applications.LaunchDashboardOverlay(string.Empty);
+
+			// 4) Håndter eventuelle feil
+			if (err != EVRApplicationError.None)
+			{
+				MessageBox.Show(
+					$"Kunne ikke åpne SteamVR-dashboard: {err}",
+					"Pause",
+					MessageBoxButton.OK,
+					MessageBoxImage.Error
+				);
 			}
 		}
+
+
+
 
 		#endregion
 
@@ -1436,7 +1460,7 @@ namespace HelseVestIKT_Dashboard.Views
 			await LaunchGameAsync(game);
 
 			// 6) Gi UI-en et lite pusterom før VR-visning
-			await Task.Delay(300);
+			await Task.Delay(500);
 
 			// 7) Bytt til fullskjerm/VR-view
 			FullScreenButton_Click(null, null);
@@ -1458,8 +1482,8 @@ namespace HelseVestIKT_Dashboard.Views
 			int attempts = 0;
 			while (attempts < MaxVREmbedAttempts)
 			{
-				// Søk etter VR-vinduet, her benytter vi tittelen "VR View".
-				IntPtr vrViewHandle = Win32.FindWindow(null, "VR View");
+				// Søk etter VR-vinduet, her benytter vi tittelen "VR View eller VR-visning".
+				IntPtr vrViewHandle = Win32.FindWindowByTitleSubstrings("VR View", "VR-visning");
 				if (vrViewHandle != IntPtr.Zero)
 				{
 					// Når vinduet er funnet, kall EmbedVRView og avslutt metoden.
@@ -1469,7 +1493,7 @@ namespace HelseVestIKT_Dashboard.Views
 				}
 
 				attempts++;
-				// Vent 500ms før neste forsøk. Juster ventetiden etter behov.
+				// Vent 3000ms før neste forsøk. Juster ventetiden etter behov.
 				await Task.Delay(3000);
 			}
 
