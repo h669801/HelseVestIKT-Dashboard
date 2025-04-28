@@ -154,17 +154,51 @@ namespace HelseVestIKT_Dashboard.Views
 		private Process? GetRunningGameProcess()
 		{
 			var game = _gameStatusManager.CurrentGame;
-			if (game == null)
-				return null;
+			if (game == null) return null;
 
-			Console.WriteLine($"[DEBUG] Letes etter prosesser med navn: {game.ProcessName}");
+			// 1) grab all procs with that simple name
 			var procs = Process.GetProcessesByName(game.ProcessName);
-			Console.WriteLine($"[DEBUG] Funnet {procs.Length} prosesser.");
+			Console.WriteLine($"[DEBUG] Funnet {procs.Length} prosesser med navn {game.ProcessName}");
+
+			// 2) if we know the exact install-path, match on MainModule.FileName
+			//    (avoid throwing if we can’t open MainModule by wrapping in try/catch)
+			string steamPath = GetSteamInstallPathFromRegistry();
+			string? exePath = GetSteamExePath(steamPath, game.AppID);
+			if (!string.IsNullOrEmpty(exePath))
+			{
+				var byPath = procs.FirstOrDefault(p =>
+				{
+					try
+					{
+						return string.Equals(
+							p.MainModule.FileName,
+							exePath,
+							StringComparison.OrdinalIgnoreCase
+						);
+					}
+					catch
+					{
+						return false;
+					}
+				});
+				if (byPath != null) return byPath;
+			}
+
+			// 3) fallback: pick the one whose window title contains the game title
+			var byTitle = procs.FirstOrDefault(p =>
+			{
+				try { return p.MainWindowTitle?.IndexOf(game.Title, StringComparison.OrdinalIgnoreCase) >= 0; }
+				catch { return false; }
+			});
+			if (byTitle != null) return byTitle;
+
+			// 4) ultimate fallback
 			return procs.FirstOrDefault();
 		}
 
-public static string? GetProcessNameFromSteam(string steamPath, string appId)
-	{
+
+		public static string? GetProcessNameFromSteam(string steamPath, string appId)
+		{
 		// 1) Les manifest
 		var manifest = Path.Combine(steamPath, "steamapps", $"appmanifest_{appId}.acf");
 		if (!File.Exists(manifest)) return null;
@@ -311,9 +345,7 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			StartMonitoringWifiSignal();
 			AllocateDebugConsole();
 
-			RestartSteamVR();
-			InitializeOpenVR();
-			InitializeVrAndCalibration();
+			
 
 			this.Loaded += MainWindow_Loaded;
 
@@ -399,6 +431,9 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 			_gameStatusManager = new GameStatusManager(AllGames);
 			StartGameStatusTimer();  // <– Du må implementere denne (se under)
 			LoadGameGroups();
+
+			RestartSteamVR();
+			InitializeVrAndCalibration();
 
 			// Til slutt kan du så starte OpenVR-timere eller annet du trenger:
 			StartVRStatusTimer();
@@ -1079,6 +1114,17 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 		#region VR Statuslinje og knappersk
 
+		private async Task<bool> WaitForExitAsync(Process proc, int timeoutMs)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+			proc.EnableRaisingEvents = true;
+			proc.Exited += (s, e) => tcs.TrySetResult(true);
+			if (proc.HasExited) return true;
+		
+			using(var cts = new CancellationTokenSource(timeoutMs))
+			return await Task.WhenAny(tcs.Task, Task.Delay(-1, cts.Token)) == tcs.Task;
+		}
+
 		//Denne knappen lukker/Avslutter spillvinduet gjennom applikasjonen
 		private void AvsluttKnapp_Click(object sender, RoutedEventArgs e)
 		{
@@ -1149,8 +1195,6 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 		{
 			// Emergency stop button if application is not responding and VR functions are not working
 			// This is a last resort to close the application
-
-			if (MessageBox.Show("Er du sikker på at du vil avslutte programmet?", "Avslutt programmet", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
 				System.Windows.Application.Current.Shutdown();
 		}
 
@@ -1511,6 +1555,12 @@ public static string? GetProcessNameFromSteam(string steamPath, string appId)
 
 		private void HoydeKalibrering_Click(object sender, RoutedEventArgs e)
 		{
+
+			Hoydekalibrering_Slider.Visibility =
+				Hoydekalibrering_Slider.Visibility == Visibility.Visible
+				? Visibility.Collapsed
+				: Visibility.Visible;
+
 			Process.Start(new ProcessStartInfo
 			{
 				FileName = "explorer.exe",

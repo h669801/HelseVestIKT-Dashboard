@@ -8,14 +8,14 @@
 		WindowState="Maximized"
 		Topmost="True">
 
-	
-	
-	<Window.Resources> 
+
+
+	<Window.Resources>
 
 		<FontFamily x:Key="SourceSansFont">Source Sans Pro</FontFamily>
 
 
-	
+
 
 		<Style x:Key="SquareRoundedButtonStyle" TargetType="Button">
 			<Setter Property="Template">
@@ -95,60 +95,60 @@
 			<Setter Property="Foreground" Value="#003087"/>
 		</Style>
 
-       <!-- Test Style for checkbox -->
+		<!-- Test Style for checkbox -->
 		<Style TargetType="CheckBox">
 			<Setter Property="Template">
 				<Setter.Value>
-                    <ControlTemplate TargetType="CheckBox">
-                        <StackPanel Orientation="Horizontal">
-                            <Border x:Name="border"
+					<ControlTemplate TargetType="CheckBox">
+						<StackPanel Orientation="Horizontal">
+							<Border x:Name="border"
                     Width="24"
                     Height="24"
                     CornerRadius="6"
                     Background="White"
                     BorderThickness="2"
                     BorderBrush="Gray">
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Opacity="0.3"/>
-                                </Border.Effect>
-                                <Grid>
-                                    <Rectangle x:Name="checkBackground"
+								<Border.Effect>
+									<DropShadowEffect BlurRadius="5" ShadowDepth="2" Opacity="0.3"/>
+								</Border.Effect>
+								<Grid>
+									<Rectangle x:Name="checkBackground"
                                Fill="White"
                                RadiusX="6" RadiusY="6"/>
-                                    <Path x:Name="checkMark"
+									<Path x:Name="checkMark"
                           Data="M4,12 L10,18 L20,6"
                           Stroke="Black"
                           StrokeThickness="2"
                           Visibility="Collapsed"/>
-                                </Grid>
-                            </Border>
-                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <ControlTemplate.Triggers>
-                            <!-- Når CheckBox er sjekket -->
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="checkBackground" Property="Fill" Value="LightGray"/>
-                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
-                            </Trigger>
+								</Grid>
+							</Border>
+							<ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+						</StackPanel>
+						<ControlTemplate.Triggers>
+							<!-- Når CheckBox er sjekket -->
+							<Trigger Property="IsChecked" Value="True">
+								<Setter TargetName="checkBackground" Property="Fill" Value="LightGray"/>
+								<Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+							</Trigger>
 
-                            <!-- Når musen er over CheckBox -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#EFEFEF"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#003087"/>
-                            </Trigger>
+							<!-- Når musen er over CheckBox -->
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="border" Property="Background" Value="#EFEFEF"/>
+								<Setter TargetName="border" Property="BorderBrush" Value="#003087"/>
+							</Trigger>
 
-                            <!-- Når CheckBox er deaktivert -->
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+							<!-- Når CheckBox er deaktivert -->
+							<Trigger Property="IsEnabled" Value="False">
+								<Setter TargetName="border" Property="Opacity" Value="0.5"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 
 		<!-- Base-stil for CheckBox med avrundede hjørner -->
-		 <Style x:Key="RoundedCheckBoxStyle" TargetType="CheckBox">
+		<Style x:Key="RoundedCheckBoxStyle" TargetType="CheckBox">
 			<Setter Property="Margin" Value="5"/>
 			<Setter Property="Template">
 				<Setter.Value>
@@ -190,35 +190,35 @@
 		</Style>
 
 
-        <!-- Stil for Knapp med + -->
-        <Style x:Key="RoundedButtonStyle" TargetType="Button">
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" Width="30" Height="30"
+		<!-- Stil for Knapp med + -->
+		<Style x:Key="RoundedButtonStyle" TargetType="Button">
+			<Setter Property="Margin" Value="5"/>
+			<Setter Property="HorizontalAlignment" Value="Left"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="ButtonBorder" Width="30" Height="30"
                         CornerRadius="4"
                         Background="White"
                         BorderBrush="Gray"
                         BorderThickness="2"
                         VerticalAlignment="Center">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="LightBlue"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="DarkGray"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsPressed" Value="True">
+								<Setter TargetName="ButtonBorder" Property="Background" Value="LightBlue"/>
+							</Trigger>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="ButtonBorder" Property="BorderBrush" Value="DarkGray"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 
-    </Window.Resources>
+	</Window.Resources>
 
 	<Grid Background="#F6F6F6">
 		<Grid.RowDefinitions>
@@ -393,16 +393,16 @@
 						</StackPanel>
 					</Button>
 
-					<StackPanel Width="150" Margin="10">
+					<StackPanel x:Name="Hoydekalibrering_Slider" Width="150" Margin="10" Visibility="Collapsed">
 						<!-- Overskrift -->
-						<TextBlock 
+						<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}"
     Text="Høydekalibrering (m)" 
     FontWeight="Bold" 
     FontSize="14" 
     Margin="0,0,0,8"/>
 
-                        <!-- Stor, tydelig slider -->
-                        <Slider
+						<!-- Stor, tydelig slider -->
+						<Slider
 x:Name="HeightSlider"
 Width="150"
 Height="32"
@@ -419,26 +419,26 @@ AutoToolTipPrecision="2"
 Value="{Binding EyeHeightSetting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 ValueChanged="HeightSlider_ValueChanged"
 Margin="0,0,0,8">
-                            <!-- Gjør thumbs litt større via et enkelt ressurs‐override -->
-                            <Slider.Resources>
-                                <Style TargetType="Thumb">
-                                    <Setter Property="Width" Value="20"/>
-                                    <Setter Property="Height" Value="20"/>
-                                </Style>
-                            </Slider.Resources>
-                        </Slider>
+							<!-- Gjør thumbs litt større via et enkelt ressurs‐override -->
+							<Slider.Resources>
+								<Style TargetType="Thumb">
+									<Setter Property="Width" Value="20"/>
+									<Setter Property="Height" Value="20"/>
+								</Style>
+							</Slider.Resources>
+						</Slider>
 
-                        <!-- Viser nummerverdien i fet font -->
-                        <TextBlock 
+						<!-- Viser nummerverdien i fet font -->
+						<TextBlock  Style="{DynamicResource SourceSansTextBlockStyle}"
 Text="{Binding EyeHeightSetting, StringFormat={}{0:F2} m}" 
 HorizontalAlignment="Center"
 FontSize="12"
 FontWeight="SemiBold"/>
-                    </StackPanel>
-                </StackPanel>
+					</StackPanel>
+				</StackPanel>
 
 
-                <!-- Midtstilt logo/tekst -->
+				<!-- Midtstilt logo/tekst -->
 				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
 					<Grid Width="60" Height="60" Margin="15,0">
 						<!-- 3 rader og 3 kolonner -->
@@ -509,7 +509,7 @@ FontWeight="SemiBold"/>
 				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,10,0">
 					<!-- Klokke -->
 					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding CurrentTime}" VerticalAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="10,0"/>
-					
+
 					<!-- Volumknapp -->
 					<Button Style="{StaticResource SquareRoundedButtonStyle}" BorderThickness="0" x:Name="SpeakerButton"
 MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
@@ -517,17 +517,19 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 							<Image Source="/Assets/Bilder/speaker_popup.png" Width="24" Height="24"/>
 						</StackPanel>
 					</Button>
+					
+					<!-- Innstillingsknapp -->
+					<Button Style="{StaticResource SquareRoundedButtonStyle}" BorderThickness="0" Click="OpenSettings">
+						<StackPanel>
+							<Image Source="/Assets/Bilder/setting.png" Width="24" Height="24"/>
+						</StackPanel>
+					</Button>
 
-                    <!-- Innstillingsknapp -->
-                    <Button Style="{StaticResource TransparentButtonStyle}" Click="OpenSettings">
-                        <Image Source="/Assets/Bilder/Settings.png" Width="24" Height="24"/>
-                    </Button>
-
-                    <!-- Wifi signal-->
-					<StackPanel Orientation="Horizontal" Height="24" Width="24" Margin="0,0,10,0">
-						<Image x:Name="WifiSignalIcon" Width="20" Height="20" Margin="0,0,10,0" SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="HighQuality" Source="/Assets/Bilder/wifi_3_bar.png"/>
-					</StackPanel>
-					<!-- Popup for volum -->
+					<!-- Wifi signal-->
+						<StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+							<Image x:Name="WifiSignalIcon" Width="24" Height="24" Margin="10,0,10,0" Source="/Assets/Bilder/wifi_3_bar.png"/>
+						</StackPanel>
+						<!-- Popup for volum -->
 					<Popup x:Name="VolumePopup" Placement="Custom"
                  CustomPopupPlacementCallback="VolumePopupPlacementCallback"
                  PlacementTarget="{Binding ElementName=SpeakerButton}"
@@ -585,19 +587,19 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 
 			<StackPanel x:Name="StatusBarKalibrering" Grid.Column="4" Visibility="Collapsed" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,10,0">
 				<Button Click="RomKalibrering_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
-						</Button>
-						<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering"/>
-						</Button>
-						<Button Click="MidtstillView_Sittende_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill sittende"/>
-						</Button>
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
+				</Button>
+				<Button Style="{StaticResource SquareRoundedButtonStyle}" Margin="5" Click="HoydeKalibrering_Click">
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Høydekalibrering"/>
+				</Button>
+				<Button Click="MidtstillView_Sittende_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
+					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midtstill sittende"/>
+				</Button>
 				<Button Click="MidstillView_Staaende_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
 					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Midstill Stående"/>
 				</Button>
 			</StackPanel>
-			
+
 			<!--Knapper (Pause, Avslutt og Nødstopp -->
 			<StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0">
 				<!-- Return-knapp for spillvisning (skjules initialt) -->
@@ -605,7 +607,7 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 				Style="{StaticResource SquareRoundedButtonStyle}"
 				HorizontalAlignment="Right" VerticalAlignment="Center" 
 				Margin="0,0,5,0" Visibility="Collapsed">
-			<StackPanel Orientation="Horizontal">
+					<StackPanel Orientation="Horizontal">
 						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Hjem"/>
 					</StackPanel>
 				</Button>
@@ -656,40 +658,40 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
          LostFocus="SearchBox_LostFocus"
          TextChanged="SearchBox_TextChanged"/>
 					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
-					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam spill" Margin="10,5,0,0" />
-					<CheckBox Click="UpdateFilters" x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre Spill" Margin="10,5,0,0" />
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam-spill" Margin="10,5,0,0" />
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre spill" Margin="10,5,0,0" />
 					<Separator Margin="10,10,10,10"/>
 					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
 					<CheckBox Click="UpdateFilters" x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
 					<CheckBox Click="UpdateFilters" x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
 					<CheckBox Click="UpdateFilters" x:Name="CheckFlerspiller" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
 
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
-            <Separator Margin="10,10,10,10"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
-            <CheckBox Click="UpdateFilters" x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
-                    <Separator x:Name="UPPER" Margin="10,10,10,10"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
+					<Separator Margin="10,10,10,10"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
+					<CheckBox Click="UpdateFilters" x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
+					<Separator x:Name="UPPER" Margin="10,10,10,10"/>
 
-                    <!-- Plus Button and TextBox for Creating New Game Categories -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">                    
-					<Button FontSize="16" Content="+" Click="CreateCategory_Click" Style="{StaticResource RoundedButtonStyle}"/>
-                        
-                        <TextBlock Style="{DynamicResource SourceSansTextBlockStyle}"  Text="Legg til kategori" FontWeight="Bold" Margin="10,10,0,0"/>
-                    </StackPanel>
-                    <TextBox x:Name="NewCategoryTextBox" Width="200" Margin="10,5,0,0" Visibility="Collapsed" KeyDown="NewCategoryTextBox_KeyDown"/>
-                    <!-- StackPanel to hold dynamically created CheckBoxes -->
-                    <StackPanel x:Name="GameCategoriesPanel" Orientation="Vertical" Margin="10,5,0,0"/>
-                                        
-                    <Separator x:Name="LOWER" Margin="10,10,10,10"/>
-			<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
+					<!-- Plus Button and TextBox for Creating New Game Categories -->
+					<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+						<Button FontSize="16" Content="+" Click="CreateCategory_Click" Style="{StaticResource RoundedButtonStyle}"/>
+
+						<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}"  Text="Legg til kategori" FontWeight="Bold" Margin="10,10,0,0"/>
+					</StackPanel>
+					<TextBox x:Name="NewCategoryTextBox" Width="200" Margin="10,5,0,0" Visibility="Collapsed" KeyDown="NewCategoryTextBox_KeyDown"/>
+					<!-- StackPanel to hold dynamically created CheckBoxes -->
+					<StackPanel x:Name="GameCategoriesPanel" Orientation="Vertical" Margin="10,5,0,0"/>
+
+					<Separator x:Name="LOWER" Margin="10,10,10,10"/>
+					<Button Content="Skjul" Style="{DynamicResource SquareRoundedButtonStyle}"
         HorizontalAlignment="Center" VerticalAlignment="Center" Click="SkjulKnapp_Click"/>
 				</StackPanel>
 			</Border>
@@ -745,5 +747,5 @@ MouseEnter="SpeakerButton_MouseEnter" MouseLeave="SpeakerButton_MouseLeave">
 				<wf:Panel x:Name="VRPanel"/>
 			</WindowsFormsHost>
 		</Grid>
-		</Grid>
+	</Grid>
 </Window>

@@ -40,6 +40,7 @@
     <None Remove="Assets\Bilder\kontroller_venstre.png" />
     <None Remove="Assets\Bilder\nodstopp_knapp.png" />
     <None Remove="Assets\Bilder\pause_knapp.png" />
+    <None Remove="Assets\Bilder\setting.png" />
     <None Remove="Assets\Bilder\settings.png" />
     <None Remove="Assets\Bilder\speaker.png" />
     <None Remove="Assets\Bilder\speaker_popup.png" />
@@ -93,6 +94,9 @@
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Resource>
 		<Resource Include="Assets\Bilder\pause_knapp.png">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</Resource>
+		<Resource Include="Assets\Bilder\setting.png">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Resource>
 		<Resource Include="Assets\Bilder\settings.png">
