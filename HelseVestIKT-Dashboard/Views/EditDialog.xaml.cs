@@ -28,8 +28,8 @@ namespace Dialogs.Views
                 SelectedGames.Add(new GameElement(game, gameGroup.HasGame(game)));
             }
 
-            gameItemsControl.ItemsSource = SelectedGames.OrderBy(a => a.Title); 
-        }
+            gameItemsControl.ItemsSource = SelectedGames.OrderBy(a => a.Title);
+		}
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
 		{

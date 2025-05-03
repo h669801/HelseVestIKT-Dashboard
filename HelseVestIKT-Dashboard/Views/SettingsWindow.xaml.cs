@@ -34,8 +34,26 @@ namespace HelseVestIKT_Dashboard.Views
             }
         }
 
-        // 2) Et eksempel på en annen innstilling
-        private void OnOtherSettings(object sender, RoutedEventArgs e)
+        private void PinButton_Click(object sender, RoutedEventArgs e)
+		{
+			var pinWin = new PinWindow
+			{
+				Owner = this,
+				WindowStartupLocation = WindowStartupLocation.CenterOwner
+			};
+
+			// ShowDialog returnerer DialogResult fra PinWindow
+			bool? ok = pinWin.ShowDialog();
+			if (ok == true)
+			{
+                EditProfileButton.Visibility = Visibility.Visible; // PIN var korrekt – vis Endre bruker‐knappen
+
+			}
+			// etter at PinWindow lukkes, er du fortsatt i SettingsWindow
+		}
+
+		// 2) Et eksempel på en annen innstilling
+		private void OnOtherSettings(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show("Her kan du vise andre innstillinger!",
                             "Andre innstillinger",

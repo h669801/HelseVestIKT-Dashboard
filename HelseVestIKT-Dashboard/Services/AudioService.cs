@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Windows.Threading;
+using System.Windows;
 using NAudio.CoreAudioApi;
+using NAudio.Gui;
+using System.Windows.Media;
 
 namespace HelseVestIKT_Dashboard.Services
 {
@@ -10,6 +14,8 @@ namespace HelseVestIKT_Dashboard.Services
 	{
 		private readonly MMDeviceEnumerator _enumerator;
 		private readonly MMDevice _device;
+		private DispatcherTimer? volumeStatusTimer = null;
+		public ImageSource VolumeIcon => StockIcons.GetVolumeIcon();
 
 		/// <summary>
 		/// Hendelse som utløses når systemvolum endres utenfra.
@@ -19,18 +25,26 @@ namespace HelseVestIKT_Dashboard.Services
 		/// <summary>
 		/// Henter eller setter gjeldende systemvolum som 0.0–1.0.
 		/// </summary>
-		public float CurrentVolume
-		{
-			get => _device.AudioEndpointVolume.MasterVolumeLevelScalar;
-			set => _device.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Clamp(value, 0f, 1f);
-		}
+		/// 
+
 
 		public AudioService()
 		{
 			_enumerator = new MMDeviceEnumerator();
 			_device = _enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
 			_device.AudioEndpointVolume.OnVolumeNotification += OnVolumeNotification;
+			VolumeChanged?.Invoke(this, _device.AudioEndpointVolume.MasterVolumeLevelScalar);
 		}
+
+		public float CurrentVolume
+		{
+			get => _device.AudioEndpointVolume.MasterVolumeLevelScalar;
+			set
+			{
+				_device.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Clamp(value, 0f, 1f);
+				VolumeChanged?.Invoke(this, _device.AudioEndpointVolume.MasterVolumeLevelScalar);
+			}
+			}
 
 		private void OnVolumeNotification(AudioVolumeNotificationData data)
 		{
@@ -40,7 +54,7 @@ namespace HelseVestIKT_Dashboard.Services
 		public void Dispose()
 		{
 			_device.AudioEndpointVolume.OnVolumeNotification -= OnVolumeNotification;
-			_enumerator.Dispose();
 		}
+
 	}
 }
