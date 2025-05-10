@@ -18,7 +18,6 @@ namespace HelseVestIKT_Dashboard.ViewModels
 		{
 			_audio = new AudioService();
 			_audio.VolumeChanged += (s, v) => Volume = v;
-			OpenVrInterop.Initialize();
 		}
 
 		public double HeightSetting

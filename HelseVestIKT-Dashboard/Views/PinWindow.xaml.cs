@@ -34,18 +34,21 @@ namespace HelseVestIKT_Dashboard.Views
 		{
 			if (PinBox.Password == CorrectPin)
 			{
+				IsAuthenticated = true;
 				DialogResult = true;
+				Close();
 			}
 			else
 			{
 				System.Windows.MessageBox.Show("Feil PIN", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
-				DialogResult = false;
+				IsAuthenticated = false;
 			}
 	
 		}
 
 		private void Cancel_Click(object sender, RoutedEventArgs e)
 		{
+			IsAuthenticated = false;
 			DialogResult = false;
 			Close();
 		}

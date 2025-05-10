@@ -9,7 +9,7 @@
 		WindowStyle="None"
 		ResizeMode="NoResize"
 		Topmost="True"
-		ShowInTaskbar="False"
+		ShowInTaskbar="True"
 		KeyDown="Window_KeyDown">
 	
 	<Window.Resources>
@@ -531,10 +531,10 @@ BorderThickness="{TemplateBinding BorderThickness}">
 				</StackPanel>
 
 				<!--Kalibreringsknapp-->
-				<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+				<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Panel.ZIndex="200">
 					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyleKalibreringButton}" Click="KalibreringKnapp_Click" Height="50" Margin="10,0,0,15">
 						<StackPanel Orientation="Horizontal">
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/>
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/> 
 							<Image Source="/Assets/Bilder/accessibility.png" Width="30" Height="30" HorizontalAlignment="Right" Margin="10,0,0,0" />
 						</StackPanel>
 					</Button>
@@ -718,7 +718,7 @@ FontWeight="SemiBold"/>
 						<Image Source="/Assets/Bilder/fullskjerm.png" Width="32" Height="32"/>
 					</Button>
 					<!-- Avslutt-knapp -->
-					<Button x:Name="ExitButton" Visibility="Collapsed" Style="{StaticResource SquareRoundedButtonStyle}" Width="55" Height="50" Click="ExitButton_Click" Margin="10,0">
+					<Button x:Name="ExitButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="55" Height="50" Click="ExitButton_Click" Margin="10,0">
 						<Image Source="/Assets/Bilder/exit_knapp.png" Width="32" Height="32" />
 					</Button>
 				</StackPanel>
@@ -756,7 +756,7 @@ FontWeight="SemiBold"/>
 
 			<!--Knapper (Pause, Avslutt og Nødstopp -->
 			<StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,0,0,0">
-				<StackPanel x:Name="StatusBarKalibrering" Grid.Column="4" Visibility="Collapsed" Orientation="Horizontal" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0">
+				<StackPanel x:Name="StatusBarKalibrering" Panel.ZIndex="200" Grid.Column="4" Visibility="Collapsed" Orientation="Horizontal" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0">
 					<Button Click="RomKalibrering_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
 						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
 					</Button>
@@ -916,7 +916,7 @@ FontWeight="SemiBold"/>
 				</ScrollViewer>
 			</Grid>
 			<WindowsFormsHost x:Name="VRHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-							  SizeChanged="VRHost_SizeChanged" Visibility="Collapsed">
+							  SizeChanged="VRHost_SizeChanged" Visibility="Collapsed" Padding="0">
 				<wf:Panel x:Name="VRPanel"/>
 			</WindowsFormsHost>
 		</Grid>

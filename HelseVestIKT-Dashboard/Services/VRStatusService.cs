@@ -22,18 +22,21 @@ namespace HelseVestIKT_Dashboard.Services
 		public VRStatusService(VRStatusManager statusModel)
 		{
 			_statusModel = statusModel;
+			_vrSystem = OpenVR.System!;
 		}
 
-		public void InitializeBackground()
+		/*
+		public bool InitializeBackground()
 		{
 			OpenVR.Shutdown();
 			EVRInitError err = EVRInitError.None;
 			OpenVR.Init(ref err, EVRApplicationType.VRApplication_Background);
-			if (err == EVRInitError.None)
-				_vrSystem = OpenVR.System;
-			else
-				throw new InvalidOperationException($"OpenVR init failed: {err}");
+			if (err != EVRInitError.None)
+				return false;
+			_vrSystem = OpenVR.System;
+			return true;
 		}
+		*/
 
 		public void StartStatusUpdates(TimeSpan interval)
 		{
@@ -54,22 +57,13 @@ namespace HelseVestIKT_Dashboard.Services
 		}
 		private void RefreshStatus()
 		{
-			if (_vrSystem == null) return;
-			// ... kopier koden fra UpdateVREquipmentStatus her, men oppdater på _statusModel ...
+				Update();
 		}
 
 		public void Shutdown()
 		{
 			_statusTimer?.Stop();
 			OpenVR.Shutdown();
-		}
-
-		private void Start()
-		{
-			_statusTimer = new DispatcherTimer();
-			_statusTimer.Interval = TimeSpan.FromSeconds(7);
-			_statusTimer.Tick += (s, e) => Update();
-			_statusTimer.Start();
 		}
 
 		private void Update()

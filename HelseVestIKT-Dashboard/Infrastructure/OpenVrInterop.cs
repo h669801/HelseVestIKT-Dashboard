@@ -10,22 +10,7 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 	{
 		private static CVRSystem? _system;
 
-		/// <summary>Initialiserer OpenVR og lagrer CVRSystem-instansen.</summary>
-		public static bool Initialize()
-		{
-			OpenVR.Shutdown();
-			EVRInitError error = EVRInitError.None;
-			OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);
-			if (error != EVRInitError.None)
-			{
-				Console.WriteLine($"OpenVR-init feilet: {error}");
-				_system = null;
-				return false;
-			}
-			_system = OpenVR.System;
-			return true;
-		}
-
+		
 		/// <summary>Stenger den aktive OpenVR-sesjonen.</summary>
 		public static void Shutdown()
 		{

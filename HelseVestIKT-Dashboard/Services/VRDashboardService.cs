@@ -15,11 +15,13 @@ namespace HelseVestIKT_Dashboard.Services
     {
 		private readonly GameProcessService _processService;
 		private readonly GameStatusManager _gameStatusManager;
+		private readonly VRInitService _initService;
 
-		public VRDashboardService(GameProcessService processService, GameStatusManager gameStatusManager)
+		public VRDashboardService(GameProcessService processService, GameStatusManager gameStatusManager, VRInitService initService)
 		{
 			_processService = processService;
 			_gameStatusManager = gameStatusManager;
+			_initService = initService;
 		}
 
 		public void CloseCurrentGame()
@@ -60,48 +62,22 @@ namespace HelseVestIKT_Dashboard.Services
 				});
 			}
 		}
-		public void OpenDashboard()
-		{
-			var err = OpenVR.Applications.LaunchDashboardOverlay("");
-			if (err != EVRApplicationError.None)
-				throw new InvalidOperationException(err.ToString());
-		}
-
+	
 
 		public void PauseKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			// 1) Finn spillprosessen slik du allerede gjør
-			var proc = _processService.GetRunningGameProcess();
-
-			if (proc == null)
-			{
-				MessageBox.Show("Fant ingen spill å pause.", "Pause", MessageBoxButton.OK, MessageBoxImage.Warning);
-				return;
-			}
-
-			// 2) Sjekk at OpenVR.Applications er initialisert
-			var applications = OpenVR.Applications;
-			if (applications == null)
-			{
-				MessageBox.Show("OpenVR.Applications er ikke tilgjengelig.", "Pause", MessageBoxButton.OK, MessageBoxImage.Error);
-				return;
-			}
-
-			// 3) Prøv å åpne SteamVR‐dashboard overlay
-			//    Argumentet er appKey for det SteamVR-dashboard‐overlayet du vil vise.
-			//    Her bruker vi tom streng for å vise brukerens standard dashboard.
-			EVRApplicationError err = applications.LaunchDashboardOverlay(string.Empty);
-
-			// 4) Håndter eventuelle feil
+			
+			// 2) Åpne SteamVR Dashboard (samme som menyknappen på kontrolleren)
+			EVRApplicationError err = OpenVR.Applications.LaunchDashboardOverlay("");
 			if (err != EVRApplicationError.None)
 			{
 				MessageBox.Show(
-					$"Kunne ikke åpne SteamVR-dashboard: {err}",
-					"Pause",
+					$" [VRDashboardService] Kunne ikke åpne SteamVR Dashboard: {err}",
+					"Feil ved åpning av dashboard",
 					MessageBoxButton.OK,
-					MessageBoxImage.Error
-				);
+					MessageBoxImage.Error);
 			}
 		}
+
 	}
 }

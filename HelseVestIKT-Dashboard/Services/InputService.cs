@@ -18,6 +18,13 @@ namespace HelseVestIKT_Dashboard.Services
 			//Blokkerer Windows-tast
 			if (e.Key == Key.LWin || e.Key == Key.RWin)
 				e.Handled = true;
+
+			if (e.Key == Key.M)
+				e.Handled = true;
+
+			if (e.Key == Key.H)
+				e.Handled = true;
+		
 		}
 	}
 }

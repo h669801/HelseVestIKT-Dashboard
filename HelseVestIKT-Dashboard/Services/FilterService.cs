@@ -14,6 +14,7 @@ namespace HelseVestIKT_Dashboard.Services
 		{
 			["Action"] = "Action",
 			["Eventyr"] = "Adventure",
+			["Flersspiller"] = "Multiplayer",
 			["Indie"] = "Indie",
 			["Lettbeint"] = "Casual",
 			["Massivt flerspill"] = "Massively Multiplayer",

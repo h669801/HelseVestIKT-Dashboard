@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 
 namespace HelseVestIKT_Dashboard.Infrastructure
 {
 	public static class Win32
 	{
+		
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
 		// —— Kernel32 —— 
 		[DllImport("kernel32.dll")]
 		public static extern bool AllocConsole();
@@ -42,9 +47,16 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 		public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
 		public const int GWL_STYLE = -16;
+		public const int GWL_EXSTYLE = -20;
 		public const int WS_CHILD = 0x40000000;
+		public const int WS_POPUP = unchecked((int)0x80000000);
 		public const int WS_CAPTION = 0x00C00000;
 		public const int WS_BORDER = 0x00800000;
+		public const int WS_THICKFRAME = 0x00040000;
+		public const int WS_SYSMENU = 0x00080000;
+		public const int WS_MINIMIZEBOX = 0x00020000;
+		public const int WS_MAXIMIZEBOX = 0x00010000;
+		public const int WS_EX_TRANSPARENT = 0x00000020;
 
 		// —— SendInput for å simulere ESC —— 
 		[StructLayout(LayoutKind.Sequential)]
@@ -90,27 +102,57 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-		public static IntPtr FindWindowByTitleSubstrings(params string[] substrings)
+		public static IntPtr FindOverlayWindow()
 		{
 			IntPtr found = IntPtr.Zero;
-			EnumWindows((hWnd, _) =>
+			const int maxTitleLength = 256;
+
+			EnumWindows((hWnd, lParam) =>
 			{
-				int len = GetWindowTextLength(hWnd);
-				if (len > 0)
+				var sb = new StringBuilder(maxTitleLength);
+				if (GetWindowText(hWnd, sb, maxTitleLength) > 0)
 				{
-					var sb = new StringBuilder(len + 1);
-					GetWindowText(hWnd, sb, sb.Capacity);
-					var title = sb.ToString();
-					foreach (var s in substrings)
-						if (title.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0)
-						{
-							found = hWnd;
-							return false; // stopp videre
-						}
+					string title = sb.ToString();
+					if (title.Contains("VR View") || title.Contains("VR-visning"))
+					{
+						found = hWnd;
+						return false;   // stopp søket
+					}
 				}
-				return true; // fortsett
+				return true;            // fortsett søket
 			}, IntPtr.Zero);
+
 			return found;
+		}
+
+		/// <summary>
+		/// Embed VR-overlay, gjør vinduet til barn, transparent for input, og fjerner rammer og systemstiler.
+		/// </summary>
+		public static void EmbedOverlay(IntPtr overlayHandle, IntPtr hostHandle, int width, int height)
+		{
+			// Hent og oppdater stil
+			int style = GetWindowLong(overlayHandle, GWL_STYLE);
+			// Fjern uønskede vindustiler for å låse vinduet til host
+			style &= ~WS_POPUP;
+			style &= ~WS_CAPTION;
+			style &= ~WS_BORDER;
+			style &= ~WS_THICKFRAME;
+			style &= ~WS_SYSMENU;
+			style &= ~WS_MINIMIZEBOX;
+			style &= ~WS_MAXIMIZEBOX;
+			// Legg til barn-stil
+			style |= WS_CHILD;
+			SetWindowLong(overlayHandle, GWL_STYLE, style);
+
+			// Legg til transparent exstyle for input-pass-through
+			int ex = GetWindowLong(overlayHandle, GWL_EXSTYLE);
+			ex |= WS_EX_TRANSPARENT;
+			SetWindowLong(overlayHandle, GWL_EXSTYLE, ex);
+
+			// Sett parent og posisjon
+			SetParent(overlayHandle, hostHandle);
+			SetWindowPos(overlayHandle, IntPtr.Zero, 0, 0, width, height,
+				SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 	}
 }

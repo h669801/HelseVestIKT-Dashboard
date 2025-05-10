@@ -12,61 +12,82 @@ using System.IO;
 
 namespace HelseVestIKT_Dashboard.Services
 {
-    public class VRCalibrator
-    {
+	public class VRCalibrator
+	{
 		private CVRSystem? vrSystem;
 
 		// Felles helper-metode som skal resentrere VR-visningen
 		// Shared helper you can call for both seated and standing
 		public void Recenter(ETrackingUniverseOrigin origin)
 		{
-			// 1) Hvis du allerede har en session, steng den
-			OpenVR.Shutdown();
-
-			// 2) Initier på nytt som overlay-app
-			EVRInitError initError = EVRInitError.None;
-			OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Overlay);
-			if (initError != EVRInitError.None)
+			try
 			{
-				Console.WriteLine($"Kunne ikke init Overlay-session: {initError}");
-				return;
+				// 1) Hvis du allerede har en session, steng den
+				OpenVR.Shutdown();
+
+				// 2) Initier ny overlay-session
+				EVRInitError initError = EVRInitError.None;
+				OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Overlay);
+				if (initError != EVRInitError.None)
+				{
+					Console.WriteLine($"[VRCalibrator] Init feilet: {initError}");
+					return;
+				}
+
+
+				// Nå er både OpenVR.Compositor og OpenVR.Chaperone ikke-null
+
+				// 3) Sett ønsket tracking-space
+				OpenVR.Compositor.SetTrackingSpace(origin);
+
+				// 4) Nullstill zero-pose
+				OpenVR.Chaperone.ResetZeroPose(origin);
+
+				// 5) Hent oppdaterte poser (du kan eventuelt sende tomme arrays i stedet for null)
+				var renderPoses = new Valve.VR.TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+				var gamePoses = new Valve.VR.TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+				OpenVR.Compositor.WaitGetPoses(renderPoses, gamePoses);
+
+				Console.WriteLine($"[VRCalibrator] Recenter fullført: {origin}");
 			}
-
-			// Nå er både OpenVR.Compositor og OpenVR.Chaperone ikke-null
-
-			// 3) Sett ønsket tracking-space
-			OpenVR.Compositor.SetTrackingSpace(origin);
-
-			// 4) Nullstill zero-pose
-			OpenVR.Chaperone.ResetZeroPose(origin);
-
-			// 5) Hent oppdaterte poser (du kan eventuelt sende tomme arrays i stedet for null)
-			var renderPoses = new Valve.VR.TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-			var gamePoses = new Valve.VR.TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-			OpenVR.Compositor.WaitGetPoses(renderPoses, gamePoses);
-
-			Console.WriteLine($"Recenter fullført: {origin}");
+			catch (Exception ex)
+			{
+				// Logg detalj, unngå at kallende tråd kollapser
+				Console.WriteLine($"[VRCalibrator] Recenter unntak: {ex.Message}");
+			}
 		}
 
-		/// <summary>
-		/// Justerer verdens Y-offset slik at brukeren oppleves høyere/lavere.
-		/// </summary>
+
+			/// <summary>
+			/// Justerer verdens Y-offset slik at brukeren oppleves høyere/lavere.
+			/// </summary>
 		public void ApplyHeight(double heightMeters)
 		{
 			// dersom vi ikke har system fra før, hent det fra OpenVR
 			if (vrSystem == null)
 				vrSystem = OpenVR.System;
-
 			if (vrSystem == null)
+			{
+				Console.WriteLine("[VRCalibrator] VR.System ikke tilgjengelig");
 				return;
+			}
 
-			// resten som før…
-			HmdMatrix34_t rawPose = vrSystem.GetRawZeroPoseToStandingAbsoluteTrackingPose();
-			rawPose.m7 = -(float)heightMeters;
-			var chaperoneSetup = OpenVR.ChaperoneSetup;
-			chaperoneSetup.SetWorkingStandingZeroPoseToRawTrackingPose(ref rawPose);
-			chaperoneSetup.CommitWorkingCopy(EChaperoneConfigFile.Live);
-		}
+			try
+			{
+
+				HmdMatrix34_t rawPose = vrSystem.GetRawZeroPoseToStandingAbsoluteTrackingPose();
+				rawPose.m7 = -(float)heightMeters;
+				var chaperoneSetup = OpenVR.ChaperoneSetup;
+
+				chaperoneSetup.SetWorkingStandingZeroPoseToRawTrackingPose(ref rawPose);
+				chaperoneSetup.CommitWorkingCopy(EChaperoneConfigFile.Live);
+				Console.WriteLine($"[VRCalibrator] Høyde satt til {heightMeters}m");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"[VRCalibrator] ApplyHeight unntak: {ex.Message}");
+			}
+			}
 
 		/// <summary>
 		/// Eksempel: henter ut gjeldende kalibrering fra ChaperoneSetup.
