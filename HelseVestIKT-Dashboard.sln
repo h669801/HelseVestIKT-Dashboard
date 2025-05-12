@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelseVestIKT-Dashboard", "HelseVestIKT-Dashboard\HelseVestIKT-Dashboard.csproj", "{3110FE5A-5189-4FAE-83DF-73D08155CDE1}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Dashboard-Installer", "Dashboard-Installer\Dashboard-Installer.vdproj", "{E7549FF3-46D1-08AE-9AA4-F0657726AD68}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelseVestIKT_Dashboard.Tests", "HelseVestIKT_Dashboard.Tests\HelseVestIKT_Dashboard.Tests.csproj", "{DC760ACD-5801-479F-872F-B3AF9124A787}"
 EndProject
 Global
@@ -17,6 +19,8 @@ Global
 		{3110FE5A-5189-4FAE-83DF-73D08155CDE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3110FE5A-5189-4FAE-83DF-73D08155CDE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3110FE5A-5189-4FAE-83DF-73D08155CDE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7549FF3-46D1-08AE-9AA4-F0657726AD68}.Debug|Any CPU.ActiveCfg = Debug
+		{E7549FF3-46D1-08AE-9AA4-F0657726AD68}.Release|Any CPU.ActiveCfg = Release
 		{DC760ACD-5801-479F-872F-B3AF9124A787}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DC760ACD-5801-479F-872F-B3AF9124A787}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC760ACD-5801-479F-872F-B3AF9124A787}.Release|Any CPU.ActiveCfg = Release|Any CPU

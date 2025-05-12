@@ -52,14 +52,24 @@ namespace HelseVestIKT_Dashboard.Views
 			// etter at PinWindow lukkes, er du fortsatt i SettingsWindow
 		}
 
-		// 2) Et eksempel på en annen innstilling
-		private void OnOtherSettings(object sender, RoutedEventArgs e)
+        private void OnToggleLock(object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show("Her kan du vise andre innstillinger!",
-                            "Andre innstillinger",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+            if (Owner is MainWindow mw)
+            {
+                mw.ToggleLock();
+
+                // Oppdater knappetekst basert på ny tilstand
+                if (mw.IsLocked)
+                {
+                    LockToggleButton.Content = "Lås opp applikasjon";
+                }
+                else
+                {
+                    LockToggleButton.Content = "Lås applikasjon";
+                }
+            }
         }
+
 
         // 3) Lukk vinduet
         private void OnClose(object sender, RoutedEventArgs e)

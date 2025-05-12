@@ -49,7 +49,10 @@ namespace HelseVestIKT_Dashboard.Views
 			}
 		}
 
-		private string _currentPlayer;
+        private bool _isLocked = true;
+        public bool IsLocked => _isLocked;
+
+        private string _currentPlayer;
 		public string CurrentPlayer { get; set; }
 
 		private string _currentStatus;
@@ -130,9 +133,8 @@ namespace HelseVestIKT_Dashboard.Views
 
 			// — 5) Hook Loaded og aktiver/deaktiver 
 			this.Loaded += MainWindow_Loaded;
-			this.Activated += MainWindow_Activated;
-			this.Deactivated += MainWindow_Deactivated;
-		}
+			Activated += MainWindow_Activated;
+        }
 
 		#endregion
 
@@ -173,101 +175,159 @@ namespace HelseVestIKT_Dashboard.Views
 			CurrentStatus = _gameStatusManager.CurrentStatus;
 		}
 
-		private void MainWindow_Activated(object sender, EventArgs e)
+        private void MainWindow_Activated(object sender, EventArgs e)
         {
-            // Når vinduet får fokus igjen, sett det øverst
-            this.Topmost = true;
+            if (_isLocked)
+            {
+                Topmost = true;
+                Activate();
+            }
         }
 
-        private void MainWindow_Deactivated(object sender, EventArgs e)
+        public void LockApplication()
         {
-            // Når vinduet mister fokus (f.eks. nettleser åpner), fjern Topmost
-            this.Topmost = false;
+            _isLocked = true;
+            Topmost = true;
         }
 
-		private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-			if (_gamesLoaded) return;
-			_gamesLoaded = true;
+        public void UnlockApplication()
+        {
+            _isLocked = false;
+            Topmost = false;
+        }
 
-			// ————— 1) Velg profil —————
-			var profiles = ProfileStore.Load();
-			var last = Properties.Settings.Default.LastProfileName;
-			var profile = profiles
-				.FirstOrDefault(p => p.Name == last)
-				?? profiles.FirstOrDefault()
-				?? new SteamProfile { Name = "Default", ApiKey = "", UserId = "" };
+        public void ToggleLock()
+        {
+            if (_isLocked) UnlockApplication();
+            else LockApplication();
+        }
 
-			_currentProfile = profile;
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            await InitializeApplicationAsync();
+        }
 
-			// Lagre tilbake hvilken profil vi faktisk bruker
-			Properties.Settings.Default.LastProfileName = profile.Name;
-			Properties.Settings.Default.Save();
+        private async Task InitializeApplicationAsync()
+        {
+            if (_gamesLoaded) return;
+            _gamesLoaded = true;
 
-			if (string.IsNullOrWhiteSpace(profile.ApiKey) ||
-	string.IsNullOrWhiteSpace(profile.UserId))
-			{
-				MessageBox.Show($"Profil «{profile.Name}» mangler ApiKey/UserId.…");
-				return;
-			}
+            Console.WriteLine("—> Startup: Velger/gjenoppretter profil…");
+            LoadOrCreateProfile();
 
-			_steamApi = new SteamApi(profile.ApiKey, profile.UserId);
-			_gameDetailsFetcher = new GameDetailsFetcher(profile.ApiKey, profile.UserId);
+            Console.WriteLine($"—> Startup: Profil funnet: {_currentProfile.Name}, ApiKey={(string.IsNullOrEmpty(_currentProfile.ApiKey) ? "(tom)" : "(har verdi)")}");
+            if (!ValidateProfile()) return;
 
-			var offlineMgr = new OfflineSteamGamesManager();
-			_gameLoadService = new GameLoadService(_steamApi, _gameDetailsFetcher, offlineMgr);
+            Console.WriteLine("—> Startup: Profil validert, går videre med init…");
+            InitializeServices();
+            await LoadAndDisplayGamesAsync();
+            InitializeGroupsAndFilters();
+            await InitializeVrAsync();
+        }
 
-			// Hent alle spill (Steam + offline) asynkront
-			var allGames = await _gameLoadService.LoadAllGamesAsync(_currentProfile);
+        private void LoadOrCreateProfile()
+        {
+            // Hent all data (profiler + sist brukte) fra profiles.json
+            var data = ProfileStore.Load();
+            var profiles = data.Profiles;
+            var lastName = data.LastProfileName;
 
-			// Fyll opp lister i én operasjon
-			AllGames.Clear();
-			Games.Clear();
-			foreach (var g in allGames)
-			{
-				AllGames.Add(g);
-				Games.Add(g);
-			}
+            // Velg profil: enten sist brukte, eller første i listen, eller en helt ny "Default"
+            _currentProfile = profiles
+                .FirstOrDefault(p => p.Name == lastName)
+                ?? profiles.FirstOrDefault()
+                ?? new SteamProfile { Name = "Default", ApiKey = "", UserId = "" };
 
-			// ————— 3) Sett ProcessName der vi har InstallPath —————
-			foreach (var g in AllGames)
-			{
-				if (!string.IsNullOrWhiteSpace(g.InstallPath))
-					g.ProcessName = Path.GetFileNameWithoutExtension(g.InstallPath);
-			}
+            // Oppdater "sist brukte" i strukturen
+            data.LastProfileName = _currentProfile.Name;
 
-			// ————— 4) Grupper, filtre og status-timer —————
+            // Lagre alt tilbake til profiles.json
+            ProfileStore.Save(data);
+        }
 
-			StartGameStatusTimer();
-			LoadGameGroups();
-			// Vis alle spill før filtrering
-			UpdateFilters(null, null);
 
-			// ————— 5) VR-init og restart —————
-			await _initService.RestartSteamVRAsync();
+        private bool ValidateProfile()
+        {
+            if (string.IsNullOrWhiteSpace(_currentProfile.ApiKey) ||
+                string.IsNullOrWhiteSpace(_currentProfile.UserId))
+            {
+                MessageBox.Show($"Profil «{_currentProfile.Name}» mangler ApiKey/UserId.…",
+                                "Ugyldig profil", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
 
-			// Pakk selve init + vent i bakgrunn så du ikke fryser UI-tråden
-			bool vrOk = await Task.Run(() => _initService.SafeInitOpenVR());
+        private void InitializeServices()
+        {
+			Console.WriteLine(_currentProfile.ApiKey);
+            _steamApi = new SteamApi(_currentProfile.ApiKey, _currentProfile.UserId);
+            _gameDetailsFetcher = new GameDetailsFetcher(_currentProfile.ApiKey, _currentProfile.UserId);
+            var offlineMgr = new OfflineSteamGamesManager();
+            _gameLoadService = new GameLoadService(_steamApi, _gameDetailsFetcher, offlineMgr);
+        }
 
-			// Nå kjører vi kalibrering **på UI-trad**:
-			if (vrOk)
-				InitializeVrAndCalibration();
+        private async Task LoadAndDisplayGamesAsync()
+        {
+            var allGames = await _gameLoadService.LoadAllGamesAsync(_currentProfile);
+            AllGames.Clear();
+            Games.Clear();
+            foreach (var g in allGames)
+            {
+                AllGames.Add(g);
+                Games.Add(g);
+                if (!string.IsNullOrWhiteSpace(g.InstallPath))
+                    g.ProcessName = Path.GetFileNameWithoutExtension(g.InstallPath);
+            }
+        }
 
-			// Endelig UI-oppdatering:
-			if (vrOk && _initService.System != null)
-			{
-				_statusService = new VRStatusService(VREquipmentStatus);
-				_statusService.StartStatusUpdates(TimeSpan.FromSeconds(7));
-			}
-			else
-			{
-				VRHost.Visibility = Visibility.Collapsed;
-				PauseKnapp.IsEnabled = false;
-				KalibrerKnapp.IsEnabled = false;
-			}
-		}
+        private void InitializeGroupsAndFilters()
+        {
+            StartGameStatusTimer();
+            LoadGameGroups();
+            UpdateFilters(null, null);
+        }
 
-		public async Task SetProfileAsync(SteamProfile p)
+        private async Task InitializeVrAsync()
+        {
+            try
+            {
+                await _initService.RestartSteamVRAsync();
+                bool vrOk = await Task.Run(() => _initService.SafeInitOpenVR());
+
+                if (vrOk)
+                {
+                    InitializeVrAndCalibration();
+                    if (_initService.System != null)
+                    {
+                        _statusService = new VRStatusService(VREquipmentStatus);
+                        _statusService.StartStatusUpdates(TimeSpan.FromSeconds(7));
+                    }
+                    else
+                    {
+                        CollapseVrControls();
+                    }
+                }
+                else
+                {
+                    CollapseVrControls();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Kunne ikke starte VR-tjenester: {ex.Message}");
+                CollapseVrControls();
+            }
+        }
+
+        private void CollapseVrControls()
+        {
+            VRHost.Visibility = Visibility.Collapsed;
+            PauseKnapp.IsEnabled = false;
+            KalibrerKnapp.IsEnabled = false;
+        }
+
+        public async Task SetProfileAsync(SteamProfile p)
 		{
 			_currentProfile = p;
 
@@ -694,51 +754,54 @@ namespace HelseVestIKT_Dashboard.Views
 			return await Task.WhenAny(tcs.Task, Task.Delay(-1, cts.Token)) == tcs.Task;
 		}
 
-		
+
         // Åpne innstillinger med trykk på innstillingsknappen
         private async void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            var dlg = new SettingsWindow
+            // 1) Spør om PIN
+            var pinDlg = new PinWindow
             {
-                Owner = this,                                        // Viktig!
+                Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
-
-            if (dlg.ShowDialog() == true)
+            var pinResult = pinDlg.ShowDialog();
+            if (pinResult != true)
             {
-			
-				// Les innstillingene på nytt
-				var apiKey = Properties.Settings.Default.SteamApiKey;
+                // Brukeren trykket Avbryt eller feil PIN – gjør ingenting
+                return;
+            }
+
+            // 2) Åpne SettingsWindow
+            var settingsDlg = new SettingsWindow
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            if (settingsDlg.ShowDialog() == true)
+            {
+                // 3) Les innstillingene på nytt
+                var apiKey = Properties.Settings.Default.SteamApiKey;
                 var userId = Properties.Settings.Default.SteamUserId;
 
-                // Gjenskape SteamApi-objektet (eller oppdatere det)
+                // 4) Oppdater SteamApi-objektet
                 _steamApi = new SteamApi(apiKey, userId);
 
-                // (Re)hent spillene, oppdater UI
-                var games = await _steamApi.GetSteamGamesAsync();
-				// … bind til din ItemsControl / ListView …
-				ShowPinAndEnableExit();
-			}
+                // 5) (Re)hent spillene og oppdater UI
+                //var games = await _steamApi.GetSteamGamesAsync();
+                //YourGamesItemsControl.ItemsSource = games;  // bytt ut med ditt konkrete binding
+                //ExitButton.Visibility = Visibility.Visible;
+            }
         }
 
-		private void ShowPinAndEnableExit()
-		{
-			var pin = new PinWindow { Owner = this };
-			if (pin.ShowDialog() == true && pin.IsAuthenticated)
-			{
-				ExitButton.Visibility = Visibility.Visible;
-			}
-		}
 
-
-
-		/// <summary>
-		/// “Nodstopp”-knappen fungerer som en “Reconnect VR”:
-		/// Den restart­er SteamVR, prøver å initialisere OpenVR igjen,
-		/// og slår på VR-relaterte UI-elementer hvis det lykkes.
-		/// </summary>
-		private async void Nodstopp_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// “Nodstopp”-knappen fungerer som en “Reconnect VR”:
+        /// Den restart­er SteamVR, prøver å initialisere OpenVR igjen,
+        /// og slår på VR-relaterte UI-elementer hvis det lykkes.
+        /// </summary>
+        private async void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
 			// 1) Forsøk å restarte SteamVR-prosessene
 			try

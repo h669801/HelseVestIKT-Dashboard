@@ -18,9 +18,10 @@ namespace HelseVestIKT_Dashboard.Services
 		private const int MaxRetries = 5;
 		private const int DelayMilliseconds = 1000;
 		private static readonly ConcurrentDictionary<string, HttpResponseMessage> cache = new ConcurrentDictionary<string, HttpResponseMessage>();
-		private static readonly string cacheFilePath = "cache.json";
+        private static readonly string cacheFilePath;
+        //private static readonly string cacheFilePath = "cache.json";
 
-		public GameDetailsFetcher(string apiKey, string userID)
+        public GameDetailsFetcher(string apiKey, string userID)
 		{
 			APIKey = apiKey;
 			UserID = userID;
@@ -53,7 +54,13 @@ namespace HelseVestIKT_Dashboard.Services
 			client.DefaultRequestHeaders.Add("User-Agent", "YourAppName/1.0");
 			client.DefaultRequestHeaders.Add("Accept", "application/json");
 			client.DefaultRequestHeaders.Add("Referer", "https://store.steampowered.com");
-		}
+
+            // Sett cache-filsti til AppData\Local\HelseVestIKT_Dashboard\cache.json
+            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appFolder = Path.Combine(appDataFolder, "HelseVestIKT_Dashboard");
+            Directory.CreateDirectory(appFolder); // Sørg for at mappen eksisterer
+            cacheFilePath = Path.Combine(appFolder, "cache.json");
+        }
 
 		private async Task<HttpResponseMessage> SendHttpRequestWithRetryAsync(string url)
 		{

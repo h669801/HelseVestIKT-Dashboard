@@ -17,9 +17,11 @@
              />
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button x:Name="EditProfileButton" Content="Endre bruker" Click="OnChangeUser" IsEnabled="False" Margin="0,0,5,0"/>
-            <Button Content="Ny bruker"   Click="OnNewUser" Margin="5,0,0,0"/>
-            <Button Content="Avbryt"     Click="OnCancel"   Margin="5,0,0,0"/>
+            <Button Content="Avbryt" Width="50" Click="OnCancel"   Margin="5,0,0,0"/>
+            <Button x:Name="DeleteProfileButton" Content="Slett" Width="50" Click="OnDeleteUser" IsEnabled="False" Margin="5,0,0,0"/>
+            <Button Content="Ny" Width="50"  Click="OnNewUser" Margin="5,0,0,0"/>
+            <Button x:Name="EditProfileButton" Width="50" Content="Bruk" Click="OnChangeUser" IsEnabled="False" Margin="5,0,0,0"/>
+            
         </StackPanel>
     </Grid>
 </Window>

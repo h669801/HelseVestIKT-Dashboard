@@ -11,16 +11,24 @@
                 Content="Endre bruker"
                 Click="OnChangeUser"
                 IsEnabled="True"
-				Visibility="Collapsed"/>
+				></Button>
 
         <!-- Del 2: Her kan du legge til flere innstillingselementer -->
         <!--<Button Content="Andre innstillinger..." 
             Height="30" Margin="0,0,0,10" 
             Click="OnOtherSettings"/> -->
-
+        
+        <!--
 		<Button Content="PIN-kode"
 		Click="PinButton_Click" Margin="0,10,0,10">
 		</Button>
+        -->
+
+        <Button x:Name="LockToggleButton"
+        Content="Lås opp applikasjon"
+        Click="OnToggleLock"
+        Margin="0,10,0,0"/>
+
 
         <!-- Nederst: Lukk-knapp -->
         <Separator Margin="0,10,0,10"/>
