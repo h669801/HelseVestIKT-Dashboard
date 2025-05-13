@@ -764,13 +764,8 @@ namespace HelseVestIKT_Dashboard.Views
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
-
-            var pinResult = pinDlg.ShowDialog();
-            if (pinResult != true)
-            {
-                // Brukeren trykket Avbryt eller feil PIN – gjør ingenting
+            if (pinDlg.ShowDialog() != true)
                 return;
-            }
 
             // 2) Åpne SettingsWindow
             var settingsDlg = new SettingsWindow
@@ -778,22 +773,34 @@ namespace HelseVestIKT_Dashboard.Views
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
+            settingsDlg.ShowDialog();
 
-            if (settingsDlg.ShowDialog() == true)
+            // 3) Etter at SettingsWindow er lukket: les profildata fra JSON
+            var data = ProfileStore.Load();
+            var lastName = data.LastProfileName;
+            var profile = data.Profiles.FirstOrDefault(p => p.Name == lastName);
+            if (profile == null)
+                return;
+
+            // 4) Dersom det faktisk er en ny profil (eller andre endringer), oppdater
+            if (_currentProfile == null
+                || profile.Name != _currentProfile.Name
+                || profile.ApiKey != _currentProfile.ApiKey
+                || profile.UserId != _currentProfile.UserId)
             {
-                // 3) Les innstillingene på nytt
-                var apiKey = Properties.Settings.Default.SteamApiKey;
-                var userId = Properties.Settings.Default.SteamUserId;
+                _currentProfile = profile;
+                _steamApi = new SteamApi(profile.ApiKey, profile.UserId);
+                _gameDetailsFetcher = new GameDetailsFetcher(profile.ApiKey, profile.UserId);
+                _gameLoadService = new GameLoadService(_steamApi, _gameDetailsFetcher, new OfflineSteamGamesManager());
 
-                // 4) Oppdater SteamApi-objektet
-                _steamApi = new SteamApi(apiKey, userId);
+                // 5) Re-hent alle spill og oppdater UI via din eksisterende metode
+                await LoadAndDisplayGamesAsync();
+                InitializeGroupsAndFilters();
 
-                // 5) (Re)hent spillene og oppdater UI
-                //var games = await _steamApi.GetSteamGamesAsync();
-                //YourGamesItemsControl.ItemsSource = games;  // bytt ut med ditt konkrete binding
-                //ExitButton.Visibility = Visibility.Visible;
+                ExitButton.Visibility = Visibility.Visible;
             }
         }
+
 
 
         /// <summary>

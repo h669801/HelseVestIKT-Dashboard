@@ -19,20 +19,24 @@ namespace HelseVestIKT_Dashboard.Views
 
             if (profileMgr.ShowDialog() == true && profileMgr.SelectedProfile != null)
             {
+                // Les eksisterende data fra JSON
+                var data = ProfileStore.Load();
+
                 // Bruk den valgte profilen:
                 var prof = profileMgr.SelectedProfile;
 
-                // Lagre som sist brukte profil:
-                Properties.Settings.Default.LastProfileName = prof.Name;
-                Properties.Settings.Default.Save();
+                // Oppdater sist brukte profil og lagre alt
+                data.LastProfileName = prof.Name;
+                ProfileStore.Save(data);
 
-                // Oppdater SteamApi i MainWindow (antatt at MainWindow har en metode for dette)
+                // Oppdater SteamApi i MainWindow
                 if (Owner is MainWindow mw)
                 {
                     await mw.SetProfileAsync(prof);
                 }
             }
         }
+
 
         private void PinButton_Click(object sender, RoutedEventArgs e)
 		{
