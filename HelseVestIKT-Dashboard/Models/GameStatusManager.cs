@@ -8,7 +8,7 @@ using System.Text;
 using Valve.VR;
 using HelseVestIKT_Dashboard.Models;
 
-namespace HelseVestIKT_Dashboard.Services
+namespace HelseVestIKT_Dashboard.Models
 {
 	/// <summary>
 	/// Holder oversikt over gjeldende spill og status.

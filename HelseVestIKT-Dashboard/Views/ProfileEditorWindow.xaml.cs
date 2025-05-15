@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Windows;
 using System.Windows.Navigation;
+using HelseVestIKT_Dashboard.Models;
 
 namespace HelseVestIKT_Dashboard.Views
 {

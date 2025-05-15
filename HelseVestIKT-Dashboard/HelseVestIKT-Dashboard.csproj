@@ -10,6 +10,8 @@
 	  <UseWindowsForms>true</UseWindowsForms>
 	  <AllowUnsafeCode>true</AllowUnsafeCode>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	  <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\VRDashboard.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

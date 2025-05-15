@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+using System.Diagnostics;
+using System.Windows.Input;
 
 namespace HelseVestIKT_Dashboard.Infrastructure
 {
@@ -34,10 +36,14 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 			uint uFlags);
 
 		public static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+		public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+		public static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+
 		public const uint SWP_NOMOVE = 0x0002;
 		public const uint SWP_NOSIZE = 0x0001;
 		public const uint SWP_NOZORDER = 0x0004;
 		public const uint SWP_NOACTIVATE = 0x0010;
+		public const uint SWO_SHOWWINDOW = 0x0040;
 
 		// —— Get/SetWindowLong —— 
 		[DllImport("user32.dll", SetLastError = true)]
@@ -154,5 +160,134 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 			SetWindowPos(overlayHandle, IntPtr.Zero, 0, 0, width, height,
 				SWP_NOZORDER | SWP_NOACTIVATE);
 		}
+
+		// —— Nye definisjoner for å gjenopprette vindu ——
+		public const int WS_EX_LAYERED = 0x00080000;   // Layered vindu
+		public const int WS_EX_NOACTIVATE = 0x08000000;   // Ikke aktiver ved klikk
+		public const uint SWP_FRAMECHANGED = 0x0020;       // Tving repaint av ramme
+		public const uint SWP_SHOWWINDOW = 0x0040;       // Vis vindu
+		public const int SW_RESTORE = 9;            // Gjenopprett vindu
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+		public const int SW_SHOWNORMAL = 5;
+		// —— Nytt: P/Invoke for å lese tastetrykk —— 
+
+		[DllImport("user32.dll")]
+		private static extern short GetAsyncKeyState(int vKey);
+
+		private const int VK_MENU = 0x12;  // Alt
+		private const int VK_TAB = 0x09;  // Tab
+		private const int VK_CONTROL = 0x11;  // Ctrl
+		private const int VK_LWIN = 0x5B;  // Venstre Win
+		private const int VK_RWIN = 0x5C;  // Høyre Win
+		private const int VK_F4 = 0X73;  // F4
+
+		// —— Hook-infrastruktur —— 
+
+		private const int WH_KEYBOARD_LL = 13;
+		private const int WM_KEYDOWN = 0x0100;
+		private const int WM_SYSKEYDOWN = 0x0104;
+
+		private static IntPtr _hookId = IntPtr.Zero;
+		private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+		private static LowLevelKeyboardProc _proc = HookCallback;
+
+		[DllImport("user32.dll", SetLastError = true)]
+		private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn,
+													  IntPtr hMod, uint dwThreadId);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
+													IntPtr wParam, IntPtr lParam);
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+		private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+		/// <summary>
+		/// Aktiverer blokkering av Alt+Tab, Windows-taster og Ctrl+Esc.
+		/// </summary>
+		public static void EnableKeyBlock()
+		{
+			if (_hookId == IntPtr.Zero)
+			{
+				using var proc = Process.GetCurrentProcess();
+				using var module = proc.MainModule;
+				_hookId = SetWindowsHookEx(
+					WH_KEYBOARD_LL,
+					_proc,
+					GetModuleHandle(module.ModuleName),
+					0);
+			}
+		}
+
+		/// <summary>
+		/// Deaktiverer tastatur-hooken.
+		/// </summary>
+		public static void DisableKeyBlock()
+		{
+			if (_hookId != IntPtr.Zero)
+			{
+				UnhookWindowsHookEx(_hookId);
+				_hookId = IntPtr.Zero;
+			}
+		}
+
+		private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+		{
+			if (nCode >= 0 &&
+			   (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
+			{
+				int vk = Marshal.ReadInt32(lParam);
+
+				bool alt = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+				bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+
+				// Blokker Alt+Tab
+				if (alt && vk == VK_TAB) return (IntPtr)1;
+				// Blokker Ctrl+Esc
+				if (ctrl && vk == VK_ESCAPE) return (IntPtr)1;
+				// Blokker Windows-taster
+				if (vk == VK_LWIN || vk == VK_RWIN) return (IntPtr)1;
+				// Blokker Alt+F4
+				if (alt && vk == VK_F4) return (IntPtr)1;
+			}
+
+			return CallNextHookEx(_hookId, nCode, wParam, lParam);
+		}
+
+		/// <summary>
+		/// Setter vinduet til alltid øverst (TopMost).
+		/// </summary>
+		public static void SetWindowTopMost(IntPtr hWnd)
+		{
+			SetWindowPos(hWnd, HWND_TOPMOST,
+						 0, 0, 0, 0,
+						 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		}
+
+		/// <summary>
+		/// Bringer et eksternt vindu til forgrunnen, uten å beholde TopMost permanent.
+		/// </summary>
+		public static void BringToFront(IntPtr hWnd)
+		{
+			// 1) Gjenopprett hvis minimert
+			ShowWindow(hWnd, SW_RESTORE);
+			// 2) Bruk z-rekkefølge: sett øverst i stabelen (men ikke TopMost)
+			SetWindowPos(
+				hWnd,
+				HWND_TOPMOST,
+				0, 0, 0, 0,
+				SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
+			);
+			// 3) Gi fokus
+			SetForegroundWindow(hWnd);
+		}
+
+
 	}
 }

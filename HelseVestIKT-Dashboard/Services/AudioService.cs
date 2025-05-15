@@ -4,6 +4,7 @@ using System.Windows;
 using NAudio.CoreAudioApi;
 using NAudio.Gui;
 using System.Windows.Media;
+using HelseVestIKT_Dashboard.Models;
 
 namespace HelseVestIKT_Dashboard.Services
 {

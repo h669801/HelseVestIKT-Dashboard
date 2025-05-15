@@ -5,7 +5,8 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace HelseVestIKT_Dashboard.Services
+namespace HelseVestIKT_Dashboard.Models
+
 {
 	public static class StockIcons
 	{

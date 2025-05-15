@@ -124,5 +124,42 @@ namespace HelseVestIKT_Dashboard.Services
 				await Task.Delay(200);
 			}
 		}
+
+/*public async Task RestartSteamVRAsync()
+{
+    // 1) Avslutt SteamVR-server dersom den kjører
+    foreach (var proc in Process.GetProcessesByName("vrserver"))
+    {
+        try { proc.Kill(); }
+        catch { /* logg feilmelding om ønskelig 
+
+// 2) Avslutt Steam-klienten
+foreach (var proc in Process.GetProcessesByName("steam"))
+{
+	try { proc.Kill(); }
+	catch { /* logg feilmelding  }
+}
+
+// 3) Gi Windows tid til å rydde opp
+await Task.Delay(1000);
+
+// 4) Start Steam-klienten på nytt (ingen argumenter for å åpne bibliotek)
+var steamExe = Path.Combine(
+	Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+	"Steam", "Steam.exe");
+Process.Start(new ProcessStartInfo(steamExe)
+{
+	UseShellExecute = true
+});
+
+// 5) Vent til vrserver er tilgjengelig igjen (maks 10 sek)
+var sw = Stopwatch.StartNew();
+while (sw.Elapsed < TimeSpan.FromSeconds(10))
+{
+	if (Process.GetProcessesByName("vrserver").Any())
+		break;
+	await Task.Delay(200);
+}
+*/
 	}
 }

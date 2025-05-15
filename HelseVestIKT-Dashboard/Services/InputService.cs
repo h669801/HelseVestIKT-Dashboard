@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HelseVestIKT_Dashboard.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,10 +22,10 @@ namespace HelseVestIKT_Dashboard.Services
 
 			if (e.Key == Key.M)
 				e.Handled = true;
+			
 
 			if (e.Key == Key.H)
 				e.Handled = true;
-		
 		}
 	}
 }

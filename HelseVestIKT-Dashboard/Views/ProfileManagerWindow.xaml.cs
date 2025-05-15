@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using HelseVestIKT_Dashboard.Models;
 
 namespace HelseVestIKT_Dashboard.Views
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace HelseVestIKT_Dashboard
+namespace HelseVestIKT_Dashboard.Models
 {
     public class SteamProfile
     {

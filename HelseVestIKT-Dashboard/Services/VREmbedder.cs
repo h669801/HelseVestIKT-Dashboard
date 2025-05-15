@@ -18,7 +18,7 @@ namespace HelseVestIKT_Dashboard.Services
 		private bool _alreadyEmbedded;
 		private int _vrEmbedAttempts;
 		private DispatcherTimer _vrEmbedTimer;
-		private const int MaxVREmbedAttempts = 20;
+		private const int MaxVREmbedAttempts = 50;
 
 		public VREmbedder(
 			WindowsFormsHost vrHost,
@@ -236,18 +236,36 @@ namespace HelseVestIKT_Dashboard.Services
 			// Fjern det som barn av vårt host-vindu
 			Win32.SetParent(overlay, IntPtr.Zero);
 
-			// Gjenopprett window-stil (ramme + border) og slå av WS_CHILD
+			// 2) Gjenopprett stil: fjern CHILD, legg på POPUP + rammer
 			int style = Win32.GetWindowLong(overlay, Win32.GWL_STYLE);
-			style |= Win32.WS_CAPTION | Win32.WS_BORDER;
-			style &= ~Win32.WS_CHILD;
+			style &= ~Win32.WS_CHILD;                               // fjern child‐flagget
+			style |= Win32.WS_POPUP                                  // gjør det til top‐level‐vindu
+				   | Win32.WS_CAPTION
+				   | Win32.WS_BORDER
+				   | Win32.WS_THICKFRAME
+				   | Win32.WS_SYSMENU
+				   | Win32.WS_MINIMIZEBOX
+				   | Win32.WS_MAXIMIZEBOX;
 			Win32.SetWindowLong(overlay, Win32.GWL_STYLE, style);
 
-			// Oppdater posisjon – beholder nåværende størrelse
-			Win32.SetWindowPos(
-				overlay,
-				IntPtr.Zero,
-				0, 0, 0, 0,
-				Win32.SWP_NOZORDER | Win32.SWP_NOACTIVATE);
+			// 4) Hent og nullstill eks­stil(fjerner transparent/ layered)
+			int ex = Win32.GetWindowLong(overlay, Win32.GWL_EXSTYLE);
+			ex &= ~(Win32.WS_EX_LAYERED | Win32.WS_EX_TRANSPARENT | Win32.WS_EX_NOACTIVATE);
+			Win32.SetWindowLong(overlay, Win32.GWL_EXSTYLE, ex);
+
+			// 5) Påfør endringen (tving ramme-refresh og vis vinduet)
+			const uint flags =
+				  Win32.SWP_NOMOVE
+				| Win32.SWP_NOSIZE
+				| Win32.SWP_NOZORDER
+				| Win32.SWP_NOACTIVATE
+				| Win32.SWP_FRAMECHANGED   // tving NCPAINT
+				| Win32.SWP_SHOWWINDOW;    // vis igjen hvis skjult
+
+			Win32.SetWindowPos(overlay, IntPtr.Zero, 0, 0, 0, 0, flags);
+
+			// 6) Hvis du fortsatt opplever at det er minimert, kan du tvinge Restore:
+			Win32.ShowWindow(overlay, Win32.SW_RESTORE);
 
 			// Reset intern flag slik at du kan embedde på nytt neste gang
 			_alreadyEmbedded = false;

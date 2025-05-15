@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using Valve.VR;
 using static SteamKit2.GC.Dota.Internal.CMsgSteamLearn_InferenceMetadata_Response;
 using static SteamKit2.Internal.CPlayer_GetGameBadgeLevels_Response;
+using HelseVestIKT_Dashboard.Models;
 
 namespace HelseVestIKT_Dashboard.Services
 {

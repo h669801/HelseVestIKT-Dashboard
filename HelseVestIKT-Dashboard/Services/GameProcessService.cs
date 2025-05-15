@@ -3,7 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;                      // For Process
 using System.Text.RegularExpressions;         // For Regex
-using Microsoft.Win32;                        // For Registry
+using Microsoft.Win32;             // For Registry
+using HelseVestIKT_Dashboard.Models; // For Game
 
 namespace HelseVestIKT_Dashboard.Services
 {

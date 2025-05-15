@@ -158,6 +158,7 @@ namespace HelseVestIKT_Dashboard.Views
 
 			// 7) Sørg for OpenVR-stenging
 			try { OpenVR.Shutdown(); } catch { }
+			Win32.DisableKeyBlock();
 
 			base.OnClosed(e);
 		}
@@ -182,9 +183,20 @@ namespace HelseVestIKT_Dashboard.Views
                 Topmost = true;
                 Activate();
             }
-        }
+		}
 
-        public void LockApplication()
+		protected override void OnActivated(EventArgs e)
+		{
+			base.OnActivated(e);
+
+			// Sett vinduet alltid øverst
+			Win32.SetWindowTopMost(new System.Windows.Interop.WindowInteropHelper(this).Handle);
+
+			// Start blokkering av Alt+Tab, Win-taster og Ctrl+Esc
+			Win32.EnableKeyBlock();
+		}
+
+		public void LockApplication()
         {
             _isLocked = true;
             Topmost = true;
@@ -323,8 +335,8 @@ namespace HelseVestIKT_Dashboard.Views
         private void CollapseVrControls()
         {
             VRHost.Visibility = Visibility.Collapsed;
-            PauseKnapp.IsEnabled = false;
-            KalibrerKnapp.IsEnabled = false;
+            PauseKnapp.IsEnabled = true;
+            KalibrerKnapp.IsEnabled = true;
         }
 
         public async Task SetProfileAsync(SteamProfile p)
@@ -1141,6 +1153,12 @@ namespace HelseVestIKT_Dashboard.Views
 		}
 
 		private void FullScreenButton_Click(object sender, RoutedEventArgs e) => _embedder.EnterFullScreen();
+
+		/// <summary>
+		/// Pauser den aktive VR-spillsesjonen ved å åpne SteamVR dashboard-overlay.
+		/// </summary>
+		/// <param name="sender">Knappen som ble klikket.</param>
+		/// <param name="e">Event-args for klikket.</param>
 		private void PauseKnapp_Click(object sender, RoutedEventArgs e) => _dashSvc.PauseKnapp_Click(sender, e);
 		private void AvsluttKnapp_Click(object sender, RoutedEventArgs e) => _dashSvc.CloseCurrentGame();
 
@@ -1169,10 +1187,6 @@ namespace HelseVestIKT_Dashboard.Views
 		{
 			var main = System.Windows.Application.Current.MainWindow as MainWindow;
 
-			// 1) Slå midlertidig av our Topmost
-			bool wasTopmost = this.Topmost;
-			this.Topmost = false;
-
 			// 2) Finn exe‑stien
 			string? exePath = Path.Combine(
 				Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
@@ -1182,7 +1196,6 @@ namespace HelseVestIKT_Dashboard.Views
 			if (!File.Exists(exePath))
 			{
 				MessageBox.Show($"Fant ikke Room Setup på:\n{exePath}", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
-				this.Topmost = wasTopmost;
 				return;
 			}
 
@@ -1196,7 +1209,6 @@ namespace HelseVestIKT_Dashboard.Views
 			if (proc == null)
 			{
 				MessageBox.Show("Kunne ikke starte Room Setup‑prosessen.", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
-				this.Topmost = wasTopmost;
 				return;
 			}
 
@@ -1215,15 +1227,12 @@ namespace HelseVestIKT_Dashboard.Views
 			// 5) Hvis vi fant vinduet, bring det foran
 			if (handle != IntPtr.Zero)
 			{
-				Win32.SetForegroundWindow(handle);
+				Win32.BringToFront(handle);
 			}
 			else
 			{
 				MessageBox.Show("Fikk ikke tak i Room Setup–vinduet for å sette det i front.", "Info", MessageBoxButton.OK, MessageBoxImage.Warning);
 			}
-
-			// 6) Gjenopprett Topmost
-			this.Topmost = wasTopmost;
 		}
 
 		/// <summary>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Valve.VR;
 using MessageBox = System.Windows.MessageBox;
+using HelseVestIKT_Dashboard.Models;
 
 namespace HelseVestIKT_Dashboard.Services
 {
@@ -62,7 +63,13 @@ namespace HelseVestIKT_Dashboard.Services
 				});
 			}
 		}
-	
+
+
+		/// <summary>
+		/// Pauser den aktive VR-spillsesjonen ved å åpne SteamVR dashboard-overlay.
+		/// </summary>
+		/// <param name="sender">Knappen som ble klikket.</param>
+		/// <param name="e">Event-args for klikket.</param>
 
 		public void PauseKnapp_Click(object sender, RoutedEventArgs e)
 		{

@@ -15,10 +15,6 @@
 	<Window.Resources>
 
 		<FontFamily x:Key="SourceSansFont">Source Sans Pro</FontFamily>
-
-
-
-
 		<Style x:Key="SquareRoundedButtonStyleAvsluttButton" TargetType="Button">
 			<Setter Property="Template">
 				<Setter.Value>
@@ -237,7 +233,7 @@ BorderThickness="{TemplateBinding BorderThickness}">
 			<Setter Property="FontSize" Value="14"/>
 			<Setter Property="Margin" Value="10"/>
 			<Setter Property="VerticalAlignment" Value="Top"/>
-			<Setter Property="Height" Value="30"/>
+			<Setter Property="Height" Value="35"/>
 		</Style>
 
 		<!-- Updated TextBlock style with a unique key -->
@@ -306,7 +302,7 @@ BorderThickness="{TemplateBinding BorderThickness}">
 				<Setter.Value>
 					<ControlTemplate TargetType="CheckBox">
 						<StackPanel Orientation="Horizontal">
-							<Border x:Name="CheckBoxBorder" Width="19" Height="19"
+							<Border x:Name="CheckBoxBorder" Width="30" Height="30"
                                     CornerRadius="4"
                                     Background="White"
                                     BorderBrush="Gray"
@@ -316,7 +312,8 @@ BorderThickness="{TemplateBinding BorderThickness}">
                                       Data="M2,8 L6,12 L14,4"
                                       Stroke="Black"
                                       StrokeThickness="2"
-                                      Visibility="Collapsed"/>
+                                      Visibility="Collapsed"
+									  Margin="6"/>
 							</Border>
 							<ContentPresenter VerticalAlignment="Center" Margin="5,0,0,0"/>
 						</StackPanel>
@@ -547,7 +544,7 @@ BorderThickness="{TemplateBinding BorderThickness}">
 					</Button>
 
 					<!--Knapp for å justere høydekalibrering-->
-					<StackPanel x:Name="Hoydekalibrering_Slider" Width="150" Margin="10" Visibility="Collapsed">
+					<StackPanel x:Name="Hoydekalibrering_Slider" Width="175" Margin="10,0,0,15" Visibility="Collapsed">
 						<!-- Overskrift -->
 						<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}"
     Text="Høydekalibrering (m)" 
