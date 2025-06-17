@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-
+using HelseVestIKT_Dashboard.Models;
 namespace HelseVestIKT_Dashboard.Views
 {
     public partial class SettingsWindow : Window

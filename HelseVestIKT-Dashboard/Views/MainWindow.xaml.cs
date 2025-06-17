@@ -83,7 +83,7 @@ namespace HelseVestIKT_Dashboard.Views
 		private readonly TimerService _timerService;
 		private readonly VRInitService _initService;
 		private readonly GameGroupHandler _gameGroupHandler;
-		private readonly GameStatusManager _gameStatusManager;
+		private readonly GameStatusService _gameStatusManager;
 		private readonly GameProcessService _processService;
 		private GameLoadService _gameLoadService;
 		private VRStatusService _statusService;
@@ -106,7 +106,7 @@ namespace HelseVestIKT_Dashboard.Views
 			_timerService = new TimerService();
 			_initService = new VRInitService();
 			_gameGroupHandler = new GameGroupHandler();
-			_gameStatusManager = new GameStatusManager(AllGames);
+			_gameStatusManager = new GameStatusService(AllGames);
 			_processService = new GameProcessService(_gameStatusManager);
 			_filterService = new FilterService();
 			_inputService = new InputService();
@@ -121,6 +121,7 @@ namespace HelseVestIKT_Dashboard.Views
 			_dashSvc = new VRDashboardService(_processService, _gameStatusManager, _initService);
 			_calibrator = new VRCalibrator();
 			_embedder = new VREmbedder(VRHost, MainContentGrid, GameLibraryArea, ReturnButton);
+			
 
 			// — 4) Audio & Wifi —
 			_audioService = new AudioService();
@@ -310,15 +311,15 @@ namespace HelseVestIKT_Dashboard.Views
                 if (vrOk)
                 {
                     InitializeVrAndCalibration();
-                    if (_initService.System != null)
-                    {
-                        _statusService = new VRStatusService(VREquipmentStatus);
-                        _statusService.StartStatusUpdates(TimeSpan.FromSeconds(7));
-                    }
-                    else
-                    {
-                        CollapseVrControls();
-                    }
+					if (_initService.System != null)
+					{
+						_statusService = new VRStatusService(VREquipmentStatus);
+						_statusService?.StartStatusUpdates(TimeSpan.FromSeconds(7));
+					}
+					else
+					{
+						CollapseVrControls();
+					}
                 }
                 else
                 {
@@ -822,7 +823,10 @@ namespace HelseVestIKT_Dashboard.Views
         /// </summary>
         private async void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
+
 			// 1) Forsøk å restarte SteamVR-prosessene
+			_statusService.StopStatusUpdates();
+
 			try
 			{
 				await _initService.RestartSteamVRAsync();
@@ -857,7 +861,7 @@ namespace HelseVestIKT_Dashboard.Views
 			KalibrerKnapp.IsEnabled = true;
 
 			// 4) Start status-oppdateringene på nytt
-			_statusService.StartStatusUpdates(TimeSpan.FromSeconds(7));
+			_statusService?.StartStatusUpdates(TimeSpan.FromSeconds(7));
 
 			// 5) Logg at VR nå er tilgjengelig
 			Debug.WriteLine("VR er gjenopprettet og klar til bruk.");
@@ -881,7 +885,9 @@ namespace HelseVestIKT_Dashboard.Views
 			ReturnButton.Visibility = Visibility.Collapsed;
 			PauseKnapp.Visibility = Visibility.Visible;
 
+
 			// —————— RESTART STEAMVR ——————
+			_statusService.StopStatusUpdates();
 			try
 			{
 				await _initService.RestartSteamVRAsync();

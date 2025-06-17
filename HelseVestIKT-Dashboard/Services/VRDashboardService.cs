@@ -8,17 +8,16 @@ using System.Threading.Tasks;
 using System.Windows;
 using Valve.VR;
 using MessageBox = System.Windows.MessageBox;
-using HelseVestIKT_Dashboard.Models;
 
 namespace HelseVestIKT_Dashboard.Services
 {
    public class VRDashboardService
     {
 		private readonly GameProcessService _processService;
-		private readonly GameStatusManager _gameStatusManager;
+		private readonly GameStatusService _gameStatusManager;
 		private readonly VRInitService _initService;
 
-		public VRDashboardService(GameProcessService processService, GameStatusManager gameStatusManager, VRInitService initService)
+		public VRDashboardService(GameProcessService processService, GameStatusService gameStatusManager, VRInitService initService)
 		{
 			_processService = processService;
 			_gameStatusManager = gameStatusManager;

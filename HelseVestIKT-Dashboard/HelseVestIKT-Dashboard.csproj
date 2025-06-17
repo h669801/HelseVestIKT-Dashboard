@@ -139,6 +139,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="coverlet.msbuild" Version="6.0.4">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
 	  <PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
 	  <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
 	  <PackageReference Include="NAudio" Version="2.2.1" />

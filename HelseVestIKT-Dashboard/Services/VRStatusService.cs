@@ -56,7 +56,7 @@ namespace HelseVestIKT_Dashboard.Services
 		{
 			_statusTimer?.Stop();
 		}
-		private void RefreshStatus()
+		public void RefreshStatus()
 		{
 				Update();
 		}

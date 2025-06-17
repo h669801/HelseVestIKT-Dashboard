@@ -4,15 +4,14 @@ using System.Linq;
 using System.Diagnostics;                      // For Process
 using System.Text.RegularExpressions;         // For Regex
 using Microsoft.Win32;             // For Registry
-using HelseVestIKT_Dashboard.Models; // For Game
 
 namespace HelseVestIKT_Dashboard.Services
 {
 	public class GameProcessService
 	{
-		private readonly GameStatusManager _gameStatusManager;
+		private readonly GameStatusService _gameStatusManager;
 
-		public GameProcessService(GameStatusManager gameStatusManager)
+		public GameProcessService(GameStatusService gameStatusManager)
 		{
 			_gameStatusManager = gameStatusManager;
 		}

@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
-namespace HelseVestIKT_Dashboard.Models
+namespace HelseVestIKT_Dashboard.Services
 {
 	public static class GameImage
 	{
@@ -98,7 +98,7 @@ namespace HelseVestIKT_Dashboard.Models
             Console.WriteLine("Path length: " + exePath.Length);
             foreach (char c in exePath)
             {
-                Console.WriteLine($"Char: '{c}' (U+{((int)c):X4})");
+                Console.WriteLine($"Char: '{c}' (U+{(int)c:X4})");
             }
             Console.WriteLine("Exists? " + File.Exists(exePath));
 
@@ -110,7 +110,7 @@ namespace HelseVestIKT_Dashboard.Models
 
             try
             {
-                System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                Icon icon = Icon.ExtractAssociatedIcon(exePath);
                 if (icon != null)
                 {
                     using (var ms = new MemoryStream())

@@ -8,13 +8,13 @@ using System.Text;
 using Valve.VR;
 using HelseVestIKT_Dashboard.Models;
 
-namespace HelseVestIKT_Dashboard.Models
+namespace HelseVestIKT_Dashboard.Services
 {
 	/// <summary>
 	/// Holder oversikt over gjeldende spill og status.
 	/// Forbedret VR-detektering via OpenVR applikasjonsnøkkel.
 	/// </summary>
-	public class GameStatusManager
+	public class GameStatusService
 	{
 		private readonly IEnumerable<Game> _allGames;
 		public string CurrentPlayer { get; private set; } = "Ingen spill kjører";
@@ -25,7 +25,7 @@ namespace HelseVestIKT_Dashboard.Models
 		private Process? _launchedProcess;
 		private Game? _launchedGame;
 
-		public GameStatusManager(IEnumerable<Game> allGames)
+		public GameStatusService(IEnumerable<Game> allGames)
 		{
 			_allGames = allGames;
 		}
