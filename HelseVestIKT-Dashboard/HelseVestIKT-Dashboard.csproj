@@ -14,22 +14,7 @@
 	  <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\VRDashboard.xml</DocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="EditDialog.xaml.cs" />
-    <Compile Remove="FilterHandler.cs" />
-    <Compile Remove="Game.cs" />
-    <Compile Remove="GameDetailsFetcher.cs" />
-    <Compile Remove="GameGroup.cs" />
-    <Compile Remove="GameGroupHandler.cs" />
-    <Compile Remove="GameImage.cs" />
-    <Compile Remove="GameStatusManager.cs" />
-    <Compile Remove="LogWindow.xaml.cs" />
-    <Compile Remove="MainWindow.xaml.cs" />
-    <Compile Remove="OfflineSteamGamesManager.cs" />
-    <Compile Remove="Services\SteamLauncher.cs" />
-    <Compile Remove="SpillFilter.cs" />
-    <Compile Remove="Win32.cs" />
-  </ItemGroup>
+ 
 
   <ItemGroup>
     <None Remove="Assets\Bilder\accessibility.png" />
@@ -162,9 +147,9 @@
 	  <Folder Include="Infrastructure\Extensions\" />
 	  <Folder Include="Filters\" />
 	  <Folder Include="Infrastructure\" />
+	  <Folder Include="Native\" />
 	  <Folder Include="ViewModels\" />
-	  <Folder Include="Resources\" />
-	  <Folder Include="NewFolder\" />
+	  <Folder Include="Resources\" />	
 	</ItemGroup>
 
 	<ItemGroup>

@@ -29,6 +29,8 @@ namespace HelseVestIKT_Dashboard.Services
 			}
 
 			string localPath = files[0];
+
+			//Riktig fil
 			
 			/*
 			// Construct the local file path.
