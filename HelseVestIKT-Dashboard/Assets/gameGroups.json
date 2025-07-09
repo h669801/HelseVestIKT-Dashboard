@@ -1,0 +1,85 @@
+[
+  {
+    "ClickEventHandlerName": "UpdateFilters",
+    "StyleName": "RoundedCheckBoxWithSourceSansFontStyle",
+    "Group": {
+      "GroupName": "Expo",
+      "Games": []
+    },
+    "GameAppIDs": []
+  },
+  {
+    "ClickEventHandlerName": "UpdateFilters",
+    "StyleName": "RoundedCheckBoxWithSourceSansFontStyle",
+    "Group": {
+      "GroupName": "Expo",
+      "Games": [
+        {
+          "AppID": "33910",
+          "Title": "Arma 2",
+          "ProcessName": "",
+          "Genres": [
+            "Action",
+            "Simulation",
+            "Strategy"
+          ],
+          "IsSinglePlayer": false,
+          "IsSteamGame": true,
+          "IsVR": false,
+          "IsFavorite": false,
+          "IsRecentlyPlayed": false,
+          "InstallPath": ""
+        },
+        {
+          "AppID": "224580",
+          "Title": "Arma 2: DayZ Mod",
+          "ProcessName": "",
+          "Genres": [
+            "Action",
+            "Simulation",
+            "Strategy"
+          ],
+          "IsSinglePlayer": false,
+          "IsSteamGame": true,
+          "IsVR": false,
+          "IsFavorite": false,
+          "IsRecentlyPlayed": false,
+          "InstallPath": ""
+        },
+        {
+          "AppID": "407530",
+          "Title": "ARK: Survival Of The Fittest",
+          "ProcessName": "",
+          "Genres": [
+            "Action",
+            "Adventure",
+            "Indie",
+            "Massively Multiplayer",
+            "RPG",
+            "Strategy"
+          ],
+          "IsSinglePlayer": false,
+          "IsSteamGame": true,
+          "IsVR": false,
+          "IsFavorite": false,
+          "IsRecentlyPlayed": false,
+          "InstallPath": ""
+        }
+      ]
+    },
+    "GameAppIDs": [
+      "33910",
+      "224580",
+      "407530"
+    ]
+  },
+  {
+    "ClickEventHandlerName": "UpdateFilters",
+    "StyleName": "RoundedCheckBoxWithSourceSansFontStyle",
+    "Group": {
+      "GroupName": "Test",
+      "Games": []
+    },
+    "GameAppIDs": []
+  }
+]

@@ -818,7 +818,7 @@ FontWeight="SemiBold"/>
 				<Border.Effect>
 					<DropShadowEffect BlurRadius="3" ShadowDepth="3" Direction="0" Color="Black" Opacity="0.9"/>
 				</Border.Effect>
-				<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10">
+				<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10" PanningMode="VerticalFirst" PanningDeceleration="0.001" IsManipulationEnabled="True">
 					<StackPanel Orientation="Vertical">
 					<TextBox x:Name="SearchBox" Style="{StaticResource SearchBoxStyle}"
          Text="Søk etter spill..."
@@ -885,7 +885,11 @@ FontWeight="SemiBold"/>
 				</Grid.Effect>
 				<ScrollViewer x:Name="GameLibraryScrollViewer" Visibility="Visible"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" PanningDeceleration="0.001" IsManipulationEnabled="True">
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" 
+					  PanningMode="VerticalFirst" IsManipulationEnabled="True"
+					PreviewTouchDown="GameLibraryScrollViewer_PreviewTouchDown"
+					PreviewTouchMove="GameLibraryScrollViewer_PreviewTouchMove"
+							  PreviewTouchUp="GameLibraryScrollViewer_PreviewTouchUp">
 					<ItemsControl x:Name="gamesItemsControl" ItemsSource="{Binding Games}" HorizontalContentAlignment="Stretch">
 						<ItemsControl.ItemsPanel>
 							<ItemsPanelTemplate>

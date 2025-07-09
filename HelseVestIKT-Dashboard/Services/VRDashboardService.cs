@@ -70,20 +70,39 @@ namespace HelseVestIKT_Dashboard.Services
 		/// <param name="sender">Knappen som ble klikket.</param>
 		/// <param name="e">Event-args for klikket.</param>
 
+		/// <summary>
+		/// Pauser den aktive VR-spillsesjonen ved å åpne SteamVR-dashboard-overlay.
+		/// </summary>
 		public void PauseKnapp_Click(object sender, RoutedEventArgs e)
 		{
-			
-			// 2) Åpne SteamVR Dashboard (samme som menyknappen på kontrolleren)
-			EVRApplicationError err = OpenVR.Applications.LaunchDashboardOverlay("");
-			if (err != EVRApplicationError.None)
+			// Sjekk at SteamVR er oppe og at vi har en VR-system-instans:
+			if (!OpenVR.IsHmdPresent() || OpenVR.System == null)
 			{
 				MessageBox.Show(
-					$" [VRDashboardService] Kunne ikke åpne SteamVR Dashboard: {err}",
-					"Feil ved åpning av dashboard",
+					"SteamVR kjører ikke eller headset er ikke tilkoblet.",
+					"Pause",
+					MessageBoxButton.OK,
+					MessageBoxImage.Warning);
+				return;
+			}
+
+			// Toggle dashboard via URI:
+			try
+			{
+				Process.Start(new ProcessStartInfo(
+					"vrmonitor://debugcommands/system_dashboard_toggle")
+				{
+					UseShellExecute = true
+				});
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(
+					$"Kunne ikke toggle dashboard via URI:\n{ex.Message}",
+					"Pause",
 					MessageBoxButton.OK,
 					MessageBoxImage.Error);
 			}
 		}
-
 	}
 }

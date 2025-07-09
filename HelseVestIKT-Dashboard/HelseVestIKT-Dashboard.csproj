@@ -1,171 +1,70 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <RootNamespace>HelseVestIKT_Dashboard</RootNamespace>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-	  <UseWindowsForms>true</UseWindowsForms>
-	  <AllowUnsafeCode>true</AllowUnsafeCode>
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
-	  <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\VRDashboard.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+			<!-- Generelle innstillinger -->
+			<OutputType>WinExe</OutputType>
+			<TargetFramework>net8.0-windows</TargetFramework>
+			<UseWPF>true</UseWPF>
+			<UseWindowsForms>true</UseWindowsForms>
+			<Nullable>enable</Nullable>
+			<ImplicitUsings>enable</ImplicitUsings>
+			<RootNamespace>HelseVestIKT_Dashboard</RootNamespace>
 
- 
+			<!-- Publish som én exe med .NET-runtime inkludert -->
+			<SelfContained>true</SelfContained>
+			<PublishSingleFile>true</PublishSingleFile>
+			<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+			<Platforms>AnyCPU;x64</Platforms>
+		</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Assets\Bilder\accessibility.png" />
-    <None Remove="Assets\Bilder\exit_knapp.png" />
-    <None Remove="Assets\Bilder\fullskjerm.png" />
-    <None Remove="Assets\Bilder\fullskjerm_lukk.png" />
-    <None Remove="Assets\Bilder\Helse_Vest_Kuler_Logo.png" />
-    <None Remove="Assets\Bilder\kontroller – Kopi.png" />
-    <None Remove="Assets\Bilder\kontroller.png" />
-    <None Remove="Assets\Bilder\kontroller_venstre.png" />
-    <None Remove="Assets\Bilder\nodstopp_knapp.png" />
-    <None Remove="Assets\Bilder\pause_knapp.png" />
-    <None Remove="Assets\Bilder\setting.png" />
-    <None Remove="Assets\Bilder\settings.png" />
-    <None Remove="Assets\Bilder\speaker.png" />
-    <None Remove="Assets\Bilder\speaker_popup.png" />
-    <None Remove="Assets\Bilder\vrheadset.png" />
-    <None Remove="Assets\Bilder\vrkontrollere.png" />
-    <None Remove="Assets\Bilder\vr_headset.png" />
-    <None Remove="Assets\Bilder\wifi_0_bar.png" />
-    <None Remove="Assets\Bilder\wifi_1_bar.png" />
-    <None Remove="Assets\Bilder\wifi_2_bar.png" />
-    <None Remove="Assets\Bilder\wifi_3_bar.png" />
-  </ItemGroup>
+		<!-- Alle PNG-er som WPF-ressurser innebygget i exe -->
+		<ItemGroup>
+			<Resource Include="Assets\Bilder\**\*.png" />
+		</ItemGroup>
 
+		<!-- JSON-filer som skal kopieres til output-mappen -->
+		<ItemGroup>
+			<Content Include="Assets\cache.json">
+				<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			</Content>
+			<Content Include="Assets\gameGroups.json">
+				<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			</Content>
+		</ItemGroup>
+
+		<!-- Native OpenVR DLL ved siden av exe -->
 	<ItemGroup>
-		<Page Remove="Dictionary1.xaml" />
-		<Page Remove="Resources.xaml" />
+		<Content Include="Native\openvr_api.dll">
+			<Link>openvr_api.dll</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <None Include="Native\openvr_api.dll">
-		  <Link>openvr_api.dll</Link>
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
+	<!-- WindowsForms-støtte -->
+		<ItemGroup>
+			<FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+		</ItemGroup>
 
-	<ItemGroup>
-		<Resource Include="Assets\Bilder\accessibility.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\exit_knapp.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\fullskjerm.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\fullskjerm_lukk.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\Helse_Vest_Kuler_Logo.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\kontroller – Kopi.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\kontroller.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\kontroller_venstre.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\nodstopp_knapp.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\pause_knapp.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\setting.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\settings.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\speaker.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\speaker_popup.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\vrheadset.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\vrkontrollere.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\vr_headset.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\wifi_0_bar.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\wifi_1_bar.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\wifi_2_bar.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Assets\Bilder\wifi_3_bar.png">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Resources\Resources.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="coverlet.msbuild" Version="6.0.4">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
-	  <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
-	  <PackageReference Include="NAudio" Version="2.2.1" />
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	  <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
-	  <PackageReference Include="Silk.NET.Core" Version="2.22.0" />
-	  <PackageReference Include="Silk.NET.OpenXR" Version="2.22.0" />
-	  <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
-	  <PackageReference Include="SimpleWifi.netstandard" Version="2.0.0" />
-	  <PackageReference Include="SteamKit2" Version="3.0.2" />
-	  <PackageReference Include="ValveKeyValue" Version="0.12.0.391" />
-	  <PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
-	  <PackageReference Include="Vortice.DXGI" Version="3.6.2" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Infrastructure\Extensions\" />
-	  <Folder Include="Filters\" />
-	  <Folder Include="Infrastructure\" />
-	  <Folder Include="Native\" />
-	  <Folder Include="ViewModels\" />
-	  <Folder Include="Resources\" />	
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Update="Properties\Settings.Designer.cs">
-	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>Settings.settings</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="Properties\Settings.settings">
-	    <Generator>SettingsSingleFileGenerator</Generator>
-	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-	  </None>
-	</ItemGroup>
-
-
+		<!-- Dine NuGet-avhengigheter -->
+		<ItemGroup>
+			<PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
+			<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
+			<PackageReference Include="NAudio" Version="2.2.1" />
+			<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+			<PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+			<PackageReference Include="Silk.NET.Core" Version="2.22.0" />
+			<PackageReference Include="Silk.NET.OpenXR" Version="2.22.0" />
+			<PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
+			<PackageReference Include="SimpleWifi.netstandard" Version="2.0.0" />
+			<PackageReference Include="SteamKit2" Version="3.0.2" />
+			<PackageReference Include="ValveKeyValue" Version="0.12.0.391" />
+			<PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
+			<PackageReference Include="Vortice.DXGI" Version="3.6.2" />
+		</ItemGroup>
+		<ItemGroup>
+		  <None Update="Native\openvr_api.dll">
+		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		  </None>
+		</ItemGroup>
 </Project>

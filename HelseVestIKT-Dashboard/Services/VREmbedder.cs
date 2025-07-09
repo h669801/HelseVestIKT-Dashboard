@@ -18,6 +18,7 @@ namespace HelseVestIKT_Dashboard.Services
 		private bool _alreadyEmbedded;
 		private int _vrEmbedAttempts;
 		private DispatcherTimer _vrEmbedTimer;
+		private IntPtr _overlayHandle = IntPtr.Zero;
 		private const int MaxVREmbedAttempts = 50;
 
 		public VREmbedder(
@@ -37,6 +38,7 @@ namespace HelseVestIKT_Dashboard.Services
 		private void EmbedVRView(IntPtr vrViewHandle)
 		{
 			if (vrViewHandle == IntPtr.Zero) return;
+			_overlayHandle = vrViewHandle;
 
 			// Hent WinForms-host‐handle
 			var hostHandle = (_vrhost.Child as System.Windows.Forms.Control)?.Handle ?? IntPtr.Zero;
@@ -229,7 +231,9 @@ namespace HelseVestIKT_Dashboard.Services
 		public void DetachOverlay()
 		{
 			// Finn overlay-vinduet (SteamVR sin “VR View”)
-			IntPtr overlay = Win32.FindOverlayWindow();
+			IntPtr overlay = _overlayHandle != IntPtr.Zero
+				? _overlayHandle
+				: Win32.FindOverlayWindow();
 			if (overlay == IntPtr.Zero)
 				return;
 
@@ -261,7 +265,6 @@ namespace HelseVestIKT_Dashboard.Services
 				| Win32.SWP_NOACTIVATE
 				| Win32.SWP_FRAMECHANGED   // tving NCPAINT
 				| Win32.SWP_SHOWWINDOW;    // vis igjen hvis skjult
-
 			Win32.SetWindowPos(overlay, IntPtr.Zero, 0, 0, 0, 0, flags);
 
 			// 6) Hvis du fortsatt opplever at det er minimert, kan du tvinge Restore:
@@ -269,6 +272,7 @@ namespace HelseVestIKT_Dashboard.Services
 
 			// Reset intern flag slik at du kan embedde på nytt neste gang
 			_alreadyEmbedded = false;
+			_overlayHandle = IntPtr.Zero;
 		}
 	}
 }

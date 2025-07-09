@@ -1,0 +1,11 @@
+﻿1. Se på feilmeldingene som Håkon sendte på mail.
+1. Låse opp applikasjonen, må kunne ALT-TAB
+2. Tilgang til hjemskjerm
+3. Romkalibrering fra Steam / Mixed Reality (se på erstatning) / Endre på prioriteringer av vinduet slik at vinduet blir fremhevet
+4. Auto huke av nylig spilte spill når applikasjonen starter og når man trykker på hjem, avslutt, nødstopp
+5. Fikse på logikk når man nødstopper slik at knappene vises og alt fungerer som det skal
+6. Restarte PC knapp og logikk
+7. Fikse på ord og visual UI / Fjerne kalibrering knapp, la kalibreringknapper være tilgjengelig fra start.
+8. Fikse på farger og fullscreen knappen
+7. Fikse på avstand mellom knappene avslutt, pause og nødstopp
+8. 

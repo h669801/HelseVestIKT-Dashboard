@@ -22,6 +22,7 @@ using CheckBox = System.Windows.Controls.CheckBox;
 using MessageBox = System.Windows.MessageBox;
 using Path = System.IO.Path;
 using System.Windows.Media;
+using System.Threading;
 
 namespace HelseVestIKT_Dashboard.Views
 {
@@ -52,14 +53,28 @@ namespace HelseVestIKT_Dashboard.Views
         private bool _isLocked = true;
         public bool IsLocked => _isLocked;
 
-        private string _currentPlayer;
-		public string CurrentPlayer { get; set; }
-
-		private string _currentStatus;
-		public string CurrentStatus { get; set; }
+        private string _currentPlayer = "Ingen spill kjører";
+		public string CurrentPlayer
+		{
+			get => _currentPlayer;
+			set
+			{
+				if (_currentPlayer != value)
+				{
+					_currentPlayer = value;
+					OnPropertyChanged(nameof(CurrentPlayer));
+				}
+			}
+		}
 
 		private double _eyeHeightSetting;
 		public double EyeHeightSetting { get; set; }
+
+		// Under klasse-deklarasjonen:
+		private bool _isTouchScrolling;
+		private System.Windows.Point _touchStartPoint;
+		private double _initialScrollOffset;
+
 
 		public ObservableCollection<Game> Games { get; } = new ObservableCollection<Game>();
 		private ObservableCollection<Game> AllGames { get; } = new ObservableCollection<Game>();
@@ -94,6 +109,7 @@ namespace HelseVestIKT_Dashboard.Views
 		private readonly WifiStatusManager _wifiStatusManager;
 		private readonly FilterService _filterService;
 		private readonly InputService _inputService;
+		private readonly StatusBarService _statusBarService;
 
 		public MainWindow()
 		{
@@ -110,6 +126,7 @@ namespace HelseVestIKT_Dashboard.Views
 			_processService = new GameProcessService(_gameStatusManager);
 			_filterService = new FilterService();
 			_inputService = new InputService();
+			//_statusBarService = new StatusBarService();
 
 			// — 1) TimerService for klokke, status og VR-helse —
 			_timerService.TickEverySecond((s, e) => CurrentTime = DateTime.Now.ToString("HH:mm"));
@@ -139,26 +156,36 @@ namespace HelseVestIKT_Dashboard.Views
 
 		#endregion
 
+		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+		{
+			// 1) Løs overlay-vinduet mens applikasjonen fortsatt er levende
+			try
+			{
+				_embedder?.DetachOverlay();
+				Thread.Sleep(100); // Gi OS tid til å prosessere før vi lukker
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Feil under DetachOverlay i OnClosing: {ex}");
+			}
+
+			// 2) Gi OS tid til å prosessere Win32-kallene
+			base.OnClosing(e);
+		}
+
 		protected override void OnClosed(EventArgs e)
 		{
+			// 1) Rydd opp tjenester
 			try { _audioService?.Dispose(); } catch { }
 			try { _wifiStatusManager?.StopMonitoringWifiSignal(); } catch { }
 			try { _statusService?.Shutdown(); } catch { }
 			try { _timerService?.Dispose(); } catch { }
 			try { _initService?.Shutdown(); } catch { }
 
-			// 6) Løs overlay‐vinduet
-			try
-			{
-				_embedder?.DetachOverlay();
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine($"Feil under DetachOverlay: {ex}");
-			}
-
-			// 7) Sørg for OpenVR-stenging
+			// 4) Steng OpenVR-sesjon
 			try { OpenVR.Shutdown(); } catch { }
+
+			// 5) Gjenopprett eventuelt global Hotkey-block eller annet
 			Win32.DisableKeyBlock();
 
 			base.OnClosed(e);
@@ -174,7 +201,6 @@ namespace HelseVestIKT_Dashboard.Views
 
 			_gameStatusManager.UpdateCurrentGameAndStatus();
 			CurrentPlayer = _gameStatusManager.CurrentPlayer;
-			CurrentStatus = _gameStatusManager.CurrentStatus;
 		}
 
         private void MainWindow_Activated(object sender, EventArgs e)
@@ -493,6 +519,7 @@ namespace HelseVestIKT_Dashboard.Views
 			{
 				if (isRenaming)
 				{
+					_gameGroupHandler.RemoveGameGroup(gameGroupToRename.GroupName);
 					// oppdater eksisterende
 					gameGroupToRename.GroupName = text;
 					// oppdater CheckBox-innhold
@@ -500,7 +527,7 @@ namespace HelseVestIKT_Dashboard.Views
 											  .FirstOrDefault(g => g.Item2 == gameGroupToRename);
 					if (pair.Item1 != null)
 						pair.Item1.Content = text;
-					_gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
+					_gameGroupHandler.SaveGameGroupsToFile(nameof(UpdateFilters), "RoundedCheckBoxWithSourceSansFontStyle");
 
 					isRenaming = false;
 				}
@@ -512,12 +539,13 @@ namespace HelseVestIKT_Dashboard.Views
 					cb.Click += UpdateFilters;
 					AddGameGroupCheckBox(cb, newGroup);
 					_gameGroupHandler.AddGameGroup(cb, newGroup);
-					_gameGroupHandler.SaveGameGroupsToFile("UpdateFilters", "RoundedCheckBoxWithSourceSansFontStyle");
-
+					_gameGroupHandler.SaveGameGroupsToFile(nameof(UpdateFilters), "RoundedCheckBoxWithSourceSansFontStyle");
 				}
 			}
 			EndNewOrRename();
 		}
+
+
 
 		private void CancelNewOrRename()
 		{
@@ -693,6 +721,8 @@ namespace HelseVestIKT_Dashboard.Views
 
 		#endregion
 
+
+
 		#region Toolbar og Volum kontroller
 
 
@@ -746,10 +776,11 @@ namespace HelseVestIKT_Dashboard.Views
 				MessageBoxButton.YesNo,
 				MessageBoxImage.Question) == MessageBoxResult.Yes)
 			{
-				// lukk! all cleanup skjer i OnClosed
 				this.Close();
 			}
 		}
+
+
 
 
 		#endregion
@@ -816,17 +847,88 @@ namespace HelseVestIKT_Dashboard.Views
 
 
 
-        /// <summary>
-        /// “Nodstopp”-knappen fungerer som en “Reconnect VR”:
-        /// Den restart­er SteamVR, prøver å initialisere OpenVR igjen,
-        /// og slår på VR-relaterte UI-elementer hvis det lykkes.
-        /// </summary>
-        private async void Nodstopp_Click(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// “Nodstopp”-knappen fungerer som en “Reconnect VR”:
+		/// Den restart­er SteamVR, prøver å initialisere OpenVR igjen,
+		/// og slår på VR-relaterte UI-elementer hvis det lykkes.
+		/// </summary>
+		/* private async void Nodstopp_Click(object sender, RoutedEventArgs e)
+		  {
+
+			  // 1) Forsøk å restarte SteamVR-prosessene
+			  _statusService.StopStatusUpdates();
+
+			  try
+			  {
+				  await _initService.RestartSteamVRAsync();
+			  }
+			  catch (Exception ex)
+			  {
+				  MessageBox.Show(
+					  $"Kunne ikke restarte SteamVR: {ex.Message}",
+					  "VR-feil",
+					  MessageBoxButton.OK,
+					  MessageBoxImage.Warning);
+				  return;
+			  }
+
+			  // 2) Prøv å initialisere OpenVR på nytt
+			  bool vrOk = _initService.InitializeOpenVR();
+			  if (!vrOk)
+			  {
+				  MessageBox.Show(
+					  "Kunne ikke koble til VR-headset.\n" +
+					  "Sørg for at SteamVR kjører og at headset er tilkoblet.",
+					  "VR-tilkobling mislyktes",
+					  MessageBoxButton.OK,
+					  MessageBoxImage.Warning);
+				  return;
+			  }
+
+			  // 3) Aktiver VR-delen i UI
+			  //    Vis VR-host-vindu, aktiver pause- og kalibreringsknapp
+			  VRHost.Visibility = Visibility.Visible;
+			  PauseKnapp.IsEnabled = true;
+			  KalibrerKnapp.IsEnabled = true;
+
+			  // 4) Start status-oppdateringene på nytt
+			  _statusService?.StartStatusUpdates(TimeSpan.FromSeconds(7));
+
+			  // 5) Logg at VR nå er tilgjengelig
+			  Debug.WriteLine("VR er gjenopprettet og klar til bruk.");
+		  }*/
+
+		private async void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
+			// 1) Stopp status-oppdateringer og løs embeddet overlay
+			try
+			{
+				_statusService?.StopStatusUpdates();
+				_embedder?.DetachOverlay();
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Feil i Nodstopp forberedelse: {ex}");
+			}
 
-			// 1) Forsøk å restarte SteamVR-prosessene
-			_statusService.StopStatusUpdates();
+			// 2) Drepe SteamVR-prosesser og eventuelt Steam-klient
+			void KillProcess(string name)
+			{
+				foreach (var p in Process.GetProcessesByName(name))
+				{
+					try { p.Kill(); }
+					catch { /* ignore */ }
+				}
+			}
+			KillProcess("vrserver");
+			KillProcess("vrmonitor");
+			// Hvis du vil tvinge Steam også:
+			// KillProcess("steam");
 
+			// 3) Vent til prosessene er virkelig borte
+			await Task.Delay(500);
+
+			// 4) (Re)start Steam + SteamVR
 			try
 			{
 				await _initService.RestartSteamVRAsync();
@@ -841,32 +943,39 @@ namespace HelseVestIKT_Dashboard.Views
 				return;
 			}
 
-			// 2) Prøv å initialisere OpenVR på nytt
-			bool vrOk = _initService.InitializeOpenVR();
-			if (!vrOk)
+			// 5) Vent til vrserver dukker opp (maks 10s)
+			var sw = Stopwatch.StartNew();
+			while (sw.Elapsed < TimeSpan.FromSeconds(10))
+			{
+				if (Process.GetProcessesByName("vrserver").Any())
+					break;
+				await Task.Delay(200);
+			}
+
+			// 6) Initier OpenVR igjen (som Overlay-app)
+			OpenVR.Shutdown();
+			EVRInitError initErr = EVRInitError.None;
+			OpenVR.Init(ref initErr, EVRApplicationType.VRApplication_Overlay);
+			if (initErr != EVRInitError.None)
 			{
 				MessageBox.Show(
-					"Kunne ikke koble til VR-headset.\n" +
-					"Sørg for at SteamVR kjører og at headset er tilkoblet.",
+					$"Kunne ikke initialisere OpenVR: {initErr}",
 					"VR-tilkobling mislyktes",
 					MessageBoxButton.OK,
 					MessageBoxImage.Warning);
 				return;
 			}
 
-			// 3) Aktiver VR-delen i UI
-			//    Vis VR-host-vindu, aktiver pause- og kalibreringsknapp
+			// 7) Slå på VR-delen i UI
 			VRHost.Visibility = Visibility.Visible;
 			PauseKnapp.IsEnabled = true;
 			KalibrerKnapp.IsEnabled = true;
 
-			// 4) Start status-oppdateringene på nytt
+			// 8) Start status-oppdateringer på nytt
 			_statusService?.StartStatusUpdates(TimeSpan.FromSeconds(7));
 
-			// 5) Logg at VR nå er tilgjengelig
 			Debug.WriteLine("VR er gjenopprettet og klar til bruk.");
 		}
-
 
 		private async void ReturnButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -887,24 +996,62 @@ namespace HelseVestIKT_Dashboard.Views
 
 
 			// —————— RESTART STEAMVR ——————
-			_statusService.StopStatusUpdates();
+			if (_statusService != null)
+			{
+				_statusService.StopStatusUpdates();
+			}
+			else
+			{
+				Debug.WriteLine("Warning: statusService er ikke initialisert!");
+			}
 			try
-			{
-				await _initService.RestartSteamVRAsync();
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(
-					$"Kunne ikke restarte SteamVR: {ex.Message}",
-					"SteamVR-feil",
-					MessageBoxButton.OK,
-					MessageBoxImage.Warning);
-			}
+				{
+					await _initService.RestartSteamVRAsync();
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show(
+						$"Kunne ikke restarte SteamVR: {ex.Message}",
+						"SteamVR-feil",
+						MessageBoxButton.OK,
+						MessageBoxImage.Warning);
+				}
 		}
-	
+
 		#endregion
 
 		#region Spillbibliotek og Logg
+
+		private void GameLibraryScrollViewer_PreviewTouchDown(object sender, TouchEventArgs e)
+		{
+			// Start touch-scroll
+			_isTouchScrolling = true;
+			_touchStartPoint = e.GetTouchPoint(GameLibraryScrollViewer).Position;
+			_initialScrollOffset = GameLibraryScrollViewer.VerticalOffset;
+			GameLibraryScrollViewer.CaptureTouch(e.TouchDevice);
+			e.Handled = true;
+		}
+
+		private void GameLibraryScrollViewer_PreviewTouchMove(object sender, TouchEventArgs e)
+		{
+			if (!_isTouchScrolling) return;
+
+			var currentPoint = e.GetTouchPoint(GameLibraryScrollViewer).Position;
+			double delta = _touchStartPoint.Y - currentPoint.Y;
+			GameLibraryScrollViewer.ScrollToVerticalOffset(_initialScrollOffset + delta);
+
+			e.Handled = true;
+		}
+
+		private void GameLibraryScrollViewer_PreviewTouchUp(object sender, TouchEventArgs e)
+		{
+			// Avslutt touch-scroll
+			_isTouchScrolling = false;
+			GameLibraryScrollViewer.ReleaseTouchCapture(e.TouchDevice);
+			e.Handled = true;
+		}
+
+
 
 		// Egen log knapp for å sjekke diverse feil i programmet.
 		private void LogButton_Click(object sender, RoutedEventArgs e)
