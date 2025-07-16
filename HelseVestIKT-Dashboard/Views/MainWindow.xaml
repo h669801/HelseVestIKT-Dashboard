@@ -33,7 +33,7 @@
 			</Setter>
 			<Setter Property="MinHeight" Value="30"/>
 			<Setter Property="Padding" Value="10,4"/>
-			<Setter Property="Background" Value="#E57A6A"/>
+			<Setter Property="Background" Value="#FF671F"/>
 			<Setter Property="BorderBrush" Value="#003087"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="FontSize" Value="14"/>
@@ -72,7 +72,7 @@
 			</Setter>
 			<Setter Property="MinHeight" Value="30"/>
 			<Setter Property="Padding" Value="10,4"/>
-			<Setter Property="Background" Value="#FDE68A"/>
+			<Setter Property="Background" Value="#FFC845"/>
 			<Setter Property="BorderBrush" Value="#003087"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="FontSize" Value="14"/>
@@ -146,7 +146,7 @@
 			</Setter>
 			<Setter Property="MinHeight" Value="30"/>
 			<Setter Property="Padding" Value="10,4"/>
-			<Setter Property="Background" Value="#C75B5B"/>
+			<Setter Property="Background" Value="#CB333B"/>
 			<Setter Property="BorderBrush" Value="#003087"/>
 			<Setter Property="BorderThickness" Value="1"/>
 			<Setter Property="FontSize" Value="14"/>
@@ -202,6 +202,9 @@ BorderThickness="{TemplateBinding BorderThickness}">
 			</Style.Triggers>
 		</Style>
 
+		<Style x:Key="TilskuerButtonStyle" TargetType="Button" BasedOn="{StaticResource SquareRoundedButtonStyle}">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
 
 		<!-- Transparent knapp for ItemsControl (brukes til spillkort), men fortsatt avrundet -->
 		<Style x:Key="TransparentButtonStyleAvsluttButton" TargetType="Button" BasedOn="{StaticResource SquareRoundedButtonStyle}">
@@ -391,10 +394,10 @@ BorderThickness="{TemplateBinding BorderThickness}">
 
 			<Grid x:Name="HeaderGrid" Height="100">
 				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
 					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
 
 				<!-- Venstre del: pilleformet knapp for VR-kalibrering -->
@@ -529,13 +532,7 @@ BorderThickness="{TemplateBinding BorderThickness}">
 
 				<!--Kalibreringsknapp-->
 				<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Panel.ZIndex="200">
-					<Button x:Name="KalibrerKnapp" Style="{StaticResource SquareRoundedButtonStyleKalibreringButton}" Click="KalibreringKnapp_Click" Height="50" Margin="10,0,0,15">
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Kalibrering av VR" Margin="5,7,0,0"/> 
-							<Image Source="/Assets/Bilder/accessibility.png" Width="30" Height="30" HorizontalAlignment="Right" Margin="10,0,0,0" />
-						</StackPanel>
-					</Button>
-
+					
 					<!-- Knapp for å vise/hide sidemeny -->
 					<Button x:Name="VisKnapp" Style="{StaticResource SquareRoundedButtonStyle}" Height="45" Margin="10,0,0,15" Visibility="Collapsed" Click="VisKnapp_Click">
 						<StackPanel>
@@ -590,8 +587,8 @@ FontWeight="SemiBold"/>
 
 
 				<!-- Midtstilt logo/tekst -->
-				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-					<Grid Width="60" Height="60" Margin="15,0">
+				<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+					<Grid Width="60" Height="60" Margin="10,0">
 						<!-- 3 rader og 3 kolonner -->
 						<Grid.RowDefinitions>
 							<RowDefinition/>
@@ -657,46 +654,46 @@ FontWeight="SemiBold"/>
 				</StackPanel>
 
 				<!-- Høyre del: wifi, volum, klokke, avslutt-knapp (alle pilleformet) -->
-				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,10,0">
+				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
+
+					<!-- Volumkontroller med fast størrelse i StackPanel -->
+					<StackPanel Orientation="Horizontal"
+            VerticalAlignment="Center"
+            Margin="8,0">
+
+						<!-- 1) Fast størrelse på ikonet -->
+						<Image x:Name="SpeakerIcon"
+         Source="/Assets/Bilder/speaker_popup.png"
+         Width="32" Height="32"
+         VerticalAlignment="Center"/>
+
+						<!-- 2) Fast størrelse på slider -->
+						<Slider x:Name="VolumeSlider"
+          Minimum="0" Maximum="100"
+          Width="120" MinWidth="120" MaxWidth="120"
+          TickFrequency="5"
+          IsSnapToTickEnabled="True"
+          ValueChanged="VolumeSlider_ValueChanged"
+          Margin="10,0,0,0"
+          VerticalAlignment="Center"/>
+
+						<!-- 3) Fast størrelse på %-teksten -->
+						<TextBlock x:Name="VolumeStatusTextBlock"
+             Width="40"
+             Text="0%"
+             TextAlignment="Right"
+             VerticalAlignment="Center"
+             Margin="5,0,0,0"
+             FontSize="14"/>
+					</StackPanel>
+
+
+
+
 					<!-- Klokke -->
 					<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="{Binding CurrentTime}" VerticalAlignment="Center" FontSize="24" FontWeight="SemiBold" Margin="10,0"/>
 
-					<!-- Hovedknapp for volum -->
-					<Button Style="{StaticResource SquareRoundedButtonStyle}"
-        BorderThickness="0"
-        x:Name="SpeakerButton"
-        Click="SpeakerButton_Click">
-						<StackPanel Orientation="Horizontal">
-							<Image Source="/Assets/Bilder/speaker_popup.png"
-               Width="32" Height="32"/>
-						</StackPanel>
-					</Button>
-
-					<!-- Popup med volum-slider -->
-					<Popup x:Name="VolumePopup"
-       StaysOpen="False"
-       PlacementTarget="{Binding ElementName=SpeakerButton}"
-       Placement="Left">
-						<Border Background="White" CornerRadius="4" Padding="8">
-							<StackPanel Orientation="Vertical" Width="200">
-								<!-- Volum-slider -->
-								<Slider x:Name="VolumeSlider"
-              Minimum="0" Maximum="100"
-              Height="30"
-              TickFrequency="5"
-              IsSnapToTickEnabled="True"
-              ValueChanged="VolumeSlider_ValueChanged"/>
-								<!-- Tekst som viser prosent, skjult til vi trenger den -->
-								<TextBlock x:Name="VolumeStatusTextBlock"
-                 Text="0%"
-                 Visibility="Collapsed"
-                 HorizontalAlignment="Center"
-                 Margin="0,8,0,0"
-                 FontSize="16"/>
-							</StackPanel>
-						</Border>
-					</Popup>
-
+					
 
 					<!-- Innstillingsknapp -->
 					<Button Style="{StaticResource SquareRoundedButtonStyle}" BorderThickness="0" Click="OpenSettings_Click">
@@ -711,12 +708,18 @@ FontWeight="SemiBold"/>
 						</StackPanel>
 	
 					<!-- Fullskjerm knapp -->
-					<Button x:Name="FullScreenButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="55" Height="50" Click="FullScreenButton_Click">
-						<Image Source="/Assets/Bilder/fullskjerm.png" Width="32" Height="32"/>
+					<Button x:Name="FullScreenButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="200" Height="50" Click="FullScreenButton_Click">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="VR-tilskuervindu" Style="{StaticResource SourceSansTextBlockStyle}" Margin="5,5,15,5" TextAlignment="Left"/>
+							<Image Source="/Assets/Bilder/VR-tilskuervindu.png" Width="32" Height="32" HorizontalAlignment="Right"/>
+						</StackPanel>
 					</Button>
 					<!-- Avslutt-knapp -->
-					<Button x:Name="ExitButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="55" Height="50" Click="ExitButton_Click" Margin="10,0">
-						<Image Source="/Assets/Bilder/exit_knapp.png" Width="32" Height="32" />
+					<Button x:Name="ExitButton" Style="{StaticResource SquareRoundedButtonStyle}" Width="190" Height="50" Click="ExitButton_Click">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Avslutt program" TextAlignment="Left" Margin="5,5,15,5"/>
+							<Image Source="/Assets/Bilder/exit_knapp.png" Width="32" Height="32" HorizontalAlignment="Right" />
+						</StackPanel>
 					</Button>
 				</StackPanel>
 			</Grid>
@@ -753,7 +756,7 @@ FontWeight="SemiBold"/>
 
 			<!--Knapper (Pause, Avslutt og Nødstopp -->
 			<StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,0,0,0">
-				<StackPanel x:Name="StatusBarKalibrering" Panel.ZIndex="200" Grid.Column="4" Visibility="Collapsed" Orientation="Horizontal" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0">
+				<StackPanel x:Name="StatusBarKalibrering" Panel.ZIndex="200" Grid.Column="4" Visibility="Visible" Orientation="Horizontal" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0">
 					<Button Click="RomKalibrering_Click" Style="{StaticResource SquareRoundedButtonStyle}" Margin="5">
 						<TextBlock Style="{StaticResource SourceSansTextBlockStyle}" Text="Romkalibrering"/>
 					</Button>
@@ -827,26 +830,26 @@ FontWeight="SemiBold"/>
 					LostFocus="NewCategoryTextBox_LostFocus"
 							 />
 					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam-spill" Margin="10,5,0,0" />
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre spill" Margin="10,5,0,0" />
+						<CheckBox x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" IsChecked="{Binding FilterAction}" Content="Steam-spill" Margin="10,5,0,0" />
+						<CheckBox x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre spill" Margin="10,5,0,0" />
 					<Separator Margin="10,10,10,10"/>
 					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckFlerspiller" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckFlerspiller" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
 
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
 					<Separator Margin="10,10,10,10"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
-						<CheckBox Checked="UpdateFilters" Unchecked="UpdateFilters" x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
+						<CheckBox x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" IsChecked="{Binding IsNyligSpiltChecked, Mode=TwoWay}" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
 					<Separator x:Name="UPPER" Margin="10,10,10,10"/>
 
 					<!-- Plus Button and TextBox for Creating New Game Categories -->

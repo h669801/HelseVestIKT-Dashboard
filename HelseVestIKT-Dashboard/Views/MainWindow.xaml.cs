@@ -52,6 +52,8 @@ namespace HelseVestIKT_Dashboard.Views
 
         private bool _isLocked = true;
         public bool IsLocked => _isLocked;
+		private string _logPath = "";
+
 
         private string _currentPlayer = "Ingen spill kjører";
 		public string CurrentPlayer
@@ -66,6 +68,8 @@ namespace HelseVestIKT_Dashboard.Views
 				}
 			}
 		}
+
+		
 
 		private double _eyeHeightSetting;
 		public double EyeHeightSetting { get; set; }
@@ -84,6 +88,7 @@ namespace HelseVestIKT_Dashboard.Views
 		// tjenester og manager‐felt som du faktisk bruker:
 		// feltdeklarasjoner i MainWindow:
 
+		private bool _isUpdatingVolumeSlider = false;
 		public SpillKategori? ValgtKategori { get; set; }
 		private GameGroup gameGroupToRename;
 		private bool _isInNewOrRenameMode = false;
@@ -106,7 +111,7 @@ namespace HelseVestIKT_Dashboard.Views
 		private readonly VRCalibrator _calibrator;
 		private readonly VREmbedder _embedder;
 		private readonly AudioService _audioService;
-		private readonly WifiStatusManager _wifiStatusManager;
+		private WifiStatusManager? _wifiStatusManager;
 		private readonly FilterService _filterService;
 		private readonly InputService _inputService;
 		private readonly StatusBarService _statusBarService;
@@ -139,6 +144,7 @@ namespace HelseVestIKT_Dashboard.Views
 			_calibrator = new VRCalibrator();
 			_embedder = new VREmbedder(VRHost, MainContentGrid, GameLibraryArea, ReturnButton);
 			
+			ExitButton.Visibility = Visibility.Collapsed; // Skjul Exit-knappen i startmodus
 
 			// — 4) Audio & Wifi —
 			_audioService = new AudioService();
@@ -203,13 +209,13 @@ namespace HelseVestIKT_Dashboard.Views
 			CurrentPlayer = _gameStatusManager.CurrentPlayer;
 		}
 
-        private void MainWindow_Activated(object sender, EventArgs e)
-        {
-            if (_isLocked)
-            {
-                Topmost = true;
-                Activate();
-            }
+		private void MainWindow_Activated(object sender, EventArgs e)
+		{
+			if (_isLocked)
+			{
+				Topmost = true;
+				Activate();
+			}
 		}
 
 		protected override void OnActivated(EventArgs e)
@@ -223,17 +229,24 @@ namespace HelseVestIKT_Dashboard.Views
 			Win32.EnableKeyBlock();
 		}
 
+		public bool isLocked => _isLocked;
 		public void LockApplication()
         {
             _isLocked = true;
             Topmost = true;
-        }
+			Win32.EnableKeyBlock();
+			ExitButton.Visibility = Visibility.Collapsed;
+		}
 
         public void UnlockApplication()
         {
             _isLocked = false;
             Topmost = false;
-        }
+			Win32.DisableKeyBlock();
+			//Vis Exitknappen når man låser opp applikasjonen
+			ExitButton.Visibility = Visibility.Visible;
+
+		}
 
         public void ToggleLock()
         {
@@ -363,7 +376,6 @@ namespace HelseVestIKT_Dashboard.Views
         {
             VRHost.Visibility = Visibility.Collapsed;
             PauseKnapp.IsEnabled = true;
-            KalibrerKnapp.IsEnabled = true;
         }
 
         public async Task SetProfileAsync(SteamProfile p)
@@ -431,58 +443,9 @@ namespace HelseVestIKT_Dashboard.Views
 
 		private void UpdateFilters(object sender, RoutedEventArgs e)
 		{
-			var selectedGenres = new[]
-			{
-		CheckBoxAction,
-		CheckBoxEventyr,
-		CheckBoxIndie,
-		CheckBoxLettbeint,
-		CheckBoxMassivtFlerspill,
-		CheckBoxRacing,
-		CheckBoxRollespill,
-		CheckBoxSimulering,
-		CheckBoxSport,
-		CheckBoxStrategi
+			if (DataContext is MainWindowViewModel vm)
+				vm.ApplyFilters();
 		}
-			 .Where(cb => cb.IsChecked == true)
-	.Select(cb => cb.Content.ToString() ?? "");
-
-
-			var selectedTypes = new[]
-			{
-		CheckBoxKunFavoritter,
-		CheckBoxNyligSpilt,
-		CheckBoxVRSpill,
-		CheckBoxSteamSpill,
-		CheckBoxAndreSpill,
-		CheckFlerspiller
-	}
-			.Where(cb => cb.IsChecked == true)
-	.Select(cb => cb.Content.ToString() ?? "");
-
-			// 3) Hent valgte GameGroup-instansene
-			var selectedGroups = _gameGroupHandler
-				.GetGameGroups()                  // IEnumerable<(CheckBox, GameGroup)>
-				.Where(pair => pair.Item1.IsChecked == true)
-				.Select(pair => pair.Item2);
-
-			// 4) Kall FilterService med korrekte typer
-			var filtered = _filterService.ApplyFilters(
-				selectedGenres,
-				selectedTypes,
-				selectedGroups,
-				AllGames
-			);
-
-			Games.Clear();
-			foreach (var g in filtered)
-				Games.Add(g);
-
-			if (sender is CheckBox cb)
-				Console.WriteLine($"Filters {(cb.IsChecked == true ? "applied" : "unapplied")}: {cb.Content}");
-		}
-
-
 
 		#endregion
 
@@ -732,9 +695,17 @@ namespace HelseVestIKT_Dashboard.Views
 			// Oppdater UI på UI‐tråd:
 			Dispatcher.Invoke(() =>
 			{
-				VolumeSlider.Value = newScalar * 100;
-				VolumeStatusTextBlock.Text = $"{(int)(newScalar * 100)}%";
+				_isUpdatingVolumeSlider = true;
+				VolumeSlider.ValueChanged -= VolumeSlider_ValueChanged; // Unsubscribe to avoid recursion
+				double newValue = newScalar * 100;
+				if (Math.Abs(VolumeSlider.Value - newValue) > 0.1)
+					VolumeSlider.Value = newValue;
+
+				VolumeSlider.ValueChanged += VolumeSlider_ValueChanged;
+
+				VolumeStatusTextBlock.Text = $"{(int)newValue}%";
 				VolumeStatusTextBlock.Visibility = Visibility.Visible;
+
 
 				// (Re)start timer
 				volumeStatusTimer?.Stop();
@@ -745,11 +716,16 @@ namespace HelseVestIKT_Dashboard.Views
 					volumeStatusTimer.Stop();
 				};
 				volumeStatusTimer.Start();
+
+				_isUpdatingVolumeSlider = false;
 			});
 		}
 
 		private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 		{
+			if (_isUpdatingVolumeSlider)
+				return;
+
 			float scalar = (float)(e.NewValue / 100.0);
 			_audioService.CurrentVolume = scalar;
 		}
@@ -762,12 +738,7 @@ namespace HelseVestIKT_Dashboard.Views
 			VolumeStatusTextBlock.Visibility = Visibility.Visible;
 		}
 
-		private void SpeakerButton_Click(object sender, RoutedEventArgs e)
-		{
-			// Toggle popup åpen/lukket ved trykk
-			VolumePopup.IsOpen = !VolumePopup.IsOpen;
-		}
-
+		
 		private void ExitButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (MessageBox.Show(
@@ -969,7 +940,6 @@ namespace HelseVestIKT_Dashboard.Views
 			// 7) Slå på VR-delen i UI
 			VRHost.Visibility = Visibility.Visible;
 			PauseKnapp.IsEnabled = true;
-			KalibrerKnapp.IsEnabled = true;
 
 			// 8) Start status-oppdateringer på nytt
 			_statusService?.StartStatusUpdates(TimeSpan.FromSeconds(7));
@@ -1195,7 +1165,6 @@ namespace HelseVestIKT_Dashboard.Views
 			// c) Juster Z-indeksen om nødvendig
 			System.Windows.Controls.Panel.SetZIndex(VRHost, 100);
 			System.Windows.Controls.Panel.SetZIndex(StatusBarKalibrering, 200);
-			System.Windows.Controls.Panel.SetZIndex(KalibrerKnapp, 200);
 		}
 
 

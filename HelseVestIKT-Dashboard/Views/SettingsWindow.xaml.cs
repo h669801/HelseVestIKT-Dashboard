@@ -1,16 +1,41 @@
-﻿using System.Windows;
+﻿using HelseVestIKT_Dashboard.Infrastructure;
 using HelseVestIKT_Dashboard.Models;
+using NAudio.Utils;
+using SteamKit2.GC.CSGO.Internal;
+using System.Runtime.InteropServices;
+using System.Windows;
+using MessageBox = System.Windows.MessageBox;
+
 namespace HelseVestIKT_Dashboard.Views
 {
     public partial class SettingsWindow : Window
     {
-        public SettingsWindow()
+
+        private readonly MainWindow _main;
+		public SettingsWindow()
         {
             InitializeComponent();
+
+            _main = (MainWindow)System.Windows.Application.Current.MainWindow!;
+            UpdateLockButton();
+
         }
 
-        // 1) Åpne ProfileManagerWindow når brukeren klikker "Endre bruker"
-        private async void OnChangeUser(object sender, RoutedEventArgs e)
+        private void UpdateLockButton()
+        {
+            if (_main.IsLocked)
+            {
+                LockToggleButton.Content = "Lås opp applikasjon";
+            }
+            else
+            {
+                LockToggleButton.Content = "Lås applikasjon";
+            }
+		}
+
+
+		// 1) Åpne ProfileManagerWindow når brukeren klikker "Endre bruker"
+		private async void ChangeUserButton_Click(object sender, RoutedEventArgs e)
         {
             var profileMgr = new ProfileManagerWindow
             {
@@ -40,45 +65,43 @@ namespace HelseVestIKT_Dashboard.Views
 
         private void PinButton_Click(object sender, RoutedEventArgs e)
 		{
-			var pinWin = new PinWindow
-			{
-				Owner = this,
-				WindowStartupLocation = WindowStartupLocation.CenterOwner
-			};
-
-			// ShowDialog returnerer DialogResult fra PinWindow
-			bool? ok = pinWin.ShowDialog();
-			if (ok == true)
-			{
-                EditProfileButton.Visibility = Visibility.Visible; // PIN var korrekt – vis Endre bruker‐knappen
-
+            var pinWin = new PinWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            bool? ok = pinWin.ShowDialog();
+            if (ok == true)
+            {
+                EditProfileButton.Visibility = Visibility.Visible;
+                UpdateLockButton();
 			}
-			// etter at PinWindow lukkes, er du fortsatt i SettingsWindow
 		}
 
-        private void OnToggleLock(object sender, RoutedEventArgs e)
+        private void LockToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Owner is MainWindow mw)
-            {
-                mw.ToggleLock();
-
-                // Oppdater knappetekst basert på ny tilstand
-                if (mw.IsLocked)
-                {
-                    LockToggleButton.Content = "Lås opp applikasjon";
-                }
-                else
-                {
-                    LockToggleButton.Content = "Lås applikasjon";
-                }
-            }
-        }
+            _main.ToggleLock();
+            UpdateLockButton();
+		}
 
 
         // 3) Lukk vinduet
-        private void OnClose(object sender, RoutedEventArgs e)
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
-    }
+
+        private void RestartPCButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Er du sikker på at du vil restarte PC?", "Bekreft restart", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+			try
+            {
+                Win32.RestartWindows();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Kunne ikke starte PC på nytt: {ex.Message}", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
+        }
+	}
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using SimpleWifi;
+using System.Diagnostics;
 
 namespace HelseVestIKT_Dashboard.Services
 {
@@ -14,24 +15,44 @@ namespace HelseVestIKT_Dashboard.Services
 	public class WifiStatusManager
 	{
 		private readonly System.Windows.Controls.Image _icon;
-		private readonly Wifi _wifi = new Wifi();
+		private Wifi? _wifi = new Wifi();
 		private DispatcherTimer? _wifiSignalTimer;
 
+		/// <summary>
+		/// Initialiserer manager med bildet som skal vise signalstyrke.
+		/// </summary>
+		/// <param name="iconControl">Image-kontroll for Wi-Fi-ikon.</param>
 		public WifiStatusManager(System.Windows.Controls.Image iconControl)
 		{
 			_icon = iconControl;
 		}
 
+		/// <summary>
+		/// Starter overvåkning av Wi-Fi-signal.
+		/// </summary>
 		public void StartMonitoringWifiSignal()
 		{
-			_wifiSignalTimer = new DispatcherTimer
+			try
 			{
-				Interval = TimeSpan.FromSeconds(2) // update every 2 seconds
+				_wifi = new Wifi();
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Kunne ikke opprette Wifi-klient: {ex.Message}");
+				UpdateWifiIcon(0);
+				return;
+			}
+				_wifiSignalTimer = new DispatcherTimer
+			{
+				Interval = TimeSpan.FromSeconds(5) // update every 2 seconds
 			};
 			_wifiSignalTimer.Tick += WifiSignalTimer_Tick;
 			_wifiSignalTimer.Start();
 		}
 
+		/// <summary>
+		/// Oppdaterer ikonet basert på signalstyrke.
+		/// </summary>
 		private void UpdateWifiIcon(uint signalStrength)
 		{
 			string iconPath = signalStrength switch
@@ -44,12 +65,32 @@ namespace HelseVestIKT_Dashboard.Services
 			_icon.Source = new BitmapImage(new Uri(iconPath, UriKind.Absolute));
 		}
 
+
+		/// <summary>
+		/// Timer-hendelse: henter signalstyrke i bakgrunnstråd og oppdaterer UI.
+		/// </summary>
 		private void WifiSignalTimer_Tick(object? sender, EventArgs e)
 		{
-			var connected = _wifi.GetAccessPoints().FirstOrDefault(ap => ap.IsConnected);
-			UpdateWifiIcon(connected?.SignalStrength ?? 0);
+			if (_wifi == null)
+				return;
+			Task.Run(() =>
+			{
+				try
+				{
+					var connected = _wifi.GetAccessPoints().FirstOrDefault(ap => ap.IsConnected);
+					uint strength = connected?.SignalStrength ?? 0;
+					_icon.Dispatcher.Invoke(() => UpdateWifiIcon(strength));
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Feil ved henting av Wi-Fi-status: {ex.Message}");
+				}
+			});
 		}
 
+		/// <summary>
+		/// Stopper overvåkningen av Wi-Fi-signal.
+		/// </summary>
 		public void StopMonitoringWifiSignal()
 		{
 			_wifiSignalTimer?.Stop();

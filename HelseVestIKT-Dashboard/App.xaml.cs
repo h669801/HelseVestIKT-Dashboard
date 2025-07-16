@@ -18,6 +18,7 @@ namespace HelseVestIKT_Dashboard
 		{
 			base.OnStartup(e);
 
+			// SKRUDD AV FEILLOGGING -MELDINGSBOKS
 			// 1) Sett opp loggfil i "Dokumenter"
 			var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			_logPath = Path.Combine(docs, "HelseVestIKT-crash.log");
@@ -28,13 +29,15 @@ namespace HelseVestIKT_Dashboard
 			TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 			this.DispatcherUnhandledException += OnDispatcherUnhandledException;
 
+		/*
 			// Valgfritt: informer brukeren om hvor logg legges én gang
 			MessageBox.Show(
 				$"All unntakslogging skrives til:\n{_logPath}",
 				"Loggplassering",
 				MessageBoxButton.OK,
 				MessageBoxImage.Information);
-		}
+		*/
+			}
 
 		private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
 		{
