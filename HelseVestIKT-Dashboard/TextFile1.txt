@@ -1,11 +1,166 @@
-﻿1. Se på feilmeldingene som Håkon sendte på mail.
-1. Låse opp applikasjonen, må kunne ALT-TAB
-2. Tilgang til hjemskjerm
-3. Romkalibrering fra Steam / Mixed Reality (se på erstatning) / Endre på prioriteringer av vinduet slik at vinduet blir fremhevet
+﻿[ISH X] 2.Aktiver opplåsing av applikasjonen slik at brukeren kan bytte vekk med ALT + TAB. (når bruker har låst opp applikasjonen)
+
+[X] 7.Implementer en egen knapp for PC-omstart, med tilhørende programlogikk.
+
+[X Ish se på dette på nytt] 3.Sørg for tilgang til hjemskjermen på samme måte som i punkt 2.
+
+5.Merk automatisk av nylig spilte spill både ved oppstart og når brukeren trykker på «Hjem», «Avslutt» eller «Nødstopp». (mest spilte spillene er bedre å vise i hovedvisning)
+
+6.Juster nødstopp-logikken slik at knappene vises, funksjonaliteten er korrekt, og brukeren returneres til spillbiblioteket etter avbrudd.
+
+25.Bruk Windows-API til kontinuerlig å verifisere at VR-visningsvinduet er åpnet via SteamVR-popup.
+
+[X] 22.Fjern loggvinduet ved oppstart av applikasjonen, da det virker forstyrrende. 
+
+14.Sørg for at «Midtstill sittende»-knappen plasseres korrekt i forhold til høyde og ikke går gjennom gulvet; vurder løsninger for rullestolbrukere.
+
+23.Utbedre SteamVR-feil 119 slik at det ikke kreves dobbel oppstart via Steam og applikasjonen.
+
+26.Fikk også feilmelding om steamVR Error 309
+
+19.Gjør berøringsskjermopplevelsen i spillbiblioteket jevnere og mer responsiv.
+
+13.Tilpass størrelse og plassering av høydekalibreringskontroller for bedre berøringsstyring og økt synlighet.
+
+15.Flytt volumknappen til venstre for klokken, og vis alltid volumjusteringsgrensesnittet.
+
+20.Prioriter VR-romkalibrering slik at brukeren kan kalibrere direkte i applikasjonen.
+
+26. SteamVR Dashboard som default home på VR-brillene, istedenfor SteamVR Home (denne er veldig ressurskrevande å kjøre vs dashboard, samt dashboard er bedre ift visning av appar/spill som er i Steam)
+
+9.Optimaliser fargepalett og legg til et ikon for fullskjermknappen.
+
+11.Rett opp problemet der egendefinerte kategorier ikke oppdateres ved redigering.
+
+10.Finjuster avstanden mellom «Avslutt», «Pause» og «Nødstopp»-knappene for å unngå utilsiktede trykk.
+
+8.Forbedre formuleringer og visuelle elementer i brukergrensesnittet; fjern kalibreringsknappen fra verktøylinjen og gjør kalibreringskontrollene tilgjengelige umiddelbart ved oppstart.
+
+12.Hindr at applikasjonen forskyver seg utenfor rammevisningen ved berøring, slik at Windows-oppgavelinjen ikke blir synlig.
+
+4.Legg inn romkalibrering via Steam/Mixed Reality (vurder alternative løsninger) og juster vindusprioriteringen slik at kalibreringsvinduet alltid blir fremhevet. Tenker vi går for SteamVR sin romkalibrering sida denne fungerer på Reverb G2 og også HTC briller (som er aktuelle kandidat for nye VR-briller der 
+
+17.Unngå at egendefinerte kategorier dupliseres ved opprettelse eller redigering.
+
+21.Undersøk hvordan man kan korrigere spillretningen i SteamVR-romkalibreringen.
+
+18.Øk størrelse på knapper og tekst i innstillingsmenyen for bedre lesbarhet.
+
+16.Forbedre oppdatering av headset-status (batteri og tilkobling) slik at den ikke faller ut etter oppstart.
+
+24.Legg til mulighet for å starte applikasjonen direkte fra Windows (snarvei/målsøk). (dette kan vi gjøre sjølv egentlig bare ved å legge inn snarvei til applikasjonen i Windows sin oppstartsmape: %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup)
+
+1.Gjennomgå feilmeldingene som Håkon sendte på e-post.(det er nok bedre å bare teste applikasjonen der oppe på VR-rommet og så reiser jo eg på ferie uansett)
+
+
+
+
+
+1. Se på feilmeldingene som Håkon sendte på mail.
+1. Låse opp applikasjonen, må kunne ALT-TAB ut av applikasjonen
+2. Tilgang til hjemskjerm, samme som nr.1
+3. Romkalibrering fra Steam / Mixed Reality (se på erstatning) / Endre på prioriteringer av vinduet slik at vinduet blir fremhevet og man kan deretter kalibrere
 4. Auto huke av nylig spilte spill når applikasjonen starter og når man trykker på hjem, avslutt, nødstopp
-5. Fikse på logikk når man nødstopper slik at knappene vises og alt fungerer som det skal
+5. Fikse på logikk når man nødstopper slik at knappene vises og alt fungerer som det skal og bli sendt tilbake til spillbibliotek
 6. Restarte PC knapp og logikk
-7. Fikse på ord og visual UI / Fjerne kalibrering knapp, la kalibreringknapper være tilgjengelig fra start.
-8. Fikse på farger og fullscreen knappen
+7. Fikse på ord og visuals på UI / Fjerne kalibrering knapp i verktøylinjen, la kalibreringsknapper være tilgjengelig fra start.
+8. Fikse på farger og fullscreen knappen(legge til ikon)
 7. Fikse på avstand mellom knappene avslutt, pause og nødstopp
-8. 
+8. Egne kategorier ville ikke oppdatere seg når jeg redigerte de
+9. Applikasjonen beveger seg opp og ned utenfor ramme-view når jeg bruker touch. Jeg kan se Windows-oppgavelinjen
+10. Fikse på størrelse, plassering av høyde kalibrering (Lettere med touch og mer synlig for brukere)
+11. Fikse midtstill sittende knapp blir riktig i forhold til høyde og ikke glitcher gjennom gulvet. Finne en god løsning på det for rullestolbrukere.
+12. Volum knappen kan flyttes til venstre for klokken og alltid vise volumjustering UI
+13. Fikse på oppdatering av headset status mtp. batteri og tilkobling. Den fungerer i starten men så mister den helt status selv om de er koblet til
+14. Prøve å ikke la egne kategorier duplicate hverandre
+15. Større knapper og tekst på innstillinger delen av UI
+16. Touch-skjerm fungerer som det skal, men prøve å gjøre den smoothere i spillbibliotek
+17. Prioriter frem VR-romkalibrering slik at man kan kalibrere gjennom applikasjonen.
+18. Prøve å se på hva som kan gjøres for å fikse på retningen av spillretning i SteamVR Romkalibrering
+19. Fjerne LOG vinduet når man starter applikasjonen, det er irriterende
+20. SteamVR error 119 fikse det, siden jeg må starte et spill gjennom steam først også deretter starte applikasjonen og starte et spill gjennom der før steamvr view 
+	blir hentet inn slik at man kan se hva som skjer i spillet. 
+21. Oppstart av applikasjonen gjennom windows
+22. Windows API som alltid sjekker om vr-view vinduet er åpent gjennom steamvr pop up vindu
+23. Pause knapp fungerte ikke med det headset som var på haukeland. 
+24. Avslutt knapp avsluttet spill men lukket også vr view vinduet fra applikasjonen og Mixed Reality, mens nødstopp fikset problemet. 
+25. Volumjustering klikket når jeg tullet med volum inne i Steam Dashboard
+
+
+
+OBS! Start av spill gjennom applikasjonen førte til at applikasjonen lukket seg automatisk, men spillet ble startet. Fikk ikke noe feilmelding fra steam eller er det error 119
+Kanskje fordi det kommer et pop up vindu hvor man kan bestemme ulike vr innstillinger som openxr eller oculus 
+
+
+Forbedret språk: 
+
+1.Gjennomgå feilmeldingene som Håkon sendte på e-post.
+2.Aktiver opplåsing av applikasjonen slik at brukeren kan bytte vekk med ALT + TAB.
+3.Sørg for tilgang til hjemskjermen på samme måte som i punkt 2.
+4.Legg inn romkalibrering via Steam/Mixed Reality (vurder alternative løsninger) og juster vindusprioriteringen slik at kalibreringsvinduet alltid blir fremhevet.
+5.Merk automatisk av nylig spilte spill både ved oppstart og når brukeren trykker på «Hjem», «Avslutt» eller «Nødstopp».
+6.Juster nødstopp-logikken slik at knappene vises, funksjonaliteten er korrekt, og brukeren returneres til spillbiblioteket etter avbrudd.
+7.Implementer en egen knapp for PC-omstart, med tilhørende programlogikk.
+8.Forbedre formuleringer og visuelle elementer i brukergrensesnittet; fjern kalibreringsknappen fra verktøylinjen og gjør kalibreringskontrollene tilgjengelige umiddelbart ved oppstart.
+9.Optimaliser fargepalett og legg til et ikon for fullskjermknappen.
+10.Finjuster avstanden mellom «Avslutt», «Pause» og «Nødstopp»-knappene for å unngå utilsiktede trykk.
+11.Rett opp problemet der egendefinerte kategorier ikke oppdateres ved redigering.
+12.Hindr at applikasjonen forskyver seg utenfor rammevisningen ved berøring, slik at Windows-oppgavelinjen ikke blir synlig.
+13.Tilpass størrelse og plassering av høydekalibreringskontroller for bedre berøringsstyring og økt synlighet.
+14.Sørg for at «Midtstill sittende»-knappen plasseres korrekt i forhold til høyde og ikke går gjennom gulvet; vurder løsninger for rullestolbrukere.
+15.Flytt volumknappen til venstre for klokken, og vis alltid volumjusteringsgrensesnittet.
+16.Forbedre oppdatering av headset-status (batteri og tilkobling) slik at den ikke faller ut etter oppstart.
+17.Unngå at egendefinerte kategorier dupliseres ved opprettelse eller redigering.
+18.Øk størrelse på knapper og tekst i innstillingsmenyen for bedre lesbarhet.
+19.Gjør berøringsskjermopplevelsen i spillbiblioteket jevnere og mer responsiv.
+20.Prioriter VR-romkalibrering slik at brukeren kan kalibrere direkte i applikasjonen.
+21.Undersøk hvordan man kan korrigere spillretningen i SteamVR-romkalibreringen.
+22.Fjern loggvinduet ved oppstart av applikasjonen, da det virker forstyrrende.
+23.Utbedre SteamVR-feil 119 slik at det ikke kreves dobbel oppstart via Steam og applikasjonen.
+24.Legg til mulighet for å starte applikasjonen direkte fra Windows (snarvei/målsøk).
+25.Bruk Windows-API til kontinuerlig å verifisere at VR-visningsvinduet er åpnet via SteamVR-popup.
+26.Fikk også feilmelding om steamVR Error 309
+
+Kategorisert:
+
+1. Feildiagnostikk og logging
+1. Gjennomgå feilmeldingene som Håkon sendte på e-post.
+22. Fjern loggvinduet ved oppstart av applikasjonen, da det virker forstyrrende.
+
+2. Applikasjonsnavigasjon og oppstart
+2. Mulighet for å ALT + TAB ut av applikasjonen.
+3. Tilgang til hjemskjermen på samme måte som i punkt 2.
+24. Mulighet for å starte applikasjonen direkte fra Windows (snarvei/målsøk).
+
+3. Systemkontroller og nødstopp
+6. Juster nødstopp-logikken slik at knappene vises, fungerer korrekt og sender brukeren tilbake til spillbiblioteket.
+7. Implementer egen knapp og logikk for PC-omstart.
+10. Finjuster avstanden mellom «Avslutt», «Pause» og «Nødstopp»-knappene.
+
+4. Spillbibliotek og kategorihåndtering
+5. Merk automatisk av nylig spilte spill ved oppstart og ved trykk på «Hjem», «Avslutt» eller «Nødstopp».
+11. Rett opp problemet der egendefinerte kategorier ikke oppdateres ved redigering.
+17. Unngå at egendefinerte kategorier dupliseres ved opprettelse eller redigering.
+19. Gjør berøringsskjermopplevelsen i spillbiblioteket jevnere og mer responsiv.
+
+5. VR-romkalibrering
+4. Romkalibrering via Steam/Mixed Reality (vurder alternativer) og juster vindusprioritering slik at kalibreringsvinduet alltid er fremhevet.
+13. Tilpass størrelse og plassering av høydekalibreringskontroller for bedre berøringsstyring og synlighet.
+20. Prioriter VR-romkalibrering slik at brukeren kan kalibrere direkte i applikasjonen.
+21. Undersøk hvordan man kan korrigere spillretningen i SteamVR-romkalibreringen.
+
+6. Brukergrensesnitt og tilgjengelighet
+8. Forbedre tekster og visuelle elementer; fjern kalibreringsknapp fra verktøylinjen og vis alle kalibreringskontroller ved oppstart.
+9. Optimaliser fargepalett og legg til ikon for fullskjermknappen.
+12. Hindr at applikasjonen beveger seg utenfor rammevisningen ved berøring (unngå synlig Windows-oppgavelinje).
+14. Sørg for at «Midtstill sittende»-knappen plasseres riktig i forhold til gulv, med særlig tanke på rullestolbrukere.
+15. Flytt volumknappen til venstre for klokken og vis volumjusterings-UI kontinuerlig.
+18. Øk størrelse på knapper og tekst i innstillingsdelen for bedre lesbarhet.
+
+7. Headset-status og tilkobling
+16. Sørg for stabil oppdatering av headset-status (batteri og tilkobling) også etter oppstart.
+25. Bruk Windows-API til kontinuerlig å verifisere at VR-visningsvinduet er åpent via SteamVR-popup.
+
+8. SteamVR-integrasjon og feil
+23. Fikse SteamVR-feil 119 slik at applikasjonen kan starte spill uten dobbel oppstart via Steam.
+26. Fikse SteamVR Error 309 som oppstår ved oppstart av applikasjonen.

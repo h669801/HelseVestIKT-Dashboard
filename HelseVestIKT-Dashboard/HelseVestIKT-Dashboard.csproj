@@ -16,6 +16,7 @@
 			<PublishSingleFile>true</PublishSingleFile>
 			<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 			<Platforms>AnyCPU;x64</Platforms>
+			<ApplicationManifest>app.manifest</ApplicationManifest>
 		</PropertyGroup>
 
 		<!-- Alle PNG-er som WPF-ressurser innebygget i exe -->

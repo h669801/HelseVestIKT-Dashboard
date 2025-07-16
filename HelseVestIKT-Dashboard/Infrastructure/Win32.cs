@@ -9,7 +9,7 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 {
 	public static class Win32
 	{
-		
+
 		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
@@ -289,5 +289,99 @@ namespace HelseVestIKT_Dashboard.Infrastructure
 		}
 
 
+		//RESTART WINDOWS LOGIKK
+		public const uint EWX_REBOOT = 0x00000002;
+		public const uint EWX_FORCE = 0x00000004;
+		public const string SE_SHUTDOWN_NAME = "SeShutdownPrivilege";
+		public const uint TOKEN_ADJUST_PRIVILEGES = 0x0020;
+		public const uint TOKEN_QUERY = 0x0008;
+		public const uint SE_PRIVILEGE_ENABLED = 0x00000002;
+
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		public struct TOKEN_PRIVILEGES
+		{
+			public uint PrivilegeCount;
+			public LUID_AND_ATTRIBUTES Privileges;
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		public struct LUID_AND_ATTRIBUTES
+		{
+			public LUID Luid;
+			public uint Attributes;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct LUID
+		{
+			public uint LowPart;
+			public int HighPart;
+		}
+
+		[DllImport("advapi32.dll", SetLastError = true)]
+		public static extern bool OpenProcessToken(
+			IntPtr ProcessHandle,
+			uint DesiredAccess,
+			out IntPtr TokenHandle);
+
+		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+		public static extern bool LookupPrivilegeValue(
+			string? lpSystemName,
+			string lpName,
+			out LUID lpLuid);
+
+		[DllImport("advapi32.dll", SetLastError = true)]
+		public static extern bool AdjustTokenPrivileges(
+			IntPtr TokenHandle,
+			bool DisableAllPrivileges,
+			ref TOKEN_PRIVILEGES NewState,
+			uint BufferLength,
+			IntPtr PreviousState,
+			IntPtr ReturnLength);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool ExitWindowsEx(
+			uint uFlags,
+			uint dwReason);
+
+		/// <summary>
+		/// Starter en umiddelbar restart av Windows, tvinger alle apper til å lukke.
+		/// Krever at prosessen kjører som administrator og har shutdown‐privilegiet.
+		/// </summary>
+		public static void RestartWindows()
+		{
+			// 1) Hent prosess‐token
+			OpenProcessToken(
+				Process.GetCurrentProcess().Handle,
+				TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+				out var tokenHandle);
+
+			// 2) Hent LUID
+			LookupPrivilegeValue(
+				null,
+				SE_SHUTDOWN_NAME,
+				out var luid);
+
+			// 3) Aktiver privilege
+			var tp = new TOKEN_PRIVILEGES
+			{
+				PrivilegeCount = 1,
+				Privileges = new LUID_AND_ATTRIBUTES
+				{
+					Luid = luid,
+					Attributes = SE_PRIVILEGE_ENABLED
+				}
+			};
+			AdjustTokenPrivileges(tokenHandle, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero);
+
+			// 4) Restart
+			if (!ExitWindowsEx(EWX_REBOOT | EWX_FORCE, 0))
+			{
+				var err = Marshal.GetLastWin32Error();
+				throw new System.ComponentModel.Win32Exception(err, "ExitWindowsEx feilet");
+			}
+
+
+		}
 	}
 }
