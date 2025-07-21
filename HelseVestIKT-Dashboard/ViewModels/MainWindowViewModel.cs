@@ -21,7 +21,7 @@ namespace HelseVestIKT_Dashboard.ViewModels
 		private string _currentStatus = "";
 
 		// --- Sjanger-filtre ---
-		private bool _filterAction;
+		private bool _filterAction ;
 		private bool _filterEventyr;
 		private bool _filterFlerspiller;
 		private bool _filterIndie;
@@ -37,13 +37,17 @@ namespace HelseVestIKT_Dashboard.ViewModels
 		private bool _filterSteamSpill;
 		private bool _filterAndreSpill;
 		private bool _filterVrSpill;
-		private bool _filterKunFavoritter;
+		private bool _filterKunFavoritter; 
+
 
 		// --- Start med “Nylig spilt” aktivert ---
 		private bool _filterNyligSpilt = true;
 
 		public ObservableCollection<Game> AllGames { get; } = new ObservableCollection<Game>();
 		public ObservableCollection<Game> FilteredGames { get; } = new ObservableCollection<Game>();
+		public ObservableCollection<GameGroup> GameGroups { get; } = new ObservableCollection<GameGroup>();
+
+
 
 		public MainWindowViewModel(AudioService audioService, SteamApi steamApi, GameDetailsFetcher detailsFetcher, OfflineSteamGamesManager offlineMgr)
 		{
@@ -69,6 +73,7 @@ namespace HelseVestIKT_Dashboard.ViewModels
 			}
 		}
 
+	
 		public double HeightSetting
 		{
 			get => _heightSetting;
@@ -341,7 +346,10 @@ namespace HelseVestIKT_Dashboard.ViewModels
 			// TODO: kall GameStatusManager.UpdateCurrentGameAndStatus() og oppdater
 		});
 
-		
+		public ICommand AddCategoryCommand { get; }
+		public ICommand RenameCategoryCommand { get; }
+
+		public ICommand DeleteCategoryCommand { get; }
 
 	}
 }
