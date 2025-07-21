@@ -6,9 +6,9 @@
 
 5.Merk automatisk av nylig spilte spill både ved oppstart og når brukeren trykker på «Hjem», «Avslutt» eller «Nødstopp». (mest spilte spillene er bedre å vise i hovedvisning)
 
-6.Juster nødstopp-logikken slik at knappene vises, funksjonaliteten er korrekt, og brukeren returneres til spillbiblioteket etter avbrudd.
+[X] 6.Juster nødstopp-logikken slik at knappene vises, funksjonaliteten er korrekt, og brukeren returneres til spillbiblioteket etter avbrudd.
 
-25.Bruk Windows-API til kontinuerlig å verifisere at VR-visningsvinduet er åpnet via SteamVR-popup.
+[X] 25.Bruk Windows-API til kontinuerlig å verifisere at VR-visningsvinduet er åpnet via SteamVR-popup.
 
 [X] 22.Fjern loggvinduet ved oppstart av applikasjonen, da det virker forstyrrende. 
 

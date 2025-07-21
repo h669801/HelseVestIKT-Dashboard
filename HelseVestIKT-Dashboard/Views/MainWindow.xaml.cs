@@ -71,8 +71,8 @@ namespace HelseVestIKT_Dashboard.Views
 
 		
 
-		private double _eyeHeightSetting;
-		public double EyeHeightSetting { get; set; }
+		private float _eyeHeightSetting;
+		public float EyeHeightSetting { get; set; }
 
 		// Under klasse-deklarasjonen:
 		private bool _isTouchScrolling;
@@ -88,6 +88,7 @@ namespace HelseVestIKT_Dashboard.Views
 		// tjenester og manager‐felt som du faktisk bruker:
 		// feltdeklarasjoner i MainWindow:
 
+		private DispatcherTimer _vrMonitorTimer;
 		private bool _isUpdatingVolumeSlider = false;
 		public SpillKategori? ValgtKategori { get; set; }
 		private GameGroup gameGroupToRename;
@@ -108,7 +109,7 @@ namespace HelseVestIKT_Dashboard.Views
 		private GameLoadService _gameLoadService;
 		private VRStatusService _statusService;
 		private readonly VRDashboardService _dashSvc;
-		private readonly VRCalibrator _calibrator;
+		private VRCalibrator _calibrator;
 		private readonly VREmbedder _embedder;
 		private readonly AudioService _audioService;
 		private WifiStatusManager? _wifiStatusManager;
@@ -116,11 +117,14 @@ namespace HelseVestIKT_Dashboard.Views
 		private readonly InputService _inputService;
 		private readonly StatusBarService _statusBarService;
 
+		//VR WATCHER
+		private readonly SteamVrAutomation _steamVrAutomation = new SteamVrAutomation();
+
 		public MainWindow()
 		{
 			InitializeComponent();
 			DataContext = this;
-
+ 
 			// — 0) Opprett alt som aldri skal være null —
 			_gameGroupHandler = new GameGroupHandler();
 			_searchService = new SearchService(SearchBox, Games, AllGames);
@@ -141,7 +145,6 @@ namespace HelseVestIKT_Dashboard.Views
 
 			// — 3) VR-tjenester & embedder —
 			_dashSvc = new VRDashboardService(_processService, _gameStatusManager, _initService);
-			_calibrator = new VRCalibrator();
 			_embedder = new VREmbedder(VRHost, MainContentGrid, GameLibraryArea, ReturnButton);
 			
 			ExitButton.Visibility = Visibility.Collapsed; // Skjul Exit-knappen i startmodus
@@ -187,13 +190,13 @@ namespace HelseVestIKT_Dashboard.Views
 			try { _statusService?.Shutdown(); } catch { }
 			try { _timerService?.Dispose(); } catch { }
 			try { _initService?.Shutdown(); } catch { }
+			try { _calibrator?.Dispose(); } catch { }
 
 			// 4) Steng OpenVR-sesjon
 			try { OpenVR.Shutdown(); } catch { }
 
 			// 5) Gjenopprett eventuelt global Hotkey-block eller annet
 			Win32.DisableKeyBlock();
-
 			base.OnClosed(e);
 		}
 
@@ -257,9 +260,12 @@ namespace HelseVestIKT_Dashboard.Views
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             await InitializeApplicationAsync();
-        }
+			_steamVrAutomation.Start();
 
-        private async Task InitializeApplicationAsync()
+		}
+
+		
+		private async Task InitializeApplicationAsync()
         {
             if (_gamesLoaded) return;
             _gamesLoaded = true;
@@ -275,7 +281,7 @@ namespace HelseVestIKT_Dashboard.Views
             await LoadAndDisplayGamesAsync();
             InitializeGroupsAndFilters();
             await InitializeVrAsync();
-        }
+		}
 
         private void LoadOrCreateProfile()
         {
@@ -340,39 +346,47 @@ namespace HelseVestIKT_Dashboard.Views
             UpdateFilters(null, null);
         }
 
-        private async Task InitializeVrAsync()
-        {
-            try
-            {
-                await _initService.RestartSteamVRAsync();
-                bool vrOk = await Task.Run(() => _initService.SafeInitOpenVR());
+		private async Task InitializeVrAsync()
+		{
+			try
+			{
+				// 1) Restart SteamVR én gang
+				await _initService.RestartSteamVRAsync();
+				bool vrOk = await Task.Run(() => _initService.SafeInitOpenVR());
+				if (!vrOk)
+				{
+					CollapseVrControls();
+					return;
+				}
 
-                if (vrOk)
-                {
-                    InitializeVrAndCalibration();
-					if (_initService.System != null)
-					{
-						_statusService = new VRStatusService(VREquipmentStatus);
-						_statusService?.StartStatusUpdates(TimeSpan.FromSeconds(7));
-					}
-					else
-					{
-						CollapseVrControls();
-					}
-                }
-                else
-                {
-                    CollapseVrControls();
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Kunne ikke starte VR-tjenester: {ex.Message}");
-                CollapseVrControls();
-            }
-        }
+				// 2) Initialiser VRCalibrator
+				_calibrator?.Dispose();
+				_calibrator = new VRCalibrator();                 // parameter­løs ctor
+				_calibrator.Initialize(_initService.System);       // injiser systemet
 
-        private void CollapseVrControls()
+				// 3) Les og vis base-høyde
+				_baseHeight = _calibrator.LoadCurrentHeightCalibration();
+				EyeHeightSetting = _baseHeight;
+				HeightSlider.Value = 0;
+
+				// 4) Start status-oppdateringer osv.
+				_statusService = new VRStatusService(VREquipmentStatus);
+				_statusService.StartStatusUpdates(TimeSpan.FromSeconds(7));
+
+				// 5) Vis VR-UI
+				VRHost.Visibility = Visibility.Visible;
+				PauseKnapp.IsEnabled = true;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Kunne ikke starte VR-tjenester: {ex}");
+				CollapseVrControls();
+			}
+		}
+
+
+
+		private void CollapseVrControls()
         {
             VRHost.Visibility = Visibility.Collapsed;
             PauseKnapp.IsEnabled = true;
@@ -871,6 +885,10 @@ namespace HelseVestIKT_Dashboard.Views
 
 		private async void Nodstopp_Click(object sender, RoutedEventArgs e)
 		{
+			VRHost.Visibility = Visibility.Collapsed;
+			GameLibraryArea.Visibility = Visibility.Visible;
+			ReturnButton.Visibility = Visibility.Collapsed;
+
 			// 1) Stopp status-oppdateringer og løs embeddet overlay
 			try
 			{
@@ -1168,7 +1186,7 @@ namespace HelseVestIKT_Dashboard.Views
 		}
 
 
-
+		/*
 
 		private void MidtstillView_Sittende_Click(object s, RoutedEventArgs e)
 			=> SafeRecenter(ETrackingUniverseOrigin.TrackingUniverseSeated);
@@ -1189,6 +1207,19 @@ namespace HelseVestIKT_Dashboard.Views
 			{
 				MessageBox.Show($"Kunne ikke midtstille: {ex.Message}", "Feil", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
+		}
+		*/
+
+		private async void MidtstillView_Sittende_Click(object sender, RoutedEventArgs e)
+		{
+			if (_calibrator != null)
+				await _calibrator.RecenterAsync(ETrackingUniverseOrigin.TrackingUniverseSeated);
+		}
+
+		private async void MidstillView_Staaende_Click(object sender, RoutedEventArgs e)
+		{
+			if (_calibrator != null)
+				await _calibrator.RecenterAsync(ETrackingUniverseOrigin.TrackingUniverseStanding);
 		}
 
 		#endregion
@@ -1363,11 +1394,12 @@ namespace HelseVestIKT_Dashboard.Views
 		private void InitializeVrAndCalibration()
 		{
 			// a) Sørg for at vi har et gyldig CVRSystem fra VRInitService
-			if (_initService.System == null)
-				return;
-
-			// b) Gi CVRSystem til kalibratoren – gjør dette på UI-tråd
-			_calibrator.Initialize(_initService.System);
+			var system = _initService.System;
+			if (system == null)	return;
+			_calibrator?.Dispose();
+			_calibrator = new VRCalibrator();
+			_calibrator.Initialize(system);
+			_baseHeight = _calibrator.LoadCurrentHeightCalibration();
 
 			// c) Last inn tidligere høyde‐kalibrering
 			try

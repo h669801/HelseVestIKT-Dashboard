@@ -830,26 +830,26 @@ FontWeight="SemiBold"/>
 					LostFocus="NewCategoryTextBox_LostFocus"
 							 />
 					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Filtrer etter:" FontWeight="Bold" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxSteamSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" IsChecked="{Binding FilterAction}" Content="Steam-spill" Margin="10,5,0,0" />
-						<CheckBox x:Name="CheckBoxAndreSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre spill" Margin="10,5,0,0" />
+						<CheckBox x:Name="CheckBoxSteamSpill" IsChecked="{Binding FilterSteamSpill, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Steam-spill" Margin="10,5,0,0" />
+						<CheckBox x:Name="CheckBoxAndreSpill" IsChecked="{Binding FilterAndreSpill, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Andre spill" Margin="10,5,0,0" />
 					<Separator Margin="10,10,10,10"/>
 					<TextBlock Style="{DynamicResource SourceSansTextBlockStyle}" Text="Kategorier" FontWeight="Bold" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxAction" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxEventyr" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckFlerspiller" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxAction" IsChecked="{Binding FilterAction, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Action" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxEventyr" IsChecked="{Binding FilterEventyr, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Eventyr" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckFlerspiller" IsChecked="{Binding FilterFlerspiller, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Flerspiller" Margin="10,5,0,0"/>
 
-						<CheckBox x:Name="CheckBoxIndie" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxLettbeint" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxMassivtFlerspill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxRacing" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
-						<CheckBox  x:Name="CheckBoxRollespill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
-						<CheckBox  x:Name="CheckBoxSimulering" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
-						<CheckBox  x:Name="CheckBoxSport" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
-						<CheckBox  x:Name="CheckBoxStrategi" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxIndie" IsChecked="{Binding FilterIndie, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Indie" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxLettbeint" IsChecked="{Binding FilterLettbeint, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Lettbeint" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxMassivtFlerspill" IsChecked="{Binding FilterMassivtFlerspill, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Massivt flerspill" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxRacing" IsChecked="{Binding FilterRacing, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Racing" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxRollespill" IsChecked="{Binding FilterRollespill, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Rollespill" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxSimulering" IsChecked="{Binding FilterSimulering, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Simulering" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxSport" IsChecked="{Binding FilterSport, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Sport" Margin="10,5,0,0"/>
+						<CheckBox  x:Name="CheckBoxStrategi" IsChecked="{Binding FilterStrategi, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Strategi" Margin="10,5,0,0"/>
 					<Separator Margin="10,10,10,10"/>
-						<CheckBox x:Name="CheckBoxKunFavoritter" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxNyligSpilt" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" IsChecked="{Binding IsNyligSpiltChecked, Mode=TwoWay}" Margin="10,5,0,0"/>
-						<CheckBox x:Name="CheckBoxVRSpill" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" IsChecked="False" FontFamily="Source Sans 3"/>
+						<CheckBox x:Name="CheckBoxKunFavoritter" IsChecked="{Binding FilterKunFavoritter, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun favoritter" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxNyligSpilt" IsChecked="{Binding FilterNyligSpilt, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="Vis kun nylig spilt" Margin="10,5,0,0"/>
+						<CheckBox x:Name="CheckBoxVRSpill" IsChecked="{Binding FilterVrSpill, Mode=TwoWay}" Style="{DynamicResource RoundedCheckBoxWithSourceSansFontStyle}" Content="VR-spill" Margin="10,5,0,0" FontFamily="Source Sans 3"/>
 					<Separator x:Name="UPPER" Margin="10,10,10,10"/>
 
 					<!-- Plus Button and TextBox for Creating New Game Categories -->
