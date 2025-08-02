@@ -12,6 +12,7 @@ namespace HelseVestIKT_Dashboard.ViewModels
 	public class GameGroupViewModel : BaseViewModel
 	{
 		private readonly GameGroup _model;
+		public GameGroup Model => _model;
 		public ObservableCollection<GameViewModel> Games { get; }
 
 		public GameGroupViewModel(GameGroup model)

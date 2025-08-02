@@ -35,7 +35,7 @@ namespace HelseVestIKT_Dashboard.Services
 			_vrhost.SizeChanged += ResizeHostHelper;
 		}
 
-		private void EmbedVRView(IntPtr vrViewHandle)
+		public void EmbedVRView(IntPtr vrViewHandle)
 		{
 			if (vrViewHandle == IntPtr.Zero) return;
 			_overlayHandle = vrViewHandle;

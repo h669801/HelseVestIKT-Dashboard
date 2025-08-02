@@ -12,7 +12,7 @@ namespace HelseVestIKT_Dashboard.Views
         private ProfilesFile _data;
         private List<SteamProfile> _profiles;
 
-        public SteamProfile SelectedProfile { get; private set; }
+        public SteamProfile SelectedProfile { get; set; }
 
         public ProfileManagerWindow()
         {

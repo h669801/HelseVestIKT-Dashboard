@@ -14,9 +14,11 @@
 
 14.Sørg for at «Midtstill sittende»-knappen plasseres korrekt i forhold til høyde og ikke går gjennom gulvet; vurder løsninger for rullestolbrukere.
 
-23.Utbedre SteamVR-feil 119 slik at det ikke kreves dobbel oppstart via Steam og applikasjonen.
+[SJEKK PÅ NYTT SENERE]23.Utbedre SteamVR-feil 119 slik at det ikke kreves dobbel oppstart via Steam og applikasjonen.
 
-26.Fikk også feilmelding om steamVR Error 309
+[FÅ DE TIL Å OPPDATERE GPU-DRIVER] 26.Fikk også feilmelding om steamVR Error 309
+
+27. Fiks kategorier slik at det stemmer med MVVM-arkitekturen til prosjektet
 
 19.Gjør berøringsskjermopplevelsen i spillbiblioteket jevnere og mer responsiv.
 
