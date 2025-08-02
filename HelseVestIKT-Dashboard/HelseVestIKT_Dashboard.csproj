@@ -9,12 +9,12 @@
 			<UseWindowsForms>true</UseWindowsForms>
 			<Nullable>enable</Nullable>
 			<ImplicitUsings>enable</ImplicitUsings>
+		<AssemblyName>HelseVestIKT_Dashboard</AssemblyName>
 			<RootNamespace>HelseVestIKT_Dashboard</RootNamespace>
 
 			<!-- Publish som én exe med .NET-runtime inkludert -->
 			<SelfContained>true</SelfContained>
 			<PublishSingleFile>true</PublishSingleFile>
-			<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 			<Platforms>AnyCPU;x64</Platforms>
 			<ApplicationManifest>app.manifest</ApplicationManifest>
 		</PropertyGroup>
@@ -49,8 +49,10 @@
 
 		<!-- Dine NuGet-avhengigheter -->
 		<ItemGroup>
+			<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 			<PackageReference Include="ManagedNativeWifi" Version="2.7.0" />
 			<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
+			<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 			<PackageReference Include="NAudio" Version="2.2.1" />
 			<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 			<PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />

@@ -9,7 +9,6 @@ namespace HelseVestIKT_Dashboard.Services
 	public class FilterService
 	{
 
-		// Oversettelse fra norsk UI-label til intern sjanger-/type-nøkkel
 		private readonly Dictionary<string, string> _translation = new()
 		{
 			["Action"] = "Action",
@@ -20,16 +19,11 @@ namespace HelseVestIKT_Dashboard.Services
 			["Massivt flerspill"] = "Massively Multiplayer",
 			["Racing"] = "Racing",
 			["Rollespill"] = "RPG",
-			["Simulering"] = "Simulation",
+			["Simulasjon"] = "Simulation",
 			["Sport"] = "Sports",
-			["Strategi"] = "Strategy",
-
-			["VR-spill"] = "VR",
-			["Steam-spill"] = "Steam",
-			["Vis kun favoritter"] = "Favorite",
-			["Vis kun nylig spilt"] = "Recent",
-			["Andre spill"] = "Other"
+			["Strategi"] = "Strategy"
 		};
+
 
 		/// <summary>
 		/// Filtrerer en liste av spill basert på valgte sjangre, typer og grupper.
@@ -52,42 +46,19 @@ namespace HelseVestIKT_Dashboard.Services
 		}
 
 		// Sjekker sjanger-filter
-		private bool MatchesGenre(List<string> genres, Game game)
-		{
-			if (genres.Count == 0)
-				return true;
-
-			// Oversett hver valgt norsk sjanger til engelsk og sjekk mot game.Genres
-			return genres.Any(norsk =>
-			{
-				if (!_translation.TryGetValue(norsk, out var eng))
-					return false;
-				return game.Genres.Contains(eng, StringComparer.OrdinalIgnoreCase);
-			});
-		}
+		private bool MatchesGenre(List<string> keys, Game game)
+	=> !keys.Any() || keys.Any(k => game.Genres.Contains(k, StringComparer.OrdinalIgnoreCase));
 
 		// Sjekker type-filter
-		private bool MatchesType(List<string> types, Game game)
-		{
-			if (types.Count == 0)
-				return true;
-
-			return types.Any(norsk =>
-			{
-				if (!_translation.TryGetValue(norsk, out var key))
-					return false;
-
-				return key switch
-				{
-					"VR" => game.IsVR,
-					"Steam" => game.IsSteamGame,
-					"Favorite" => game.IsFavorite,
-					"Recent" => game.IsRecentlyPlayed,
-					"Other" => !game.IsVR && !game.IsSteamGame,
-					_ => false
-				};
-			});
-		}
+		private bool MatchesType(List<string> keys, Game game)
+	=> !keys.Any() || keys.Any(key => key switch {
+		"Steam" => game.IsSteamGame,
+		"Other" => !game.IsSteamGame,
+		"VR" => game.IsVR,
+		"Favorite" => game.IsFavorite,
+		"Recent" => game.IsRecentlyPlayed,
+		_ => false
+	});
 
 		// Sjekker gruppe-filter
 		private bool MatchesGroup(List<GameGroup> groups, Game game)

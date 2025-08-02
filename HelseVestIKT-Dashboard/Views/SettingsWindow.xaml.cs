@@ -1,5 +1,31 @@
-﻿using HelseVestIKT_Dashboard.Infrastructure;
+﻿using System.Windows;
+using HelseVestIKT_Dashboard.ViewModels;
+using Application = System.Windows.Application;
+
+namespace HelseVestIKT_Dashboard.Views
+{
+	public partial class SettingsWindow : Window
+	{
+        public SettingsViewModel ViewModel { get; private set; }
+
+		public SettingsWindow(MainWindowViewModel mainVm)
+		{
+
+			InitializeComponent();
+			ViewModel = new SettingsViewModel(mainVm);
+			DataContext = ViewModel;
+		}
+	}
+}
+
+
+
+
+/*using HelseVestIKT_Dashboard.Infrastructure;
 using HelseVestIKT_Dashboard.Models;
+using HelseVestIKT_Dashboard.Views;
+using HelseVestIKT_Dashboard.ViewModels;
+using HelseVestIKT_Dashboard.Services;
 using NAudio.Utils;
 using SteamKit2.GC.CSGO.Internal;
 using System.Runtime.InteropServices;
@@ -11,12 +37,14 @@ namespace HelseVestIKT_Dashboard.Views
     public partial class SettingsWindow : Window
     {
 
-        private readonly MainWindow _main;
+        public bool IsLocked {get; set; }   
+
+		private MainWindowViewModel _main;
 		public SettingsWindow()
         {
             InitializeComponent();
 
-            _main = (MainWindow)System.Windows.Application.Current.MainWindow!;
+            _main = (MainWindowViewModel)System.Windows.Application.Current.MainWindow!;
             UpdateLockButton();
 
         }
@@ -105,3 +133,4 @@ namespace HelseVestIKT_Dashboard.Views
         }
 	}
 }
+*/

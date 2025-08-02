@@ -63,6 +63,9 @@ namespace HelseVestIKT_Dashboard.Services
 			}
 		}
 
+		// Ny «Pause»-metode:
+		public void Pause()
+			=> PauseKnapp_Click(this, new RoutedEventArgs());
 
 		/// <summary>
 		/// Pauser den aktive VR-spillsesjonen ved å åpne SteamVR dashboard-overlay.
